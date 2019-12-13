@@ -136,47 +136,91 @@ function update_pointer(pointer) {
         };
 }
 
+function flip(i, j, i2, j2, e) {
+  if (i === i2 && j === j2) {
+    if (e) {
+      return /* Dead */0;
+    } else {
+      return /* Alive */1;
+    }
+  } else {
+    return e;
+  }
+}
+
 function update($$event) {
   var board;
   if (typeof $$event === "number") {
     switch ($$event) {
-      case /* Next */0 :
+      case /* Nothing */0 :
+          board = state_board.contents;
+          break;
+      case /* Next */1 :
           board = next(state_board.contents);
           break;
-      case /* Previous */1 :
+      case /* Previous */2 :
           board = List.hd(state_previous.contents);
           break;
-      case /* Reset */2 :
+      case /* Reset */3 :
           board = $$Array.make_matrix(Global.num_dot_x, Global.num_dot_y, /* Dead */0);
           break;
       
     }
-  } else if ($$event.tag) {
-    board = state_board.contents;
   } else {
-    var j = $$event[1];
-    var i = $$event[0];
-    board = Global.matrix_mapij((function (param, param$1, param$2) {
-            var i$1 = i;
-            var j$1 = j;
-            var i2 = param;
-            var j2 = param$1;
-            var e = param$2;
-            if (i$1 === i2 && j$1 === j2) {
-              if (e) {
-                return /* Dead */0;
-              } else {
-                return /* Alive */1;
-              }
-            } else {
-              return e;
-            }
-          }), state_board.contents);
+    switch ($$event.tag | 0) {
+      case /* Click */0 :
+          var j = $$event[1];
+          var i = $$event[0];
+          board = Global.matrix_mapij((function (param, param$1, param$2) {
+                  return flip(i, j, param, param$1, param$2);
+                }), state_board.contents);
+          break;
+      case /* ClickThenNext */1 :
+          var j$1 = $$event[1];
+          var i$1 = $$event[0];
+          board = next(Global.matrix_mapij((function (param, param$1, param$2) {
+                      return flip(i$1, j$1, param, param$1, param$2);
+                    }), state_board.contents));
+          break;
+      case /* Select */2 :
+          board = state_board.contents;
+          break;
+      
+    }
   }
-  state_previous.contents = List.append(/* :: */[
-        state_board.contents,
-        /* [] */0
-      ], state_previous.contents);
+  var previous;
+  var exit = 0;
+  if (typeof $$event === "number") {
+    switch ($$event) {
+      case /* Next */1 :
+          previous = List.append(/* :: */[
+                state_board.contents,
+                /* [] */0
+              ], state_previous.contents);
+          break;
+      case /* Previous */2 :
+          previous = List.tl(state_previous.contents);
+          break;
+      default:
+        previous = state_previous.contents;
+    }
+  } else {
+    switch ($$event.tag | 0) {
+      case /* Click */0 :
+      case /* ClickThenNext */1 :
+          exit = 1;
+          break;
+      default:
+        previous = state_previous.contents;
+    }
+  }
+  if (exit === 1) {
+    previous = List.append(/* :: */[
+          state_board.contents,
+          /* [] */0
+        ], state_previous.contents);
+  }
+  state_previous.contents = previous;
   state_board.contents = board;
   pointer.contents = update_pointer(pointer.contents);
   Draw.draw(state_board.contents);
@@ -193,7 +237,7 @@ function mousedown(x, y) {
     inside: init.inside,
     selecting: true
   };
-  return update(/* Click */Block.__(0, [
+  return update(/* ClickThenNext */Block.__(1, [
                 Caml_int32.div(x, Global.dot_w),
                 Caml_int32.div(y, Global.dot_h)
               ]));
@@ -222,34 +266,41 @@ function mousemove(x, y) {
     inside: init.inside,
     selecting: init.selecting
   };
-  return update(/* Select */Block.__(1, [
+  return update(/* Select */Block.__(2, [
                 Caml_int32.div(x, Global.dot_w),
                 Caml_int32.div(y, Global.dot_h)
               ]));
 }
 
 function keydown(str) {
+  var tmp;
   switch (str) {
-    case " " :
-        return update(/* Next */0);
     case "Escape" :
-        return update(/* Reset */2);
+        tmp = /* Reset */3;
+        break;
+    case "LeftArrow" :
+        tmp = /* Previous */2;
+        break;
+    case " " :
+    case "RighArrow" :
+        tmp = /* Next */1;
+        break;
     default:
-      console.log(str);
-      return /* () */0;
+      tmp = /* Nothing */0;
   }
+  return update(tmp);
 }
 
 function reset(param) {
-  return update(/* Reset */2);
+  return update(/* Reset */3);
 }
 
 function previous(param) {
-  return update(/* Previous */1);
+  return update(/* Previous */2);
 }
 
 function next$1(param) {
-  return update(/* Next */0);
+  return update(/* Next */1);
 }
 
 bind_mousemove(mousemove);
@@ -265,6 +316,16 @@ bind_next(next$1);
 bind_previous(previous);
 
 bind_reset(reset);
+
+update(/* Click */Block.__(0, [
+        10,
+        5
+      ]));
+
+update(/* Click */Block.__(0, [
+        10,
+        6
+      ]));
 
 export {
   

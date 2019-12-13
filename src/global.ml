@@ -18,21 +18,14 @@ let listmatrix_iterij f a =
     List.iteri (fun j e -> f i j e) row
   ) a
 
-type player =
-  | Player
-  | Enemy
-
-type sphere_type =
-  | Base
-  | Scout
-  | View
-
 type point =
   | Dead
   | Alive
 
 type event =
+  | Nothing
   | Click of int * int
+  | ClickThenNext of int * int
   | Select of int * int
   | Next
   | Previous

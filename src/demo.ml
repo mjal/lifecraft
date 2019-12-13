@@ -73,17 +73,26 @@ let () =
 
   let update event =
 
-    let board : point array array
-    = match event with
-      | Click(i,j)  -> matrix_mapij (flip i j) !(state.board)
-     | Select(i,j)  -> !(state.board)
+    let board = match event with
      | Next         -> next !(state.board)
      | Previous     -> List.hd !(state.previous)
      | Reset        -> Array.make_matrix num_dot_x num_dot_y Dead
+     | Click(i,j)  -> matrix_mapij (flip i j) !(state.board)
+     | ClickThenNext(i,j)  -> next (matrix_mapij (flip i j) !(state.board))
+     | Select(_,_)  -> !(state.board) (* Do Nothing *)
+     | _            -> !(state.board) (* Do nothing *)
     in
-      
-    state.previous := List.append [!(state.board)] !(state.previous);
+
+    let previous = match event with
+      | Next -> List.append [!(state.board)] !(state.previous);
+      | Click(_,_) | ClickThenNext(_,_) -> List.append [!(state.board)] !(state.previous);
+      | Previous -> List.tl !(state.previous)
+      | _ -> !(state.previous)
+    in 
+
+    state.previous := previous;
     state.board := board;
+
     pointer := update_pointer !pointer;
 
     Draw.draw !(state.board);
@@ -92,7 +101,7 @@ let () =
 
   let mousedown x y =
     pointer := { !pointer with selecting = true };
-    let event = Click((x/dot_w), (y/dot_h)) in
+    let event = ClickThenNext((x/dot_w), (y/dot_h)) in
     update event
   in
 
@@ -108,11 +117,15 @@ let () =
   in
 
   let keydown str =
-    (* Add more keys *)
-    match str with
-    | " " -> update Next
-    | "Escape" -> update Reset
-    | _ -> Js.log str
+    (* Idea: Arrows move cursor to use mouseless *)
+    let event = match str with
+      | " " -> Next
+      | "LeftArrow" -> Previous
+      | "RighArrow" -> Next
+      | "Escape" -> Reset
+      | _ -> Nothing
+    in update event
+
   in
 
   let reset () =
@@ -134,3 +147,8 @@ let () =
   bind_next next;
   bind_previous previous;
   bind_reset reset;
+
+  let e1 = Click(10,5)
+  in update e1;
+  let e2 = Click(10,6)
+  in update e2;
