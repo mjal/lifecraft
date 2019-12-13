@@ -101,13 +101,11 @@ let () =
 
   let mousedown x y =
     pointer := { !pointer with selecting = true };
-    let event = ClickThenNext((x/dot_w), (y/dot_h)) in
-    update event
+    update (ClickThenNext((x/dot_w), (y/dot_h)))
   in
 
   let mouseup () = 
     pointer := { !pointer with selecting = false };
-    ()
   in
 
   let mousemove x y =
@@ -119,11 +117,11 @@ let () =
   let keydown str =
     (* Idea: Arrows move cursor to use mouseless *)
     let event = match str with
-      | " " -> Next
+      | " "         -> Next
       | "LeftArrow" -> Previous
       | "RighArrow" -> Next
-      | "Escape" -> Reset
-      | _ -> Nothing
+      | "Escape"    -> Reset
+      | _           -> Nothing
     in update event
 
   in
@@ -148,7 +146,5 @@ let () =
   bind_previous previous;
   bind_reset reset;
 
-  let e1 = Click(10,5)
-  in update e1;
-  let e2 = Click(10,6)
-  in update e2;
+  update (Click(10,5));
+  update (Click(10,6));
