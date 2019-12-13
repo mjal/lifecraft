@@ -1,0 +1,14 @@
+# Spacecraft
+## 2d spheres (x,y)
+- power emission (x,y,radius,time)
+- spheres(x,y) can emit other spheres
+- can move and remember mvt
+- have collision et can ai on impact
+- can kill other spheres or emit fx to other sphere
+- units can group and can be more or less ranged
+- point de ralliement + ordre de deplacement/attaque
+
+- ressource points
+- space can be shaped (could be labyrithics)
+
+possibilite de cacher de l'information sur le terrain (devoiler plus tard), transformation/creation
