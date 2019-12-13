@@ -1,5 +1,22 @@
-let matrix_mapij f a = Array.mapi (fun i r -> Array.mapi (fun j e -> f i j e) r) a
-let matrix_iterij f a = Array.iteri (fun i r -> Array.iteri (fun j e -> f i j e) r) a
+let matrix_mapij f a =
+  Array.mapi (fun i row ->
+    Array.mapi (fun j e -> f i j e) row
+  ) a
+
+let matrix_iterij f a =
+  Array.iteri (fun i row ->
+    Array.iteri (fun j e -> f i j e) row
+  ) a
+
+let listmatrix_mapij f a =
+  List.mapi (fun i row ->
+    List.mapi (fun j e -> f i j e) row
+  ) a
+
+let listmatrix_iterij f a =
+  List.iteri (fun i row ->
+    List.iteri (fun j e -> f i j e) row
+  ) a
 
 type player =
   | Player
@@ -18,6 +35,7 @@ type event =
   | Click of int * int
   | Select of int * int
   | Next
+  | Previous
   | Reset
 
 external width: int = "canvas.width" [@@bs.val]
@@ -43,4 +61,3 @@ let num_dot_y = 11
 let dot_w = width / num_dot_x
 let dot_h = height / num_dot_y
 let r = min (dot_w / 2) (dot_h / 2)
-

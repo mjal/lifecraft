@@ -4,7 +4,7 @@ type pointer = { x: int; y: int; i: int; j: int; inside: bool; selecting: bool }
 
 type state = {
   board: point array array ref;
-  previous: point array array list
+  previous: point array array list ref;
 }
 
 let () =
@@ -12,7 +12,7 @@ let () =
 
   let state = {
     board = ref (Array.make_matrix num_dot_x num_dot_y Dead);
-    previous = [];
+    previous = ref [];
   } in
 
   let next board =
@@ -76,12 +76,13 @@ let () =
     let board : point array array
     = match event with
       | Click(i,j)  -> matrix_mapij (flip i j) !(state.board)
-     | Select(i,j) -> !(state.board)
-     | Next        -> next !(state.board)
+     | Select(i,j)  -> !(state.board)
+     | Next         -> next !(state.board)
+     | Previous     -> List.hd !(state.previous)
      | Reset        -> Array.make_matrix num_dot_x num_dot_y Dead
     in
       
-    state.previous = List.append [!(state.board)] state.previous;
+    state.previous := List.append [!(state.board)] !(state.previous);
     state.board := board;
     pointer := update_pointer !pointer;
 
@@ -107,18 +108,23 @@ let () =
   in
 
   let keydown str =
+    (* Add more keys *)
     match str with
     | " " -> update Next
-    | _ -> ()
+    | "Escape" -> update Reset
+    | _ -> Js.log str
   in
 
   let reset () =
     update Reset
   in
 
-  let previous () = ()
+  let previous () =
+    update Previous
   in
-  let next () = ()
+
+  let next () =
+    update Next
   in
 
   bind_mousemove mousemove;

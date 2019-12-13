@@ -5,7 +5,6 @@ import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Global from "./global.bs.js";
-import * as Caml_obj from "../node_modules/bs-platform/lib/es6/caml_obj.js";
 import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
 import * as Caml_int32 from "../node_modules/bs-platform/lib/es6/caml_int32.js";
 
@@ -22,6 +21,10 @@ var pointer = {
 
 var state_board = {
   contents: $$Array.make_matrix(Global.num_dot_x, Global.num_dot_y, /* Dead */0)
+};
+
+var state_previous = {
+  contents: /* [] */0
 };
 
 function next(board) {
@@ -136,7 +139,18 @@ function update_pointer(pointer) {
 function update($$event) {
   var board;
   if (typeof $$event === "number") {
-    board = $$event === /* Next */0 ? next(state_board.contents) : $$Array.make_matrix(Global.num_dot_x, Global.num_dot_y, /* Dead */0);
+    switch ($$event) {
+      case /* Next */0 :
+          board = next(state_board.contents);
+          break;
+      case /* Previous */1 :
+          board = List.hd(state_previous.contents);
+          break;
+      case /* Reset */2 :
+          board = $$Array.make_matrix(Global.num_dot_x, Global.num_dot_y, /* Dead */0);
+          break;
+      
+    }
   } else if ($$event.tag) {
     board = state_board.contents;
   } else {
@@ -159,10 +173,10 @@ function update($$event) {
             }
           }), state_board.contents);
   }
-  Caml_obj.caml_equal(/* [] */0, List.append(/* :: */[
-            state_board.contents,
-            /* [] */0
-          ], /* [] */0));
+  state_previous.contents = List.append(/* :: */[
+        state_board.contents,
+        /* [] */0
+      ], state_previous.contents);
   state_board.contents = board;
   pointer.contents = update_pointer(pointer.contents);
   Draw.draw(state_board.contents);
@@ -215,23 +229,27 @@ function mousemove(x, y) {
 }
 
 function keydown(str) {
-  if (str === " ") {
-    return update(/* Next */0);
-  } else {
-    return /* () */0;
+  switch (str) {
+    case " " :
+        return update(/* Next */0);
+    case "Escape" :
+        return update(/* Reset */2);
+    default:
+      console.log(str);
+      return /* () */0;
   }
 }
 
 function reset(param) {
-  return update(/* Reset */1);
+  return update(/* Reset */2);
 }
 
 function previous(param) {
-  return /* () */0;
+  return update(/* Previous */1);
 }
 
 function next$1(param) {
-  return /* () */0;
+  return update(/* Next */0);
 }
 
 bind_mousemove(mousemove);
