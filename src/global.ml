@@ -1,24 +1,4 @@
-let matrix_mapij f a =
-  Array.mapi (fun i row ->
-    Array.mapi (fun j e -> f i j e) row
-  ) a
-
-let matrix_iterij f a =
-  Array.iteri (fun i row ->
-    Array.iteri (fun j e -> f i j e) row
-  ) a
-
-let listmatrix_mapij f a =
-  List.mapi (fun i row ->
-    List.mapi (fun j e -> f i j e) row
-  ) a
-
-let listmatrix_iterij f a =
-  List.iteri (fun i row ->
-    List.iteri (fun j e -> f i j e) row
-  ) a
-
-type point =
+type cell =
   | Dead
   | Alive
 
@@ -30,6 +10,38 @@ type event =
   | Next
   | Previous
   | Reset
+
+type size = { x: int; y: int }
+
+type state = {
+  size: size ref;
+  board: cell list list ref;
+  previous: cell list list list ref;
+}
+
+let matrix_mapij f a =
+  Array.mapi (fun i row ->
+    Array.mapi (fun j e -> f i j e) row
+  ) a
+
+let matrix_iterij f a =
+  Array.iteri (fun i row ->
+    Array.iteri (fun j e -> f i j e) row
+  ) a
+
+let lmatrix_mapij f a =
+  List.mapi (fun i row ->
+    List.mapi (fun j e -> f i j e) row
+  ) a
+
+let lmatrix_iterij f a =
+  List.iteri (fun i row ->
+    List.iteri (fun j e -> f i j e) row
+  ) a
+
+let lmatrix_create i j e =
+  List.init i (fun _ -> List.init j (fun _ -> e))
+
 
 external width: int = "canvas.width" [@@bs.val]
 external height: int = "canvas.height" [@@bs.val]
@@ -48,9 +60,3 @@ external bind_keydown:    (string -> unit) -> unit = "bind_keydown" [@@bs.val]
 external bind_reset: (unit -> unit) -> unit = "bind_reset" [@@bs.val]
 external bind_previous: (unit -> unit) -> unit = "bind_previous" [@@bs.val]
 external bind_next: (unit -> unit) -> unit = "bind_next" [@@bs.val]
-
-let num_dot_x = 21
-let num_dot_y = 11
-let dot_w = width / num_dot_x
-let dot_h = height / num_dot_y
-let r = min (dot_w / 2) (dot_h / 2)

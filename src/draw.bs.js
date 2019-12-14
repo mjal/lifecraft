@@ -2,28 +2,36 @@
 
 import * as Global from "./global.bs.js";
 import * as Caml_int32 from "../node_modules/bs-platform/lib/es6/caml_int32.js";
+import * as Caml_primitive from "../node_modules/bs-platform/lib/es6/caml_primitive.js";
 
 function draw_selection(x, y) {
-  drawCircle(x, y, Global.r, "black");
+  drawCircle(x, y, 20, "black");
   return /* () */0;
 }
 
-function draw(board) {
+function draw(state) {
   var draw_one = function (i, j, e) {
-    var x = Caml_int32.imul(i, Global.dot_w) + (Global.dot_w / 2 | 0) | 0;
-    var y = Caml_int32.imul(j, Global.dot_h) + (Global.dot_h / 2 | 0) | 0;
+    var dot_w = Caml_int32.div(canvas.width, state.size.contents.x);
+    var dot_h = Caml_int32.div(canvas.height, state.size.contents.y);
+    var r = Caml_primitive.caml_int_min(dot_w / 2 | 0, dot_h / 2 | 0);
+    var x = Caml_int32.imul(i, dot_w) + (dot_w / 2 | 0) | 0;
+    var y = Caml_int32.imul(j, dot_h) + (dot_h / 2 | 0) | 0;
     var match = e ? /* tuple */[
         "black",
-        Global.r / 2 | 0
+        r / 2 | 0
       ] : /* tuple */[
         "grey",
-        Global.r / 5 | 0
+        r / 5 | 0
       ];
     drawDisk(x, y, match[1], match[0]);
     return /* () */0;
   };
   clear();
-  return Global.matrix_iterij(draw_one, board);
+  if (state.size.contents.x !== 0 && state.size.contents.y !== 0) {
+    return Global.lmatrix_iterij(draw_one, state.board.contents);
+  } else {
+    return /* () */0;
+  }
 }
 
 export {
@@ -31,4 +39,4 @@ export {
   draw ,
   
 }
-/* Global Not a pure module */
+/* No side effect */

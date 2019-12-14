@@ -2,10 +2,8 @@
 
 import * as Draw from "./draw.bs.js";
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
-import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Global from "./global.bs.js";
-import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
 import * as Caml_int32 from "../node_modules/bs-platform/lib/es6/caml_int32.js";
 
 var pointer = {
@@ -19,23 +17,105 @@ var pointer = {
   }
 };
 
+var state_size = {
+  contents: {
+    x: 5,
+    y: 8
+  }
+};
+
 var state_board = {
-  contents: $$Array.make_matrix(Global.num_dot_x, Global.num_dot_y, /* Dead */0)
+  contents: Global.lmatrix_create(5, 8, /* Dead */0)
 };
 
 var state_previous = {
   contents: /* [] */0
 };
 
+var state = {
+  size: state_size,
+  board: state_board,
+  previous: state_previous
+};
+
+function prune_top(_board) {
+  while(true) {
+    var board = _board;
+    if (board) {
+      if (List.exists((function (e) {
+                return e === /* Alive */1;
+              }), board[0])) {
+        return board;
+      } else {
+        _board = board[1];
+        continue ;
+      }
+    } else {
+      return /* [] */0;
+    }
+  };
+}
+
+function prune_left(_board) {
+  while(true) {
+    var board = _board;
+    var column = List.map(List.hd, board);
+    if (List.length(board) === 0) {
+      return /* [] */0;
+    } else if (List.exists((function (e) {
+              return e === /* Alive */1;
+            }), column)) {
+      return board;
+    } else {
+      _board = List.map(List.tl, board);
+      continue ;
+    }
+  };
+}
+
+function prune_right(board) {
+  var rev_board = List.map(List.rev, board);
+  return List.map(List.rev, prune_left(rev_board));
+}
+
+function prune(board) {
+  var board$1 = prune_top(board);
+  return prune_left(prune_right(List.rev(prune_top(List.rev(board$1)))));
+}
+
+function resize(board) {
+  var board2 = List.map((function (row) {
+          return /* :: */[
+                  /* Dead */0,
+                  List.append(row, /* :: */[
+                        /* Dead */0,
+                        /* [] */0
+                      ])
+                ];
+        }), board);
+  var length = List.length(List.hd(board2));
+  var column = List.init(length, (function (i) {
+          return /* Dead */0;
+        }));
+  return /* :: */[
+          column,
+          List.append(board2, /* :: */[
+                column,
+                /* [] */0
+              ])
+        ];
+}
+
 function next(board) {
   var is_alive = function (coords) {
     var j = coords[1];
     var i = coords[0];
-    if (i < 0 || i >= Global.num_dot_x || j < 0 || j >= Global.num_dot_y) {
+    if (i < 0 || i >= state_size.contents.x || j < 0 || j >= state_size.contents.y) {
       return 0;
     } else {
-      var match = Caml_array.caml_array_get(Caml_array.caml_array_get(board, i), j);
-      if (match) {
+      var row = List.nth(board, i);
+      var cell = List.nth(row, j);
+      if (cell) {
         return 1;
       } else {
         return 0;
@@ -116,24 +196,7 @@ function next(board) {
       return /* Alive */1;
     }
   };
-  return Global.matrix_mapij(next_one, board);
-}
-
-function update_pointer(pointer) {
-  var x = pointer.x - Caml_int32.mod_(pointer.x, Global.dot_w) | 0;
-  var y = pointer.y - Caml_int32.mod_(pointer.y, Global.dot_h) | 0;
-  var i = pointer.x;
-  var j = pointer.y;
-  var dist2 = Math.pow(x - (i + 0.5) * Global.dot_w, 2) + Math.pow(y - (j + 0.5) * Global.dot_h, 2);
-  var inside = dist2 < Math.pow(Global.r, 2);
-  return {
-          x: pointer.x,
-          y: pointer.y,
-          i: Caml_int32.div(pointer.x, Global.dot_w),
-          j: Caml_int32.div(pointer.y, Global.dot_h),
-          inside: inside,
-          selecting: pointer.selecting
-        };
+  return Global.lmatrix_mapij(next_one, board);
 }
 
 function flip(i, j, i2, j2, e) {
@@ -162,7 +225,7 @@ function update($$event) {
           board = List.hd(state_previous.contents);
           break;
       case /* Reset */3 :
-          board = $$Array.make_matrix(Global.num_dot_x, Global.num_dot_y, /* Dead */0);
+          board = Global.lmatrix_create(5, 8, /* Dead */0);
           break;
       
     }
@@ -171,14 +234,14 @@ function update($$event) {
       case /* Click */0 :
           var j = $$event[1];
           var i = $$event[0];
-          board = Global.matrix_mapij((function (param, param$1, param$2) {
+          board = Global.lmatrix_mapij((function (param, param$1, param$2) {
                   return flip(i, j, param, param$1, param$2);
                 }), state_board.contents);
           break;
       case /* ClickThenNext */1 :
           var j$1 = $$event[1];
           var i$1 = $$event[0];
-          board = next(Global.matrix_mapij((function (param, param$1, param$2) {
+          board = next(Global.lmatrix_mapij((function (param, param$1, param$2) {
                       return flip(i$1, j$1, param, param$1, param$2);
                     }), state_board.contents));
           break;
@@ -193,10 +256,10 @@ function update($$event) {
   if (typeof $$event === "number") {
     switch ($$event) {
       case /* Next */1 :
-          previous = List.append(/* :: */[
-                state_board.contents,
-                /* [] */0
-              ], state_previous.contents);
+          previous = /* :: */[
+            state_board.contents,
+            state_previous.contents
+          ];
           break;
       case /* Previous */2 :
           previous = List.tl(state_previous.contents);
@@ -215,15 +278,19 @@ function update($$event) {
     }
   }
   if (exit === 1) {
-    previous = List.append(/* :: */[
-          state_board.contents,
-          /* [] */0
-        ], state_previous.contents);
+    previous = /* :: */[
+      state_board.contents,
+      state_previous.contents
+    ];
   }
   state_previous.contents = previous;
-  state_board.contents = board;
-  pointer.contents = update_pointer(pointer.contents);
-  Draw.draw(state_board.contents);
+  state_board.contents = typeof $$event === "number" && $$event === 1 ? resize(prune(board)) : board;
+  state_size.contents = {
+    x: List.length(state_board.contents),
+    y: List.length(state_board.contents) === 0 ? 0 : List.length(List.hd(state_board.contents))
+  };
+  pointer.contents = pointer.contents;
+  Draw.draw(state);
   return Draw.draw_selection(pointer.contents.x, pointer.contents.y);
 }
 
@@ -238,8 +305,8 @@ function mousedown(x, y) {
     selecting: true
   };
   return update(/* ClickThenNext */Block.__(1, [
-                Caml_int32.div(x, Global.dot_w),
-                Caml_int32.div(y, Global.dot_h)
+                Caml_int32.div(x, Caml_int32.div(canvas.width, state_size.contents.x)),
+                Caml_int32.div(y, Caml_int32.div(canvas.height, state_size.contents.y))
               ]));
 }
 
@@ -266,26 +333,31 @@ function mousemove(x, y) {
     inside: init.inside,
     selecting: init.selecting
   };
-  return update(/* Select */Block.__(2, [
-                Caml_int32.div(x, Global.dot_w),
-                Caml_int32.div(y, Global.dot_h)
-              ]));
+  if (state_size.contents.x !== 0 && state_size.contents.y !== 0) {
+    return update(/* Select */Block.__(2, [
+                  Caml_int32.div(x, Caml_int32.div(canvas.width, state_size.contents.x)),
+                  Caml_int32.div(y, Caml_int32.div(canvas.height, state_size.contents.y))
+                ]));
+  } else {
+    return /* () */0;
+  }
 }
 
 function keydown(str) {
   var tmp;
   switch (str) {
-    case "Escape" :
-        tmp = /* Reset */3;
-        break;
-    case "LeftArrow" :
+    case "ArrowLeft" :
         tmp = /* Previous */2;
         break;
     case " " :
-    case "RighArrow" :
+    case "ArrowRight" :
         tmp = /* Next */1;
         break;
+    case "Escape" :
+        tmp = /* Reset */3;
+        break;
     default:
+      console.log(str);
       tmp = /* Nothing */0;
   }
   return update(tmp);
@@ -318,13 +390,33 @@ bind_previous(previous);
 bind_reset(reset);
 
 update(/* Click */Block.__(0, [
-        10,
-        5
+        1,
+        1
       ]));
 
 update(/* Click */Block.__(0, [
-        10,
-        6
+        2,
+        2
+      ]));
+
+update(/* Click */Block.__(0, [
+        3,
+        2
+      ]));
+
+update(/* Click */Block.__(0, [
+        1,
+        3
+      ]));
+
+update(/* Click */Block.__(0, [
+        1,
+        3
+      ]));
+
+update(/* Click */Block.__(0, [
+        2,
+        4
       ]));
 
 export {

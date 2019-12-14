@@ -2,28 +2,65 @@ open Global
 
 type pointer = { x: int; y: int; i: int; j: int; inside: bool; selecting: bool }
 
-type state = {
-  board: point array array ref;
-  previous: point array array list ref;
-}
-
 let () =
   let pointer = ref { x = 0; y = 0; i = 0; j = 0; inside = false; selecting = false; } in
 
+  let size = { x = 5; y = 8; } in
+
   let state = {
-    board = ref (Array.make_matrix num_dot_x num_dot_y Dead);
+    size = ref size;
+    board = ref (lmatrix_create size.x size.y Dead);
     previous = ref [];
   } in
+
+  let rec prune_top (board : cell list list) : cell list list =
+    match board with
+    | hd :: tl -> 
+      if List.exists (fun e -> e == Alive) hd then
+        board
+      else
+        prune_top tl
+    | [] -> []
+  in
+
+  let prune_bottom board = List.rev (prune_top (List.rev board)) in
+
+  let rec prune_left board =
+    let column = List.map List.hd board in
+    if List.length board = 0 then
+      []
+    else if List.exists (fun e -> e == Alive) column then
+      board
+    else
+      prune_left (List.map List.tl board)
+  in
+
+  let prune_right board =
+    let rev_board = List.map List.rev board
+    in List.map List.rev (prune_left rev_board)
+  in
+
+  let prune board = prune_left (prune_right (prune_bottom (prune_top board)))
+  in
+
+  let resize board =
+    let board2 = List.map (fun row -> Dead :: (List.append row [Dead])) board in
+    let length = List.length (List.hd board2) in
+    let column = List.init length (fun i -> Dead)  in
+    column :: (List.append board2 [column])
+  in
 
   let next board =
     let is_alive coords =
       let (i,j) = coords in
-      if i < 0 || i >= num_dot_x
-      || j < 0 || j >= num_dot_y
+      if i < 0 || i >= !(state.size).x
+      || j < 0 || j >= !(state.size).y
       then
         0
       else
-        match board.(i).(j) with | Dead -> 0 | Alive -> 1
+        let row = List.nth board i in
+        let cell = List.nth row j in
+        match cell with | Dead -> 0 | Alive -> 1
     in 
     let sum_neighbourg x y =
       let offsets = [(-1,-1); (-1, 0); (-1, 1); (0, -1); (*(0, 0);*) (0, 1); (1, -1); (1, 0); (1, 1)] in
@@ -39,11 +76,15 @@ let () =
       | Dead, 3  -> Alive
       | _ -> Dead
     in
-    matrix_mapij next_one board
+    lmatrix_mapij next_one board
   in
 
   let update_pointer pointer =
+    (*
     let inside =
+      let dot_w = (width / !(state.size).x) in
+      let dot_h = (height / !(state.size).y) in
+      let r = min (dot_w / 2) (dot_h / 2) in
       let foi = float_of_int in
       let x = foi (pointer.x - pointer.x mod dot_w) in
       let y = foi (pointer.y - pointer.y mod dot_h) in
@@ -58,10 +99,14 @@ let () =
         else false
     in
     { pointer with
-      i = pointer.x / dot_w;
-      j = pointer.y / dot_h;
+      (*
+      i = pointer.x / width  * !(state.size).x;
+      j = pointer.y / height * !(state.size).y;
+      *)
       inside
     }
+    *)
+    pointer
   in
 
   let flip i j i2 j2 e =
@@ -71,37 +116,46 @@ let () =
       e
   in
 
-  let update event =
-
+  let update (event : event) : unit =
     let board = match event with
      | Next         -> next !(state.board)
      | Previous     -> List.hd !(state.previous)
-     | Reset        -> Array.make_matrix num_dot_x num_dot_y Dead
-     | Click(i,j)  -> matrix_mapij (flip i j) !(state.board)
-     | ClickThenNext(i,j)  -> next (matrix_mapij (flip i j) !(state.board))
+     | Reset        -> lmatrix_create size.x size.y Dead
+     | Click(i,j)   -> lmatrix_mapij (flip i j) !(state.board)
+     | ClickThenNext(i,j)  -> next (lmatrix_mapij (flip i j) !(state.board))
      | Select(_,_)  -> !(state.board) (* Do Nothing *)
      | _            -> !(state.board) (* Do nothing *)
     in
 
+    (* use cons of x :: xs instead of append *)
     let previous = match event with
-      | Next -> List.append [!(state.board)] !(state.previous);
-      | Click(_,_) | ClickThenNext(_,_) -> List.append [!(state.board)] !(state.previous);
+      | Next -> !(state.board) :: !(state.previous);
+      | Click(_,_) | ClickThenNext(_,_) -> !(state.board) :: !(state.previous);
       | Previous -> List.tl !(state.previous)
       | _ -> !(state.previous)
     in 
 
     state.previous := previous;
-    state.board := board;
-
+    state.board :=
+      begin
+        match event with
+        | Next -> resize (prune board)
+        | _ -> board
+      end
+    ;
+    state.size := {
+      x = List.length !(state.board);
+      y = if List.length !(state.board) = 0 then 0 else List.length (List.hd !(state.board))
+    };
     pointer := update_pointer !pointer;
 
-    Draw.draw !(state.board);
+    Draw.draw state;
     Draw.draw_selection !pointer.x !pointer.y;
   in
 
   let mousedown x y =
     pointer := { !pointer with selecting = true };
-    update (ClickThenNext((x/dot_w), (y/dot_h)))
+    update (ClickThenNext((x / (width / !(state.size).x)), (y / (height / !(state.size).y))))
   in
 
   let mouseup () = 
@@ -110,18 +164,20 @@ let () =
 
   let mousemove x y =
     pointer := { !pointer with x; y };
-    let event = Select((x/dot_w), (y/dot_h)) in
-    update event
+    if !(state.size).x != 0 && !(state.size).y != 0 then
+      update (Select((x / (width / !(state.size).x)), (y / (height / !(state.size).y))))
+    else
+      ()
   in
 
   let keydown str =
-    (* Idea: Arrows move cursor to use mouseless *)
+    (* Idea: Arrows move cursor for mouseless *)
     let event = match str with
       | " "         -> Next
-      | "LeftArrow" -> Previous
-      | "RighArrow" -> Next
+      | "ArrowLeft" -> Previous
+      | "ArrowRight" -> Next
       | "Escape"    -> Reset
-      | _           -> Nothing
+      | _           -> Js.log str; Nothing
     in update event
 
   in
@@ -146,5 +202,9 @@ let () =
   bind_previous previous;
   bind_reset reset;
 
-  update (Click(10,5));
-  update (Click(10,6));
+  update (Click(1,1));
+  update (Click(2,2));
+  update (Click(3,2));
+  update (Click(1,3));
+  update (Click(1,3));
+  update (Click(2,4));

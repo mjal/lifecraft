@@ -3,7 +3,6 @@
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
-import * as Caml_primitive from "../node_modules/bs-platform/lib/es6/caml_primitive.js";
 
 function matrix_mapij(f, a) {
   return $$Array.mapi((function (i, row) {
@@ -21,7 +20,7 @@ function matrix_iterij(f, a) {
               }), a);
 }
 
-function listmatrix_mapij(f, a) {
+function lmatrix_mapij(f, a) {
   return List.mapi((function (i, row) {
                 return List.mapi((function (j, e) {
                               return Curry._3(f, i, j, e);
@@ -29,7 +28,7 @@ function listmatrix_mapij(f, a) {
               }), a);
 }
 
-function listmatrix_iterij(f, a) {
+function lmatrix_iterij(f, a) {
   return List.iteri((function (i, row) {
                 return List.iteri((function (j, e) {
                               return Curry._3(f, i, j, e);
@@ -37,26 +36,20 @@ function listmatrix_iterij(f, a) {
               }), a);
 }
 
-var dot_w = canvas.width / 21 | 0;
-
-var dot_h = canvas.height / 11 | 0;
-
-var r = Caml_primitive.caml_int_min(dot_w / 2 | 0, dot_h / 2 | 0);
-
-var num_dot_x = 21;
-
-var num_dot_y = 11;
+function lmatrix_create(i, j, e) {
+  return List.init(i, (function (param) {
+                return List.init(j, (function (param) {
+                              return e;
+                            }));
+              }));
+}
 
 export {
   matrix_mapij ,
   matrix_iterij ,
-  listmatrix_mapij ,
-  listmatrix_iterij ,
-  num_dot_x ,
-  num_dot_y ,
-  dot_w ,
-  dot_h ,
-  r ,
+  lmatrix_mapij ,
+  lmatrix_iterij ,
+  lmatrix_create ,
   
 }
-/* dot_w Not a pure module */
+/* No side effect */
