@@ -56,14 +56,8 @@ const bind_keydown = (f) => {
   }, false);
 }
 
-const bind_previous = (f) => {
-  document.querySelector(".previous").addEventListener('click', function(event) { f() }, false);
-}
-
-const bind_next = (f) => {
-  document.querySelector(".next").addEventListener('click', function(event) { f() }, false);
-}
-
-const bind_reset = (f) => {
-  document.querySelector(".reset").addEventListener('click', function(event) { f() }, false);
+const bind_button = (selector, f) => {
+  document
+    .querySelector(selector)
+    .addEventListener('click', function(event) { f() }, false);
 }

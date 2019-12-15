@@ -57,6 +57,4 @@ external bind_mousedown:  (int -> int -> unit) -> unit = "bind_mousedown" [@@bs.
 external bind_mouseup:    (unit -> unit) -> unit = "bind_mouseup" [@@bs.val]
 external bind_keydown:    (string -> unit) -> unit = "bind_keydown" [@@bs.val]
 
-external bind_reset: (unit -> unit) -> unit = "bind_reset" [@@bs.val]
-external bind_previous: (unit -> unit) -> unit = "bind_previous" [@@bs.val]
-external bind_next: (unit -> unit) -> unit = "bind_next" [@@bs.val]
+external bind_button: string -> (unit -> unit) -> unit = "bind_button" [@@bs.val]

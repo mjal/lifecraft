@@ -5,7 +5,7 @@ type pointer = { x: int; y: int; i: int; j: int; inside: bool; selecting: bool }
 let () =
   let pointer = ref { x = 0; y = 0; i = 0; j = 0; inside = false; selecting = false; } in
 
-  let size = { x = 5; y = 8; } in
+  let size = { x = 3; y = 3; } in
 
   let state = {
     size = ref size;
@@ -15,12 +15,12 @@ let () =
 
   let rec prune_top (board : cell list list) : cell list list =
     match board with
+    | [] -> []
     | hd :: tl -> 
       if List.exists (fun e -> e == Alive) hd then
         board
       else
         prune_top tl
-    | [] -> []
   in
 
   let prune_bottom board = List.rev (prune_top (List.rev board)) in
@@ -36,18 +36,20 @@ let () =
   in
 
   let prune_right board =
-    let rev_board = List.map List.rev board
-    in List.map List.rev (prune_left rev_board)
+    List.map List.rev (prune_left (List.map List.rev board))
   in
 
   let prune board = prune_left (prune_right (prune_bottom (prune_top board)))
   in
 
   let resize board =
-    let board2 = List.map (fun row -> Dead :: (List.append row [Dead])) board in
-    let length = List.length (List.hd board2) in
-    let column = List.init length (fun i -> Dead)  in
-    column :: (List.append board2 [column])
+    if board == [] then
+      [[Dead]]
+    else
+      let board2 = List.map (fun row -> Dead :: (List.append row [Dead])) board in
+      let length = List.length (List.hd board2) in
+      let column = List.init length (fun _ -> Dead)  in
+      column :: (List.append board2 [column])
   in
 
   let next board =
@@ -139,7 +141,7 @@ let () =
     state.board :=
       begin
         match event with
-        | Next -> resize (prune board)
+        | Next | Click(_,_) -> resize (prune board)
         | _ -> board
       end
     ;
@@ -155,7 +157,7 @@ let () =
 
   let mousedown x y =
     pointer := { !pointer with selecting = true };
-    update (ClickThenNext((x / (width / !(state.size).x)), (y / (height / !(state.size).y))))
+    update (Click((x / (width / !(state.size).x)), (y / (height / !(state.size).y))))
   in
 
   let mouseup () = 
@@ -194,17 +196,20 @@ let () =
     update Next
   in
 
+  let save () =
+    Js.log (Array.of_list (List.map Array.of_list !(state.board)))
+  in
+
   bind_mousemove mousemove;
   bind_mousedown mousedown;
   bind_mouseup mouseup;
   bind_keydown keydown;
-  bind_next next;
-  bind_previous previous;
-  bind_reset reset;
+
+  bind_button ".next" next;
+  bind_button ".previous" previous;
+  bind_button ".reset" reset;
+  bind_button ".save" save;
 
   update (Click(1,1));
-  update (Click(2,2));
-  update (Click(3,2));
+  update (Click(1,2));
   update (Click(1,3));
-  update (Click(1,3));
-  update (Click(2,4));

@@ -18,7 +18,7 @@ function draw(state) {
     var y = Caml_int32.imul(j, dot_h) + (dot_h / 2 | 0) | 0;
     var match = e ? /* tuple */[
         "black",
-        r / 2 | 0
+        (r << 1) / 3 | 0
       ] : /* tuple */[
         "grey",
         r / 5 | 0

@@ -11,7 +11,7 @@ let draw state =
     let x = i * dot_w + dot_w / 2 in
     let y = j * dot_h + dot_h / 2 in
     let (color, size) = match e with
-      | Alive -> ("black", r/2)
+      | Alive -> ("black", (r*2)/3)
       | Dead ->  ("grey", r/5)
     in
       drawDisk x y size color;
