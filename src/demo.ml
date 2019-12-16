@@ -213,3 +213,4 @@ let () =
   update (Click(1,1));
   update (Click(1,2));
   update (Click(1,3));
+  update (Click(1,2));

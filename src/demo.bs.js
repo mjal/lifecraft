@@ -427,6 +427,11 @@ update(/* Click */Block.__(0, [
         3
       ]));
 
+update(/* Click */Block.__(0, [
+        1,
+        2
+      ]));
+
 export {
   
 }
