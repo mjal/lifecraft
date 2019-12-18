@@ -55,18 +55,20 @@ function update(state, $$event) {
           board = Board.clamp(Board.flip(state.board, $$event[0], $$event[1]));
           break;
       case /* ClickThenNext */1 :
-          board = Board.next(Board.flip(state.board, $$event[0], $$event[1]));
-          break;
-      case /* Select */2 :
-          board = state.board;
+          board = Board.clamp(Board.next(Board.flip(state.board, $$event[0], $$event[1])));
           break;
       case /* SetBoard */3 :
           board = Board.clamp($$event[0]);
+          break;
+      case /* Select */2 :
+      case /* AddSeed */4 :
+          board = state.board;
           break;
       
     }
   }
   var previous;
+  var exit = 0;
   if (typeof $$event === "number") {
     switch ($$event) {
       case /* Next */1 :
@@ -78,18 +80,34 @@ function update(state, $$event) {
       case /* Previous */2 :
           previous = List.tl(state.previous);
           break;
-      case /* Nothing */0 :
-      case /* Reset */3 :
-          previous = state.previous;
-          break;
-      
+      default:
+        previous = state.previous;
     }
   } else {
-    previous = $$event.tag === /* Select */2 ? state.previous : /* :: */[
-        state.board,
-        state.previous
-      ];
+    switch ($$event.tag | 0) {
+      case /* Click */0 :
+      case /* ClickThenNext */1 :
+      case /* SetBoard */3 :
+          exit = 1;
+          break;
+      default:
+        previous = state.previous;
+    }
   }
+  if (exit === 1) {
+    previous = /* :: */[
+      state.board,
+      state.previous
+    ];
+  }
+  var seeds;
+  seeds = typeof $$event === "number" || $$event.tag !== /* AddSeed */4 ? state.seeds : /* :: */[
+      {
+        name: $$event[0],
+        str: $$event[1]
+      },
+      state.seeds
+    ];
   var size_x = List.length(board);
   var size_y = List.length(board) === 0 ? 0 : List.length(List.hd(board));
   var size = {
@@ -100,64 +118,35 @@ function update(state, $$event) {
           size: size,
           board: board,
           previous: previous,
-          seeds: state.seeds
+          seeds: seeds
         };
 }
 
 function send($$event) {
   state.contents = update(state.contents, $$event);
-  pointer.contents = pointer.contents;
+  clear_left_side();
+  List.iter((function (seed) {
+          add_seed(seed.name, seed.str);
+          return /* () */0;
+        }), state.contents.seeds);
+  set_html_size(state.contents.size.x, state.contents.size.y);
+  var sum = function (param) {
+    return List.fold_left((function (prim, prim$1) {
+                  return prim + prim$1 | 0;
+                }), 0, param);
+  };
+  var digify = function (param, param$1, e) {
+    if (e) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+  var population = sum(List.map(sum, Global.lmatrix_mapij(digify, state.contents.board)));
+  set_html_population(population);
   Draw.draw(state.contents);
-  return Draw.draw_selection(pointer.contents.x, pointer.contents.y);
-}
-
-function mousedown(x, y) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: init.x,
-    y: init.y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: true
-  };
-  return send(/* Click */Block.__(0, [
-                Caml_int32.div(x, Caml_int32.div(canvas.width, state.contents.size.x)),
-                Caml_int32.div(y, Caml_int32.div(canvas.height, state.contents.size.y))
-              ]));
-}
-
-function mouseup(param) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: init.x,
-    y: init.y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: false
-  };
+  Draw.draw_selection(pointer.contents.x, pointer.contents.y);
   return /* () */0;
-}
-
-function mousemove(x, y) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: x,
-    y: y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: init.selecting
-  };
-  if (state.contents.size.x !== 0 && state.contents.size.y !== 0) {
-    return send(/* Select */Block.__(2, [
-                  Caml_int32.div(x, Caml_int32.div(canvas.width, state.contents.size.x)),
-                  Caml_int32.div(y, Caml_int32.div(canvas.height, state.contents.size.y))
-                ]));
-  } else {
-    return /* () */0;
-  }
 }
 
 function keydown(str) {
@@ -196,9 +185,71 @@ function save(param) {
   var seed_array = $$Array.of_list(List.map($$Array.of_list, state.contents.board));
   console.log(seed_array);
   var seed_json = (JSON.stringify(seed_array));
-  add_seed("Some name", seed_json);
+  var name = ( window.prompt("Choose a name for it", "Untitled") );
+  return send(/* AddSeed */Block.__(4, [
+                name,
+                seed_json
+              ]));
+}
+
+function mousedown(x, y) {
+  var init = pointer.contents;
+  pointer.contents = {
+    x: init.x,
+    y: init.y,
+    i: init.i,
+    j: init.j,
+    inside: init.inside,
+    selecting: true
+  };
+  var i = Caml_int32.div(x, Caml_int32.div(canvas.width, state.contents.size.x));
+  var j = Caml_int32.div(y, Caml_int32.div(canvas.height, state.contents.size.y));
+  return send(/* Click */Block.__(0, [
+                i,
+                j
+              ]));
+}
+
+function mouseup(param) {
+  var init = pointer.contents;
+  pointer.contents = {
+    x: init.x,
+    y: init.y,
+    i: init.i,
+    j: init.j,
+    inside: init.inside,
+    selecting: false
+  };
   return /* () */0;
 }
+
+function mousemove(x, y) {
+  var init = pointer.contents;
+  pointer.contents = {
+    x: x,
+    y: y,
+    i: init.i,
+    j: init.j,
+    inside: init.inside,
+    selecting: init.selecting
+  };
+  if (state.contents.size.x !== 0 && state.contents.size.y !== 0) {
+    var i = Caml_int32.div(x, Caml_int32.div(canvas.width, state.contents.size.x));
+    var j = Caml_int32.div(y, Caml_int32.div(canvas.height, state.contents.size.y));
+    return send(/* Select */Block.__(2, [
+                  i,
+                  j
+                ]));
+  } else {
+    return /* () */0;
+  }
+}
+
+bind_mousemove(mousemove);
+
+bind_mousedown(mousedown);
+
+bind_mouseup(mouseup);
 
 function set_state(state_str) {
   var my_array = ( JSON.parse(state_str) );
@@ -207,12 +258,6 @@ function set_state(state_str) {
 }
 
 bind_set_state_to_js(set_state);
-
-bind_mousemove(mousemove);
-
-bind_mousedown(mousedown);
-
-bind_mouseup(mouseup);
 
 bind_keydown(keydown);
 
@@ -224,24 +269,14 @@ bind_button(".reset", reset);
 
 bind_button(".save", save);
 
-send(/* Click */Block.__(0, [
-        1,
-        1
+send(/* AddSeed */Block.__(4, [
+        "Glisseur 1",
+        "[[0,1,0],[1,0,0],[1,1,1]]"
       ]));
 
-send(/* Click */Block.__(0, [
-        1,
-        2
-      ]));
-
-send(/* Click */Block.__(0, [
-        1,
-        3
-      ]));
-
-send(/* Click */Block.__(0, [
-        1,
-        2
+send(/* AddSeed */Block.__(4, [
+        "Mathusalem 1",
+        "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"
       ]));
 
 set_state("[[0,0,0,0],[0,1,1,0],[0,0,0,0]]");

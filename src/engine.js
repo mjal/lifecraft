@@ -68,6 +68,10 @@ const bind_set_state_to_js = (f) => {
   set_state_js = f
 }
 
+const clear_left_side = () => {
+  document.getElementById("left-side").innerHTML = '';
+}
+
 const add_seed = (name, seed) => {
   parent = document.getElementById("left-side")
   link = document.createElement('a')
@@ -88,6 +92,16 @@ const add_seed = (name, seed) => {
   p = document.createElement('p')
   p.appendChild(link)
   parent.appendChild(p)
+}
+
+const set_html_size = (x, y) => {
+  document.getElementById("size").innerHTML =
+    "Size: " + x + "x" + y
+}
+
+const set_html_population = (pop) => {
+  document.getElementById("population").innerHTML =
+    "Population: " + pop
 }
 
 add_seed("Starter", "[[0,0,0,0],[0,1,1,0],[0,0,0,0]]")

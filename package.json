@@ -6,7 +6,7 @@
     "build": "bsb -make-world",
     "watch": "bsb -make-world -w",
     "bundle": "rollup src/demo.bs.js --format esm --file bundle.js",
-    "watch-bundle": "rollup src/demo.bs.js --format esm --file bundle.js --watch"
+    "watch-bundle": "rollup src/main.bs.js --format esm --file bundle.js --watch"
   },
   "keywords": [
     "BuckleScript"

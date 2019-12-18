@@ -12,19 +12,13 @@
       height: 100%;
     }
     #container {
-      background-color: green;
       height: 100%;
     }
-    #left-side {
-      background-color: red;
-    }
+    #left-side {}
     #center {
-      background-color: blue;
       display: relative;
     }
-    #right-side {
-      background-color: yellow;
-    }
+    #right-side {}
     /*canvas {
       margin: auto;
       position: absolute;
@@ -32,6 +26,7 @@
     }*/
     .flex { display: flex; }
     .flex-1 { flex: 1; }
+    .center { text-align: center }
   </style>
 </head>
 
@@ -41,14 +36,19 @@
       <p>Right Side</p>
     </div>
     <div id="center" class="flex-1">
+      <div class="flex">
+        <div class="flex-1 center" id="size"></div>
+        <div class="flex-1 center" id="population"></div>
+      </div>
       <canvas width="640" height="640"></canvas>
-      <button class="reset">Reset</button>
-      <button class="previous">Previous</button>
-      <button class="next">Next</button>
-      <button class="save">Save</button>
+      <div class="flex">
+        <button class="flex-1 reset">Reset</button>
+        <button class="flex-1 previous">Previous</button>
+        <button class="flex-1 next">Next</button>
+        <button class="flex-1 save">Save</button>
+      </div>
     </div>
     <div id="right-side" class="flex-1">
-      <p>Left Side</p>
     </div>
   </div>
   <script src="src/engine.js"></script>

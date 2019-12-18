@@ -477,6 +477,18 @@ function mapi$1(f, l) {
   return mapi(0, f, l);
 }
 
+function iter(f, _param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      _1(f, param[0]);
+      _param = param[1];
+      continue ;
+    } else {
+      return /* () */0;
+    }
+  }}
+
 function iteri(f, l) {
   var _i = 0;
   var f$1 = f;
@@ -895,18 +907,20 @@ function update(state, $$event) {
           board = clamp(flip(state.board, $$event[0], $$event[1]));
           break;
       case /* ClickThenNext */1 :
-          board = next(flip(state.board, $$event[0], $$event[1]));
-          break;
-      case /* Select */2 :
-          board = state.board;
+          board = clamp(next(flip(state.board, $$event[0], $$event[1])));
           break;
       case /* SetBoard */3 :
           board = clamp($$event[0]);
+          break;
+      case /* Select */2 :
+      case /* AddSeed */4 :
+          board = state.board;
           break;
       
     }
   }
   var previous;
+  var exit = 0;
   if (typeof $$event === "number") {
     switch ($$event) {
       case /* Next */1 :
@@ -918,18 +932,34 @@ function update(state, $$event) {
       case /* Previous */2 :
           previous = tl(state.previous);
           break;
-      case /* Nothing */0 :
-      case /* Reset */3 :
-          previous = state.previous;
-          break;
-      
+      default:
+        previous = state.previous;
     }
   } else {
-    previous = $$event.tag === /* Select */2 ? state.previous : /* :: */[
-        state.board,
-        state.previous
-      ];
+    switch ($$event.tag | 0) {
+      case /* Click */0 :
+      case /* ClickThenNext */1 :
+      case /* SetBoard */3 :
+          exit = 1;
+          break;
+      default:
+        previous = state.previous;
+    }
   }
+  if (exit === 1) {
+    previous = /* :: */[
+      state.board,
+      state.previous
+    ];
+  }
+  var seeds;
+  seeds = typeof $$event === "number" || $$event.tag !== /* AddSeed */4 ? state.seeds : /* :: */[
+      {
+        name: $$event[0],
+        str: $$event[1]
+      },
+      state.seeds
+    ];
   var size_x = length(board);
   var size_y = length(board) === 0 ? 0 : length(hd(board));
   var size = {
@@ -940,64 +970,35 @@ function update(state, $$event) {
           size: size,
           board: board,
           previous: previous,
-          seeds: state.seeds
+          seeds: seeds
         };
 }
 
 function send($$event) {
   state.contents = update(state.contents, $$event);
-  pointer.contents = pointer.contents;
+  clear_left_side();
+  iter((function (seed) {
+          add_seed(seed.name, seed.str);
+          return /* () */0;
+        }), state.contents.seeds);
+  set_html_size(state.contents.size.x, state.contents.size.y);
+  var sum = function (param) {
+    return fold_left((function (prim, prim$1) {
+                  return prim + prim$1 | 0;
+                }), 0, param);
+  };
+  var digify = function (param, param$1, e) {
+    if (e) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+  var population = sum(map(sum, lmatrix_mapij(digify, state.contents.board)));
+  set_html_population(population);
   draw(state.contents);
-  return draw_selection(pointer.contents.x, pointer.contents.y);
-}
-
-function mousedown(x, y) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: init.x,
-    y: init.y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: true
-  };
-  return send(/* Click */__(0, [
-                div(x, div(canvas.width, state.contents.size.x)),
-                div(y, div(canvas.height, state.contents.size.y))
-              ]));
-}
-
-function mouseup(param) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: init.x,
-    y: init.y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: false
-  };
+  draw_selection(pointer.contents.x, pointer.contents.y);
   return /* () */0;
-}
-
-function mousemove(x, y) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: x,
-    y: y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: init.selecting
-  };
-  if (state.contents.size.x !== 0 && state.contents.size.y !== 0) {
-    return send(/* Select */__(2, [
-                  div(x, div(canvas.width, state.contents.size.x)),
-                  div(y, div(canvas.height, state.contents.size.y))
-                ]));
-  } else {
-    return /* () */0;
-  }
 }
 
 function keydown(str) {
@@ -1036,9 +1037,71 @@ function save(param) {
   var seed_array = of_list(map(of_list, state.contents.board));
   console.log(seed_array);
   var seed_json = (JSON.stringify(seed_array));
-  add_seed("Some name", seed_json);
+  var name = ( window.prompt("Choose a name for it", "Untitled") );
+  return send(/* AddSeed */__(4, [
+                name,
+                seed_json
+              ]));
+}
+
+function mousedown(x, y) {
+  var init = pointer.contents;
+  pointer.contents = {
+    x: init.x,
+    y: init.y,
+    i: init.i,
+    j: init.j,
+    inside: init.inside,
+    selecting: true
+  };
+  var i = div(x, div(canvas.width, state.contents.size.x));
+  var j = div(y, div(canvas.height, state.contents.size.y));
+  return send(/* Click */__(0, [
+                i,
+                j
+              ]));
+}
+
+function mouseup(param) {
+  var init = pointer.contents;
+  pointer.contents = {
+    x: init.x,
+    y: init.y,
+    i: init.i,
+    j: init.j,
+    inside: init.inside,
+    selecting: false
+  };
   return /* () */0;
 }
+
+function mousemove(x, y) {
+  var init = pointer.contents;
+  pointer.contents = {
+    x: x,
+    y: y,
+    i: init.i,
+    j: init.j,
+    inside: init.inside,
+    selecting: init.selecting
+  };
+  if (state.contents.size.x !== 0 && state.contents.size.y !== 0) {
+    var i = div(x, div(canvas.width, state.contents.size.x));
+    var j = div(y, div(canvas.height, state.contents.size.y));
+    return send(/* Select */__(2, [
+                  i,
+                  j
+                ]));
+  } else {
+    return /* () */0;
+  }
+}
+
+bind_mousemove(mousemove);
+
+bind_mousedown(mousedown);
+
+bind_mouseup(mouseup);
 
 function set_state(state_str) {
   var my_array = ( JSON.parse(state_str) );
@@ -1047,12 +1110,6 @@ function set_state(state_str) {
 }
 
 bind_set_state_to_js(set_state);
-
-bind_mousemove(mousemove);
-
-bind_mousedown(mousedown);
-
-bind_mouseup(mouseup);
 
 bind_keydown(keydown);
 
@@ -1064,24 +1121,14 @@ bind_button(".reset", reset);
 
 bind_button(".save", save);
 
-send(/* Click */__(0, [
-        1,
-        1
+send(/* AddSeed */__(4, [
+        "Glisseur 1",
+        "[[0,1,0],[1,0,0],[1,1,1]]"
       ]));
 
-send(/* Click */__(0, [
-        1,
-        2
-      ]));
-
-send(/* Click */__(0, [
-        1,
-        3
-      ]));
-
-send(/* Click */__(0, [
-        1,
-        2
+send(/* AddSeed */__(4, [
+        "Mathusalem 1",
+        "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"
       ]));
 
 set_state("[[0,0,0,0],[0,1,1,0],[0,0,0,0]]");
