@@ -525,6 +525,37 @@ function exists(p, _param) {
 var append = $at;
 /* No side effect */
 
+function map$1(f, a) {
+  var l = a.length;
+  if (l === 0) {
+    return /* array */[];
+  } else {
+    var r = caml_make_vect(l, _1(f, a[0]));
+    for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
+      r[i] = _1(f, a[i]);
+    }
+    return r;
+  }
+}
+
+function to_list(a) {
+  var _i = a.length - 1 | 0;
+  var _res = /* [] */0;
+  while(true) {
+    var res = _res;
+    var i = _i;
+    if (i < 0) {
+      return res;
+    } else {
+      _res = /* :: */[
+        a[i],
+        res
+      ];
+      _i = i - 1 | 0;
+      continue ;
+    }
+  }}
+
 function list_length(_accu, _param) {
   while(true) {
     var param = _param;
@@ -873,6 +904,9 @@ function update($$event) {
       case /* Select */2 :
           board = state_board.contents;
           break;
+      case /* SetBoard */3 :
+          board = $$event[0];
+          break;
       
     }
   }
@@ -896,6 +930,7 @@ function update($$event) {
     switch ($$event.tag | 0) {
       case /* Click */0 :
       case /* ClickThenNext */1 :
+      case /* SetBoard */3 :
           exit = 1;
           break;
       default:
@@ -910,11 +945,18 @@ function update($$event) {
   }
   state_previous.contents = previous;
   var tmp;
-  tmp = typeof $$event === "number" ? (
-      $$event === /* Next */1 ? resize(prune(board)) : board
-    ) : (
-      $$event.tag ? board : resize(prune(board))
-    );
+  if (typeof $$event === "number") {
+    tmp = $$event === /* Next */1 ? resize(prune(board)) : board;
+  } else {
+    switch ($$event.tag | 0) {
+      case /* Click */0 :
+      case /* SetBoard */3 :
+          tmp = resize(prune(board));
+          break;
+      default:
+        tmp = board;
+    }
+  }
   state_board.contents = tmp;
   state_size.contents = {
     x: length(state_board.contents),
@@ -1007,9 +1049,20 @@ function next$1(param) {
 }
 
 function save(param) {
-  console.log(of_list(map(of_list, state_board.contents)));
+  var seed_array = of_list(map(of_list, state_board.contents));
+  console.log(seed_array);
+  var seed_json = (JSON.stringify(seed_array));
+  add_seed("Some name", seed_json);
   return /* () */0;
 }
+
+function set_state(state_str) {
+  var my_array = ( JSON.parse(state_str) );
+  var my_state = to_list(map$1(to_list, my_array));
+  return update(/* SetBoard */__(3, [my_state]));
+}
+
+bind_set_state_to_js(set_state);
 
 bind_mousemove(mousemove);
 
@@ -1046,4 +1099,6 @@ update(/* Click */__(0, [
         1,
         2
       ]));
+
+set_state("[[0,0,0,0],[0,1,1,0],[0,0,0,0]]");
 /* state Not a pure module */

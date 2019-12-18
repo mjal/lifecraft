@@ -9,22 +9,50 @@
     html, body {
       margin: 0 !important;
       padding: 0 !important;
+      height: 100%;
     }
-    canvas {
+    #container {
+      background-color: green;
+      height: 100%;
+    }
+    #left-side {
+      background-color: red;
+    }
+    #center {
+      background-color: blue;
+      display: relative;
+    }
+    #right-side {
+      background-color: yellow;
+    }
+    /*canvas {
       margin: auto;
       position: absolute;
       left: 0; right: 0; top: 0; bottom: 0;
-    }
+    }*/
+    .flex { display: flex; }
+    .flex-1 { flex: 1; }
   </style>
 </head>
 
 <body>
-  <canvas width="640" height="640"></canvas>
-  <button class="reset">Reset</button>
-  <button class="previous">Previous</button>
-  <button class="next">Next</button>
-  <button class="save">Save</button>
+  <div id="container" class="flex">
+    <div id="left-side" class="flex-1">
+      <p>Right Side</p>
+    </div>
+    <div id="center" class="flex-1">
+      <canvas width="640" height="640"></canvas>
+      <button class="reset">Reset</button>
+      <button class="previous">Previous</button>
+      <button class="next">Next</button>
+      <button class="save">Save</button>
+    </div>
+    <div id="right-side" class="flex-1">
+      <p>Left Side</p>
+    </div>
+  </div>
   <script src="src/engine.js"></script>
+  <!--script src="src/demo.bs.js" type="module></script-->
   <script src="bundle.js"></script>
 </body>
 </html>

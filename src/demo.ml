@@ -126,14 +126,16 @@ let () =
      | Click(i,j)   -> lmatrix_mapij (flip i j) !(state.board)
      | ClickThenNext(i,j)  -> next (lmatrix_mapij (flip i j) !(state.board))
      | Select(_,_)  -> !(state.board) (* Do Nothing *)
+     | SetBoard(board) -> board
      | _            -> !(state.board) (* Do nothing *)
     in
 
     (* use cons of x :: xs instead of append *)
     let previous = match event with
       | Next -> !(state.board) :: !(state.previous);
-      | Click(_,_) | ClickThenNext(_,_) -> !(state.board) :: !(state.previous);
       | Previous -> List.tl !(state.previous)
+      | Click(_,_) | ClickThenNext(_,_) | SetBoard(_) ->
+          !(state.board) :: !(state.previous);
       | _ -> !(state.previous)
     in 
 
@@ -141,7 +143,7 @@ let () =
     state.board :=
       begin
         match event with
-        | Next | Click(_,_) -> resize (prune board)
+        | Next | Click(_,_) | SetBoard(_) -> resize (prune board)
         | _ -> board
       end
     ;
@@ -173,7 +175,7 @@ let () =
   in
 
   let keydown str =
-    (* Idea: Arrows move cursor for mouseless *)
+    (* Idea: Arrows move cursor for mouseless use *)
     let event = match str with
       | " "         -> Next
       | "ArrowLeft" -> Previous
@@ -184,21 +186,28 @@ let () =
 
   in
 
-  let reset () =
-    update Reset
-  in
-
-  let previous () =
-    update Previous
-  in
-
-  let next () =
-    update Next
-  in
+  let reset () = update Reset in
+  let previous () = update Previous in
+  let next () = update Next in
 
   let save () =
-    Js.log (Array.of_list (List.map Array.of_list !(state.board)))
+    let seed_array = (Array.of_list (List.map Array.of_list !(state.board))) in
+    Js.log seed_array; (* to export name for raw js *)
+    let seed_json = [%raw {|JSON.stringify(seed_array)|}] in
+    add_seed "Some name" seed_json;
   in
+
+  let set_state (state_str: string) =
+    let my_array: cell array array =
+      [%raw {| JSON.parse(state_str) |}]
+    in
+    let my_state: cell list list =
+      Array.to_list (Array.map Array.to_list my_array)
+    in
+    update (SetBoard(my_state))
+  in
+
+  bind_set_state_to_js set_state;
 
   bind_mousemove mousemove;
   bind_mousedown mousedown;
@@ -214,3 +223,5 @@ let () =
   update (Click(1,2));
   update (Click(1,3));
   update (Click(1,2));
+
+  set_state "[[0,0,0,0],[0,1,1,0],[0,0,0,0]]";

@@ -258,6 +258,9 @@ function update($$event) {
       case /* Select */2 :
           board = state_board.contents;
           break;
+      case /* SetBoard */3 :
+          board = $$event[0];
+          break;
       
     }
   }
@@ -281,6 +284,7 @@ function update($$event) {
     switch ($$event.tag | 0) {
       case /* Click */0 :
       case /* ClickThenNext */1 :
+      case /* SetBoard */3 :
           exit = 1;
           break;
       default:
@@ -295,11 +299,18 @@ function update($$event) {
   }
   state_previous.contents = previous;
   var tmp;
-  tmp = typeof $$event === "number" ? (
-      $$event === /* Next */1 ? resize(prune(board)) : board
-    ) : (
-      $$event.tag ? board : resize(prune(board))
-    );
+  if (typeof $$event === "number") {
+    tmp = $$event === /* Next */1 ? resize(prune(board)) : board;
+  } else {
+    switch ($$event.tag | 0) {
+      case /* Click */0 :
+      case /* SetBoard */3 :
+          tmp = resize(prune(board));
+          break;
+      default:
+        tmp = board;
+    }
+  }
   state_board.contents = tmp;
   state_size.contents = {
     x: List.length(state_board.contents),
@@ -392,9 +403,20 @@ function next$1(param) {
 }
 
 function save(param) {
-  console.log($$Array.of_list(List.map($$Array.of_list, state_board.contents)));
+  var seed_array = $$Array.of_list(List.map($$Array.of_list, state_board.contents));
+  console.log(seed_array);
+  var seed_json = (JSON.stringify(seed_array));
+  add_seed("Some name", seed_json);
   return /* () */0;
 }
+
+function set_state(state_str) {
+  var my_array = ( JSON.parse(state_str) );
+  var my_state = $$Array.to_list($$Array.map($$Array.to_list, my_array));
+  return update(/* SetBoard */Block.__(3, [my_state]));
+}
+
+bind_set_state_to_js(set_state);
 
 bind_mousemove(mousemove);
 
@@ -431,6 +453,8 @@ update(/* Click */Block.__(0, [
         1,
         2
       ]));
+
+set_state("[[0,0,0,0],[0,1,1,0],[0,0,0,0]]");
 
 export {
   

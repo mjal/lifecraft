@@ -61,3 +61,34 @@ const bind_button = (selector, f) => {
     .querySelector(selector)
     .addEventListener('click', function(event) { f() }, false);
 }
+
+let set_state_js = undefined
+const bind_set_state_to_js = (f) => {
+  console.log(f)
+  set_state_js = f
+}
+
+const add_seed = (name, seed) => {
+  parent = document.getElementById("left-side")
+  link = document.createElement('a')
+  link.innerHTML = name
+  link.href = ""
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    set_state_js(seed)
+    /*
+    set_state_js(`[
+      [0,0,0,0,0],
+      [0,1,1,1,0],
+      [0,1,1,1,0],
+      [0,0,0,0,0]
+    ]`)
+    */
+  })
+  p = document.createElement('p')
+  p.appendChild(link)
+  parent.appendChild(p)
+}
+
+add_seed("Starter", "[[0,0,0,0],[0,1,1,0],[0,0,0,0]]")
+add_seed("Starter2", "[[0,0,0],[0,1,0],[0,1,0],[0,0,0]]")

@@ -9,6 +9,7 @@ type event =
   | Select of int * int
   | Next
   | Previous
+  | SetBoard of cell list list
   | Reset
 
 type size = { x: int; y: int }
@@ -58,3 +59,6 @@ external bind_mouseup:    (unit -> unit) -> unit = "bind_mouseup" [@@bs.val]
 external bind_keydown:    (string -> unit) -> unit = "bind_keydown" [@@bs.val]
 
 external bind_button: string -> (unit -> unit) -> unit = "bind_button" [@@bs.val]
+
+external bind_set_state_to_js: (string -> unit) -> unit = "bind_set_state_to_js" [@@bs.val]
+external add_seed: string -> string -> unit = "add_seed" [@@bs.val]
