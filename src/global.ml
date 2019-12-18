@@ -15,9 +15,10 @@ type event =
 type size = { x: int; y: int }
 
 type state = {
-  size: size ref;
-  board: cell list list ref;
-  previous: cell list list list ref;
+  size: size;
+  board: cell list list;
+  previous: cell list list list;
+  seeds: string list;
 }
 
 let matrix_mapij f a =

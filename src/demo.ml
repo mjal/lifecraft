@@ -7,85 +7,18 @@ let () =
 
   let size = { x = 3; y = 3; } in
 
-  let state = {
-    size = ref size;
-    board = ref (lmatrix_create size.x size.y Dead);
-    previous = ref [];
+  let state = ref {
+    size = size;
+    board = (lmatrix_create size.x size.y Dead);
+    previous = [];
+    seeds = [];
   } in
-
-  let rec prune_top (board : cell list list) : cell list list =
-    match board with
-    | [] -> []
-    | hd :: tl -> 
-      if List.exists (fun e -> e == Alive) hd then
-        board
-      else
-        prune_top tl
-  in
-
-  let prune_bottom board = List.rev (prune_top (List.rev board)) in
-
-  let rec prune_left board =
-    let column = List.map List.hd board in
-    if List.length board = 0 then
-      []
-    else if List.exists (fun e -> e == Alive) column then
-      board
-    else
-      prune_left (List.map List.tl board)
-  in
-
-  let prune_right board =
-    List.map List.rev (prune_left (List.map List.rev board))
-  in
-
-  let prune board = prune_left (prune_right (prune_bottom (prune_top board)))
-  in
-
-  let resize board =
-    if board == [] then
-      [[Dead]]
-    else
-      let board2 = List.map (fun row -> Dead :: (List.append row [Dead])) board in
-      let length = List.length (List.hd board2) in
-      let column = List.init length (fun _ -> Dead)  in
-      column :: (List.append board2 [column])
-  in
-
-  let next board =
-    let is_alive coords =
-      let (i,j) = coords in
-      if i < 0 || i >= !(state.size).x
-      || j < 0 || j >= !(state.size).y
-      then
-        0
-      else
-        let row = List.nth board i in
-        let cell = List.nth row j in
-        match cell with | Dead -> 0 | Alive -> 1
-    in 
-    let sum_neighbourg x y =
-      let offsets = [(-1,-1); (-1, 0); (-1, 1); (0, -1); (*(0, 0);*) (0, 1); (1, -1); (1, 0); (1, 1)] in
-      let coords  = List.map (fun coords -> (x + (fst coords), y + (snd coords))) offsets in
-      let neighbourg = List.map is_alive coords in
-      List.fold_left (+) 0 neighbourg
-    in
-    let next_one i j e =
-      let n = sum_neighbourg i j in
-      match (e, n) with
-      | Alive, 2 -> Alive
-      | Alive, 3 -> Alive
-      | Dead, 3  -> Alive
-      | _ -> Dead
-    in
-    lmatrix_mapij next_one board
-  in
 
   let update_pointer pointer =
     (*
     let inside =
-      let dot_w = (width / !(state.size).x) in
-      let dot_h = (height / !(state.size).y) in
+      let dot_w = (width / state.size.x) in
+      let dot_h = (height / state.size.y) in
       let r = min (dot_w / 2) (dot_h / 2) in
       let foi = float_of_int in
       let x = foi (pointer.x - pointer.x mod dot_w) in
@@ -102,8 +35,8 @@ let () =
     in
     { pointer with
       (*
-      i = pointer.x / width  * !(state.size).x;
-      j = pointer.y / height * !(state.size).y;
+      i = pointer.x / width  * state.size.x;
+      j = pointer.y / height * state.size.y;
       *)
       inside
     }
@@ -111,55 +44,47 @@ let () =
     pointer
   in
 
-  let flip i j i2 j2 e =
-    if i == i2 && j == j2 then
-      match e with | Alive -> Dead | Dead -> Alive
-    else
-      e
-  in
-
-  let update (event : event) : unit =
+  let update state event =
     let board = match event with
-     | Next         -> next !(state.board)
-     | Previous     -> List.hd !(state.previous)
+     | Next         -> Board.clamp (Board.next state.board)
+     | Previous     -> List.hd state.previous
      | Reset        -> lmatrix_create size.x size.y Dead
-     | Click(i,j)   -> lmatrix_mapij (flip i j) !(state.board)
-     | ClickThenNext(i,j)  -> next (lmatrix_mapij (flip i j) !(state.board))
-     | Select(_,_)  -> !(state.board) (* Do Nothing *)
-     | SetBoard(board) -> board
-     | _            -> !(state.board) (* Do nothing *)
+     | Click(i,j)   -> Board.clamp (Board.flip state.board i j)
+     | ClickThenNext(i,j)  -> Board.next (Board.flip state.board i j)
+     | Select(_,_)  -> state.board (* Do Nothing *)
+     | SetBoard(board) -> Board.clamp board
+     | _            -> state.board (* Do nothing *)
     in
 
     (* use cons of x :: xs instead of append *)
     let previous = match event with
-      | Next -> !(state.board) :: !(state.previous);
-      | Previous -> List.tl !(state.previous)
+      | Next -> state.board :: state.previous;
+      | Previous -> List.tl state.previous
       | Click(_,_) | ClickThenNext(_,_) | SetBoard(_) ->
-          !(state.board) :: !(state.previous);
-      | _ -> !(state.previous)
+          state.board :: state.previous;
+      | _ -> state.previous
     in 
 
-    state.previous := previous;
-    state.board :=
-      begin
-        match event with
-        | Next | Click(_,_) | SetBoard(_) -> resize (prune board)
-        | _ -> board
-      end
-    ;
-    state.size := {
-      x = List.length !(state.board);
-      y = if List.length !(state.board) = 0 then 0 else List.length (List.hd !(state.board))
-    };
+    let size = {
+      x = List.length board;
+      y = if List.length board = 0 then 0 else List.length (List.hd board)
+    } in
+
+    { state with board; previous; size}
+  in
+
+  let send event =
+    state := update !state event;
+
     pointer := update_pointer !pointer;
 
-    Draw.draw state;
+    Draw.draw !state;
     Draw.draw_selection !pointer.x !pointer.y;
   in
 
   let mousedown x y =
     pointer := { !pointer with selecting = true };
-    update (Click((x / (width / !(state.size).x)), (y / (height / !(state.size).y))))
+    send (Click((x / (width / !state.size.x)), (y / (height / !state.size.y))))
   in
 
   let mouseup () = 
@@ -168,8 +93,8 @@ let () =
 
   let mousemove x y =
     pointer := { !pointer with x; y };
-    if !(state.size).x != 0 && !(state.size).y != 0 then
-      update (Select((x / (width / !(state.size).x)), (y / (height / !(state.size).y))))
+    if !state.size.x != 0 && !state.size.y != 0 then
+      send (Select((x / (width / !state.size.x)), (y / (height / !state.size.y))))
     else
       ()
   in
@@ -182,16 +107,16 @@ let () =
       | "ArrowRight" -> Next
       | "Escape"    -> Reset
       | _           -> Js.log str; Nothing
-    in update event
+    in send event
 
   in
 
-  let reset () = update Reset in
-  let previous () = update Previous in
-  let next () = update Next in
+  let reset () = send Reset in
+  let previous () = send Previous in
+  let next () = send Next in
 
   let save () =
-    let seed_array = (Array.of_list (List.map Array.of_list !(state.board))) in
+    let seed_array = (Array.of_list (List.map Array.of_list !state.board)) in
     Js.log seed_array; (* to export name for raw js *)
     let seed_json = [%raw {|JSON.stringify(seed_array)|}] in
     add_seed "Some name" seed_json;
@@ -204,7 +129,7 @@ let () =
     let my_state: cell list list =
       Array.to_list (Array.map Array.to_list my_array)
     in
-    update (SetBoard(my_state))
+    send (SetBoard(my_state))
   in
 
   bind_set_state_to_js set_state;
@@ -219,9 +144,9 @@ let () =
   bind_button ".reset" reset;
   bind_button ".save" save;
 
-  update (Click(1,1));
-  update (Click(1,2));
-  update (Click(1,3));
-  update (Click(1,2));
+  send (Click(1,1));
+  send (Click(1,2));
+  send (Click(1,3));
+  send (Click(1,2));
 
   set_state "[[0,0,0,0],[0,1,1,0],[0,0,0,0]]";

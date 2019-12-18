@@ -11,8 +11,8 @@ function draw_selection(x, y) {
 
 function draw(state) {
   var draw_one = function (i, j, e) {
-    var dot_w = Caml_int32.div(canvas.width, state.size.contents.x);
-    var dot_h = Caml_int32.div(canvas.height, state.size.contents.y);
+    var dot_w = Caml_int32.div(canvas.width, state.size.x);
+    var dot_h = Caml_int32.div(canvas.height, state.size.y);
     var r = Caml_primitive.caml_int_min(dot_w / 2 | 0, dot_h / 2 | 0);
     var x = Caml_int32.imul(i, dot_w) + (dot_w / 2 | 0) | 0;
     var y = Caml_int32.imul(j, dot_h) + (dot_h / 2 | 0) | 0;
@@ -27,8 +27,8 @@ function draw(state) {
     return /* () */0;
   };
   clear();
-  if (state.size.contents.x !== 0 && state.size.contents.y !== 0) {
-    return Global.lmatrix_iterij(draw_one, state.board.contents);
+  if (state.size.x !== 0 && state.size.y !== 0) {
+    return Global.lmatrix_iterij(draw_one, state.board);
   } else {
     return /* () */0;
   }
