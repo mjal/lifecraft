@@ -26,33 +26,38 @@
     }*/
     .flex { display: flex; }
     .flex-1 { flex: 1; }
-    .center { text-align: center }
+    .centered { text-align: center }
+    #center {}
+    .board {
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+    .alive {
+      flex: 1;
+      background-color: black;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    .dead {
+      flex: 1;
+      background-color: lightgrey;
+      margin-right: 5px;
+      margin-bottom: 5px;
+    }
+    }
   </style>
 </head>
 
 <body>
-  <div id="container" class="flex">
-    <div id="left-side" class="flex-1">
-      <p>Right Side</p>
-    </div>
-    <div id="center" class="flex-1">
-      <div class="flex">
-        <div class="flex-1 center" id="size"></div>
-        <div class="flex-1 center" id="population"></div>
-      </div>
-      <canvas width="640" height="640"></canvas>
-      <div class="flex">
-        <button class="flex-1 reset">Reset</button>
-        <button class="flex-1 previous">Previous</button>
-        <button class="flex-1 next">Next</button>
-        <button class="flex-1 save">Save</button>
-      </div>
-    </div>
-    <div id="right-side" class="flex-1">
-    </div>
+  <div id="app">
   </div>
-  <script src="src/engine.js"></script>
+  <script type="module">
+    import { main } from './src/index.bs.js'
+    main(document.getElementById("app"))
+  </script>
+  <!--script src="src/engine.js"></script-->
   <!--script src="src/demo.bs.js" type="module></script-->
-  <script src="bundle.js"></script>
+  <!--script src="bundle.js"></script-->
 </body>
 </html>

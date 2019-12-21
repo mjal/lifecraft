@@ -16,16 +16,7 @@ let () =
   in
 
   let update state event =
-    let board = match event with
-     | Next               -> state.board |. Board.next |. Board.clamp
-     | Previous           -> List.hd state.previous
-     | Reset              -> lmatrix_create size.x size.y Dead
-     | Click(i,j)         -> state.board |. Board.flip i j |. Board.clamp
-     | ClickThenNext(i,j) -> state.board |. Board.flip i j |. Board.next |. Board.clamp
-     | Select(_,_)        -> state.board
-     | SetBoard(board)    -> Board.clamp board
-     | _            -> state.board
-    in
+    let board = Board.update state event in
 
     (* use cons of x :: xs instead of append *)
     let previous = match event with
@@ -93,8 +84,8 @@ let () =
 
   let mousedown x y =
     pointer := { !(pointer) with selecting = true };
-    let i = x / (width  / !state.size.x) in
-    let j = y / (height / !state.size.y) in
+    let i = x / (canvas_width  / !state.size.x) in
+    let j = y / (canvas_height / !state.size.y) in
     send (Click(i, j))
   in
 
@@ -107,8 +98,8 @@ let () =
     pointer := { !(pointer) with x; y };
 
     if !(state).size.x != 0 && !(state).size.y != 0 then
-      let i = x / (width  / !(state).size.x) in
-      let j = y / (height / !(state).size.y) in
+      let i = x / (canvas_width  / !(state).size.x) in
+      let j = y / (canvas_height / !(state).size.y) in
       send (Select(i, j))
     else
       ()

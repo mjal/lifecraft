@@ -10,7 +10,11 @@ type event =
   | Next
   | Previous
   | SetBoard of cell list list
+  | SetBoardFromSeed of string
   | AddSeed of string * string
+  | SetX of int
+  | SetY of int
+  | KeyPressed of Keyboard.key_event
   | Reset
 
 type size = { x: int; y: int }
@@ -49,8 +53,8 @@ let lmatrix_create i j e =
   List.init i (fun _ -> List.init j (fun _ -> e))
 
 
-external width: int = "canvas.width" [@@bs.val]
-external height: int = "canvas.height" [@@bs.val]
+external canvas_width: int = "canvas.width" [@@bs.val]
+external canvas_height: int = "canvas.height" [@@bs.val]
 
 external drawCircle: x:int -> y:int -> r:int -> color:string -> unit = "drawCircle" [@@bs.val]
 external drawDisk: x:int -> y:int -> r:int -> color:string -> unit = "drawDisk" [@@bs.val]

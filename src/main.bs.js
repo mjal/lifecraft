@@ -32,41 +32,7 @@ var state = {
 };
 
 function update(state, $$event) {
-  var board;
-  if (typeof $$event === "number") {
-    switch ($$event) {
-      case /* Nothing */0 :
-          board = state.board;
-          break;
-      case /* Next */1 :
-          board = Board.clamp(Board.next(state.board));
-          break;
-      case /* Previous */2 :
-          board = List.hd(state.previous);
-          break;
-      case /* Reset */3 :
-          board = Global.lmatrix_create(3, 3, /* Dead */0);
-          break;
-      
-    }
-  } else {
-    switch ($$event.tag | 0) {
-      case /* Click */0 :
-          board = Board.clamp(Board.flip(state.board, $$event[0], $$event[1]));
-          break;
-      case /* ClickThenNext */1 :
-          board = Board.clamp(Board.next(Board.flip(state.board, $$event[0], $$event[1])));
-          break;
-      case /* SetBoard */3 :
-          board = Board.clamp($$event[0]);
-          break;
-      case /* Select */2 :
-      case /* AddSeed */4 :
-          board = state.board;
-          break;
-      
-    }
-  }
+  var board = Board.update(state, $$event);
   var previous;
   var exit = 0;
   if (typeof $$event === "number") {
@@ -101,7 +67,7 @@ function update(state, $$event) {
     ];
   }
   var seeds;
-  seeds = typeof $$event === "number" || $$event.tag !== /* AddSeed */4 ? state.seeds : /* :: */[
+  seeds = typeof $$event === "number" || $$event.tag !== /* AddSeed */5 ? state.seeds : /* :: */[
       {
         name: $$event[0],
         str: $$event[1]
@@ -186,7 +152,7 @@ function save(param) {
   console.log(seed_array);
   var seed_json = (JSON.stringify(seed_array));
   var name = ( window.prompt("Choose a name for it", "Untitled") );
-  return send(/* AddSeed */Block.__(4, [
+  return send(/* AddSeed */Block.__(5, [
                 name,
                 seed_json
               ]));
@@ -269,12 +235,12 @@ bind_button(".reset", reset);
 
 bind_button(".save", save);
 
-send(/* AddSeed */Block.__(4, [
+send(/* AddSeed */Block.__(5, [
         "Glisseur 1",
         "[[0,1,0],[1,0,0],[1,1,1]]"
       ]));
 
-send(/* AddSeed */Block.__(4, [
+send(/* AddSeed */Block.__(5, [
         "Mathusalem 1",
         "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"
       ]));

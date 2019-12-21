@@ -22,8 +22,8 @@ let update pointer =
   in
   { pointer with
     (*
-    i = pointer.x / width  * state.size.x;
-    j = pointer.y / height * state.size.y;
+    i = pointer.x / canvas_width  * state.size.x;
+    j = pointer.y / canvas_height * state.size.y;
     *)
     inside
   }

@@ -75,3 +75,43 @@ let flip_if_equal i j i2 j2 e =
 
 let flip board i j =
   lmatrix_mapij (flip_if_equal i j) board
+
+let update state = function
+  | Next               ->
+    state.board |. next |. clamp
+  | KeyPressed k       ->
+    begin
+      match k.key_code with
+      | 13 (* Enter *) | 32 (* Space *) -> state.board |. next |. clamp
+      | _ -> state.board
+    end
+  | Previous           ->
+    (match state.previous with | [] -> [] | hd::_ -> hd)
+  | Reset              ->
+    lmatrix_create state.size.x state.size.y Dead
+  | Click(i,j)         ->
+    state.board |. flip i j |. clamp
+  | ClickThenNext(i,j) ->
+    state.board |. flip i j |. next |. clamp
+  | Select(_,_)        ->
+    state.board
+  | SetBoard(board)    ->
+    clamp board
+  | SetBoardFromSeed(str) ->
+      let my_array: cell array array = [%raw {| JSON.parse(param[0]) |}] in
+    let my_state: cell list list = Array.to_list (Array.map Array.to_list my_array) in
+    clamp my_state
+  | SetX(x) ->
+    let h = List.length state.board in
+    if h > 0 then
+      let w = List.length (List.hd state.board) in
+      if w < x then
+        List.map (fun row -> List.append (List.init (w - x) (fun _ -> Dead)) row) state.board
+      else
+        state.board
+    else
+      state.board (* [[]] *)
+  | SetY(y) ->
+    state.board
+  | _            ->
+    state.board
