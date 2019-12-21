@@ -3,6 +3,7 @@
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Global from "./global.bs.js";
+import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
 
 function prune_top(_board) {
   while(true) {
@@ -53,51 +54,22 @@ function prune(board) {
 }
 
 function resize(board) {
-  if (board === /* [] */0) {
-    return /* :: */[
-            /* :: */[
-              /* Dead */0,
-              /* [] */0
-            ],
-            /* [] */0
-          ];
-  } else {
-    var board2 = List.map((function (row) {
-            return /* :: */[
-                    /* Dead */0,
-                    List.append(row, /* :: */[
-                          /* Dead */0,
-                          /* [] */0
-                        ])
-                  ];
-          }), board);
-    var length = List.length(List.hd(board2));
-    var column = List.init(length, (function (param) {
-            return /* Dead */0;
-          }));
-    return /* :: */[
-            column,
-            List.append(board2, /* :: */[
-                  column,
-                  /* [] */0
-                ])
-          ];
-  }
+  return board;
 }
 
 function clamp(board) {
-  return resize(prune(board));
+  return board;
 }
 
 function next(board) {
   var is_alive = function (coords) {
     var j = coords[1];
     var i = coords[0];
-    if (i < 0 || i >= List.length(board) || j < 0 || j >= List.length(List.hd(board))) {
+    if (i < 0 || i >= board.length || j < 0 || j >= Caml_array.caml_array_get(board, 0).length) {
       return 0;
     } else {
-      var row = List.nth(board, i);
-      var cell = List.nth(row, j);
+      var row = Caml_array.caml_array_get(board, i);
+      var cell = Caml_array.caml_array_get(row, j);
       if (cell) {
         return 1;
       } else {
@@ -179,7 +151,7 @@ function next(board) {
       return /* Alive */1;
     }
   };
-  return Global.lmatrix_mapij(next_one, board);
+  return Global.matrix_mapij(next_one, board);
 }
 
 function flip_if_equal(i, j, i2, j2, e) {
@@ -195,7 +167,7 @@ function flip_if_equal(i, j, i2, j2, e) {
 }
 
 function flip(board, i, j) {
-  return Global.lmatrix_mapij((function (param, param$1, param$2) {
+  return Global.matrix_mapij((function (param, param$1, param$2) {
                 return flip_if_equal(i, j, param, param$1, param$2);
               }), board);
 }
@@ -206,68 +178,39 @@ function update(state, param) {
       case /* Nothing */0 :
           return state.board;
       case /* Next */1 :
-          var board = next(state.board);
-          return resize(prune(board));
+          return next(state.board);
       case /* Previous */2 :
           var match = state.previous;
           if (match) {
             return match[0];
           } else {
-            return /* [] */0;
+            return $$Array.make_matrix(0, 0, /* Dead */0);
           }
       case /* Reset */3 :
-          return Global.lmatrix_create(state.size.x, state.size.y, /* Dead */0);
+          return $$Array.make_matrix(state.size.x, state.size.y, /* Dead */0);
       
     }
   } else {
     switch (param.tag | 0) {
       case /* Click */0 :
-          var board$1 = flip(state.board, param[0], param[1]);
-          return resize(prune(board$1));
+          return flip(state.board, param[0], param[1]);
       case /* ClickThenNext */1 :
-          var board$2 = next(flip(state.board, param[0], param[1]));
-          return resize(prune(board$2));
+          return next(flip(state.board, param[0], param[1]));
       case /* SetBoard */3 :
-          return resize(prune(param[0]));
+          return param[0];
       case /* SetBoardFromSeed */4 :
-          var my_array = ( JSON.parse(param[0]) );
-          var board$3 = $$Array.to_list($$Array.map($$Array.to_list, my_array));
-          return resize(prune(board$3));
-      case /* SetX */6 :
-          var x = param[0];
-          var h = List.length(state.board);
-          if (h > 0) {
-            var w = List.length(List.hd(state.board));
-            if (w < x) {
-              return List.map((function (row) {
-                            return List.append(List.init(w - x | 0, (function (param) {
-                                              return /* Dead */0;
-                                            })), row);
-                          }), state.board);
-            } else {
-              return state.board;
-            }
-          } else {
-            return state.board;
-          }
-      case /* Select */2 :
+          return ( JSON.parse(param[0]) );
       case /* AddSeed */5 :
-      case /* SetY */7 :
           return state.board;
       case /* KeyPressed */8 :
           var match$1 = param[0].key_code;
-          if (match$1 !== 13) {
-            if (match$1 !== 32) {
-              return state.board;
-            } else {
-              var board$4 = next(state.board);
-              return resize(prune(board$4));
-            }
+          if (match$1 !== 13 && match$1 !== 32) {
+            return state.board;
           } else {
-            var board$5 = next(state.board);
-            return resize(prune(board$5));
+            return next(state.board);
           }
-      
+      default:
+        return state.board;
     }
   }
 }

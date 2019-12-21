@@ -2,14 +2,15 @@
 
 import * as Draw from "./draw.bs.js";
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
+import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Board from "./board.bs.js";
 import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
-import * as Global from "./global.bs.js";
 import * as Printf from "../node_modules/bs-platform/lib/es6/printf.js";
 import * as Tea_app from "../node_modules/bucklescript-tea/src-ocaml/tea_app.js";
 import * as Keyboard from "./Keyboard.bs.js";
 import * as Tea_html from "../node_modules/bucklescript-tea/src-ocaml/tea_html.js";
+import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
 import * as Caml_format from "../node_modules/bs-platform/lib/es6/caml_format.js";
 
 function init(param) {
@@ -19,7 +20,7 @@ function init(param) {
               x: 3,
               y: 3
             },
-            board: Global.lmatrix_create(3, 3, /* Dead */0),
+            board: $$Array.make_matrix(3, 3, /* Dead */0),
             previous: /* [] */0,
             seeds: /* :: */[
               {
@@ -83,8 +84,8 @@ function update(state, $$event) {
       },
       state.seeds
     ];
-  var size_x = List.length(board);
-  var size_y = List.length(board) === 0 ? 0 : List.length(List.hd(board));
+  var size_x = board.length;
+  var size_y = board.length === 0 ? 0 : Caml_array.caml_array_get(board, 0).length;
   var size = {
     x: size_x,
     y: size_y

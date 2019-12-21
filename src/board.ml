@@ -28,6 +28,7 @@ let prune board =
   prune_left (prune_right (prune_bottom (prune_top board)))
 
 let resize board =
+  (*
   if board == [] then
     [[Dead]]
   else
@@ -35,20 +36,26 @@ let resize board =
     let length = List.length (List.hd board2) in
     let column = List.init length (fun _ -> Dead)  in
     column :: (List.append board2 [column])
+  board
+  *)
+  board
 
 let clamp board =
+  (*
   resize (prune board)
+  *)
+  board
 
 let next board =
   let is_alive coords =
     let (i,j) = coords in
-    if i < 0 || i >= List.length board
-    || j < 0 || j >= List.length (List.hd board)
+    if i < 0 || i >= Array.length board
+    || j < 0 || j >= Array.length board.(0)
     then
       0
     else
-      let row = List.nth board i in
-      let cell = List.nth row j in
+      let row = Array.get board i in
+      let cell = Array.get row j in
       match cell with | Dead -> 0 | Alive -> 1
   in 
   let sum_neighbourg x y =
@@ -65,7 +72,7 @@ let next board =
     | Dead, 3  -> Alive
     | _ -> Dead
   in
-  lmatrix_mapij next_one board
+  matrix_mapij next_one board
 
 let flip_if_equal i j i2 j2 e =
   if i == i2 && j == j2 then
@@ -74,11 +81,11 @@ let flip_if_equal i j i2 j2 e =
     e
 
 let flip board i j =
-  lmatrix_mapij (flip_if_equal i j) board
+  matrix_mapij (flip_if_equal i j) board
 
 let update state = function
   | Next               ->
-    state.board |. next |. clamp
+    state.board |> next |> clamp
   | KeyPressed k       ->
     begin
       match k.key_code with
@@ -86,9 +93,9 @@ let update state = function
       | _ -> state.board
     end
   | Previous           ->
-    (match state.previous with | [] -> [] | hd::_ -> hd)
+    (match state.previous with | [] -> Array.make_matrix 0 0 Dead | hd::_ -> hd)
   | Reset              ->
-    lmatrix_create state.size.x state.size.y Dead
+    Array.make_matrix state.size.x state.size.y Dead
   | Click(i,j)         ->
     state.board |. flip i j |. clamp
   | ClickThenNext(i,j) ->
@@ -99,18 +106,9 @@ let update state = function
     clamp board
   | SetBoardFromSeed(str) ->
       let my_array: cell array array = [%raw {| JSON.parse(param[0]) |}] in
-    let my_state: cell list list = Array.to_list (Array.map Array.to_list my_array) in
-    clamp my_state
+    clamp my_array
   | SetX(x) ->
-    let h = List.length state.board in
-    if h > 0 then
-      let w = List.length (List.hd state.board) in
-      if w < x then
-        List.map (fun row -> List.append (List.init (w - x) (fun _ -> Dead)) row) state.board
-      else
-        state.board
-    else
-      state.board (* [[]] *)
+    state.board
   | SetY(y) ->
     state.board
   | _            ->

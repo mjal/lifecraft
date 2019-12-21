@@ -1,9 +1,6 @@
 open Global
 open Tea.Html
 
-let draw_selection x y =
-  drawCircle x y 20 "black"
-
 let draw state =
   (*
   let draw_one i j e =
@@ -35,8 +32,6 @@ let draw_html state =
     ] []
   in
   let draw_line i line = 
-    div
-      [class' "flex-1 flex"]
-      (List.mapi (draw_cell i) line)
+    div [class' "flex-1 flex"] ((Array.mapi (draw_cell i) line) |> Array.to_list)
   in
-  List.mapi draw_line state.board
+  (Array.mapi draw_line state.board) |> Array.to_list

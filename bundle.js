@@ -705,6 +705,158 @@ function caml_notequal(a, b) {
 }
 /* No side effect */
 
+var id = {
+  contents: 0
+};
+
+function caml_fresh_oo_id(param) {
+  id.contents = id.contents + 1;
+  return id.contents;
+}
+
+function create(str) {
+  var v_001 = caml_fresh_oo_id();
+  var v = /* tuple */[
+    str,
+    v_001
+  ];
+  v.tag = 248;
+  return v;
+}
+
+function caml_is_extension(e) {
+  if (e === undefined) {
+    return false;
+  } else if (e.tag === 248) {
+    return true;
+  } else {
+    var slot = e[0];
+    if (slot !== undefined) {
+      return slot.tag === 248;
+    } else {
+      return false;
+    }
+  }
+}
+/* No side effect */
+
+var undefinedHeader = /* array */[];
+
+function some(x) {
+  if (x === undefined) {
+    var block = /* tuple */[
+      undefinedHeader,
+      0
+    ];
+    block.tag = 256;
+    return block;
+  } else if (x !== null && x[0] === undefinedHeader) {
+    var nid = x[1] + 1 | 0;
+    var block$1 = /* tuple */[
+      undefinedHeader,
+      nid
+    ];
+    block$1.tag = 256;
+    return block$1;
+  } else {
+    return x;
+  }
+}
+
+function valFromOption(x) {
+  if (x !== null && x[0] === undefinedHeader) {
+    var depth = x[1];
+    if (depth === 0) {
+      return ;
+    } else {
+      return /* tuple */[
+              undefinedHeader,
+              depth - 1 | 0
+            ];
+    }
+  } else {
+    return x;
+  }
+}
+/* No side effect */
+
+var $$Error = create("Caml_js_exceptions.Error");
+
+function internalToOCamlException(e) {
+  if (caml_is_extension(e)) {
+    return e;
+  } else {
+    return [
+            $$Error,
+            e
+          ];
+  }
+}
+/* No side effect */
+
+function make_matrix(sx, sy, init) {
+  var res = caml_make_vect(sx, /* array */[]);
+  for(var x = 0 ,x_finish = sx - 1 | 0; x <= x_finish; ++x){
+    res[x] = caml_make_vect(sy, init);
+  }
+  return res;
+}
+
+function map(f, a) {
+  var l = a.length;
+  if (l === 0) {
+    return /* array */[];
+  } else {
+    var r = caml_make_vect(l, _1(f, a[0]));
+    for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
+      r[i] = _1(f, a[i]);
+    }
+    return r;
+  }
+}
+
+function mapi(f, a) {
+  var l = a.length;
+  if (l === 0) {
+    return /* array */[];
+  } else {
+    var r = caml_make_vect(l, _2(f, 0, a[0]));
+    for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
+      r[i] = _2(f, i, a[i]);
+    }
+    return r;
+  }
+}
+
+function to_list(a) {
+  var _i = a.length - 1 | 0;
+  var _res = /* [] */0;
+  while(true) {
+    var res = _res;
+    var i = _i;
+    if (i < 0) {
+      return res;
+    } else {
+      _res = /* :: */[
+        a[i],
+        res
+      ];
+      _i = i - 1 | 0;
+      continue ;
+    }
+  }}
+
+function fold_right(f, a, x) {
+  var r = x;
+  for(var i = a.length - 1 | 0; i >= 0; --i){
+    r = _2(f, a[i], r);
+  }
+  return r;
+}
+
+var Bottom = create("Array.Bottom");
+/* No side effect */
+
 function caml_fill_bytes(s, i, l, c) {
   if (l > 0) {
     for(var k = i ,k_finish = (l + i | 0) - 1 | 0; k <= k_finish; ++k){
@@ -1966,95 +2118,6 @@ function get(s, i) {
 }
 /* No side effect */
 
-var id = {
-  contents: 0
-};
-
-function caml_fresh_oo_id(param) {
-  id.contents = id.contents + 1;
-  return id.contents;
-}
-
-function create(str) {
-  var v_001 = caml_fresh_oo_id();
-  var v = /* tuple */[
-    str,
-    v_001
-  ];
-  v.tag = 248;
-  return v;
-}
-
-function caml_is_extension(e) {
-  if (e === undefined) {
-    return false;
-  } else if (e.tag === 248) {
-    return true;
-  } else {
-    var slot = e[0];
-    if (slot !== undefined) {
-      return slot.tag === 248;
-    } else {
-      return false;
-    }
-  }
-}
-/* No side effect */
-
-var undefinedHeader = /* array */[];
-
-function some(x) {
-  if (x === undefined) {
-    var block = /* tuple */[
-      undefinedHeader,
-      0
-    ];
-    block.tag = 256;
-    return block;
-  } else if (x !== null && x[0] === undefinedHeader) {
-    var nid = x[1] + 1 | 0;
-    var block$1 = /* tuple */[
-      undefinedHeader,
-      nid
-    ];
-    block$1.tag = 256;
-    return block$1;
-  } else {
-    return x;
-  }
-}
-
-function valFromOption(x) {
-  if (x !== null && x[0] === undefinedHeader) {
-    var depth = x[1];
-    if (depth === 0) {
-      return ;
-    } else {
-      return /* tuple */[
-              undefinedHeader,
-              depth - 1 | 0
-            ];
-    }
-  } else {
-    return x;
-  }
-}
-/* No side effect */
-
-var $$Error = create("Caml_js_exceptions.Error");
-
-function internalToOCamlException(e) {
-  if (caml_is_extension(e)) {
-    return e;
-  } else {
-    return [
-            $$Error,
-            e
-          ];
-  }
-}
-/* No side effect */
-
 function erase_rel(param) {
   if (typeof param === "number") {
     return /* End_of_fmtty */0;
@@ -2329,71 +2392,6 @@ function $at(l1, l2) {
 var max_int$1 = 2147483647;
 /* No side effect */
 
-function length(l) {
-  var _len = 0;
-  var _param = l;
-  while(true) {
-    var param = _param;
-    var len = _len;
-    if (param) {
-      _param = param[1];
-      _len = len + 1 | 0;
-      continue ;
-    } else {
-      return len;
-    }
-  }}
-
-function hd(param) {
-  if (param) {
-    return param[0];
-  } else {
-    throw [
-          failure,
-          "hd"
-        ];
-  }
-}
-
-function tl(param) {
-  if (param) {
-    return param[1];
-  } else {
-    throw [
-          failure,
-          "tl"
-        ];
-  }
-}
-
-function nth(l, n) {
-  if (n < 0) {
-    throw [
-          invalid_argument,
-          "List.nth"
-        ];
-  }
-  var _l = l;
-  var _n = n;
-  while(true) {
-    var n$1 = _n;
-    var l$1 = _l;
-    if (l$1) {
-      if (n$1 === 0) {
-        return l$1[0];
-      } else {
-        _n = n$1 - 1 | 0;
-        _l = l$1[1];
-        continue ;
-      }
-    } else {
-      throw [
-            failure,
-            "nth"
-          ];
-    }
-  }}
-
 function rev_append(_l1, _l2) {
   while(true) {
     var l2 = _l2;
@@ -2414,74 +2412,16 @@ function rev(l) {
   return rev_append(l, /* [] */0);
 }
 
-function init_tailrec_aux(_acc, _i, n, f) {
-  while(true) {
-    var i = _i;
-    var acc = _acc;
-    if (i >= n) {
-      return acc;
-    } else {
-      _i = i + 1 | 0;
-      _acc = /* :: */[
-        _1(f, i),
-        acc
-      ];
-      continue ;
-    }
-  }}
-
-function init_aux(i, n, f) {
-  if (i >= n) {
-    return /* [] */0;
-  } else {
-    var r = _1(f, i);
-    return /* :: */[
-            r,
-            init_aux(i + 1 | 0, n, f)
-          ];
-  }
-}
-
-function init(len, f) {
-  if (len < 0) {
-    throw [
-          invalid_argument,
-          "List.init"
-        ];
-  }
-  if (len > 10000) {
-    return rev_append(init_tailrec_aux(/* [] */0, 0, len, f), /* [] */0);
-  } else {
-    return init_aux(0, len, f);
-  }
-}
-
-function map(f, param) {
+function map$1(f, param) {
   if (param) {
     var r = _1(f, param[0]);
     return /* :: */[
             r,
-            map(f, param[1])
+            map$1(f, param[1])
           ];
   } else {
     return /* [] */0;
   }
-}
-
-function mapi(i, f, param) {
-  if (param) {
-    var r = _2(f, i, param[0]);
-    return /* :: */[
-            r,
-            mapi(i + 1 | 0, f, param[1])
-          ];
-  } else {
-    return /* [] */0;
-  }
-}
-
-function mapi$1(f, l) {
-  return mapi(0, f, l);
 }
 
 function iter(f, _param) {
@@ -2509,9 +2449,9 @@ function fold_left(f, _accu, _l) {
     }
   }}
 
-function fold_right(f, l, accu) {
+function fold_right$1(f, l, accu) {
   if (l) {
-    return _2(f, l[0], fold_right(f, l[1], accu));
+    return _2(f, l[0], fold_right$1(f, l[1], accu));
   } else {
     return accu;
   }
@@ -2542,21 +2482,6 @@ function fold_left2(f, _accu, _l1, _l2) {
             ];
       }
       return accu;
-    }
-  }}
-
-function exists(p, _param) {
-  while(true) {
-    var param = _param;
-    if (param) {
-      if (_1(p, param[0])) {
-        return true;
-      } else {
-        _param = param[1];
-        continue ;
-      }
-    } else {
-      return false;
     }
   }}
 
@@ -2819,7 +2744,7 @@ function escaped$1(s) {
   }
 }
 
-function map$1(f, s) {
+function map$2(f, s) {
   var l = s.length;
   if (l === 0) {
     return s;
@@ -2833,7 +2758,7 @@ function map$1(f, s) {
 }
 
 function uppercase_ascii$1(s) {
-  return map$1(uppercase_ascii, s);
+  return map$2(uppercase_ascii, s);
 }
 /* No side effect */
 
@@ -3066,7 +2991,7 @@ function renderToHtmlString(_param) {
                           /* :: */[
                             tagName,
                             /* :: */[
-                              concat("", map((function (p) {
+                              concat("", map$1((function (p) {
                                           var param = p;
                                           if (typeof param === "number") {
                                             return "";
@@ -3129,7 +3054,7 @@ function renderToHtmlString(_param) {
                                                   return concat("", /* :: */[
                                                               " style=\"",
                                                               /* :: */[
-                                                                concat(";", map((function (param) {
+                                                                concat(";", map$1((function (param) {
                                                                             return concat("", /* :: */[
                                                                                         param[0],
                                                                                         /* :: */[
@@ -3157,7 +3082,7 @@ function renderToHtmlString(_param) {
                               /* :: */[
                                 ">",
                                 /* :: */[
-                                  concat("", map(renderToHtmlString, param[5])),
+                                  concat("", map$1(renderToHtmlString, param[5])),
                                   /* :: */[
                                     "</",
                                     /* :: */[
@@ -3499,7 +3424,7 @@ function patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, param) {
     var newProperties = param[4];
     var oldChild = caml_array_get(elems, idx);
     var newChild = createElementNsOptional(param[0], param[1]);
-    var match = patchVNodesOnElems_Properties(callbacks, newChild, map((function (param) {
+    var match = patchVNodesOnElems_Properties(callbacks, newChild, map$1((function (param) {
                 return /* NoProp */0;
               }), newProperties), newProperties);
     if (match) {
@@ -3540,7 +3465,7 @@ function patchVNodesOnElems_CreateElement(_callbacks, _param) {
       case /* Node */2 :
           var newProperties = param[4];
           var newChild = createElementNsOptional(param[0], param[1]);
-          var match = patchVNodesOnElems_Properties(callbacks, newChild, map((function (param) {
+          var match = patchVNodesOnElems_Properties(callbacks, newChild, map$1((function (param) {
                       return /* NoProp */0;
                     }), newProperties), newProperties);
           if (match) {
@@ -4354,48 +4279,6 @@ function program(param, pnode, flags) {
 }
 /* No side effect */
 
-function map$2(f, a) {
-  var l = a.length;
-  if (l === 0) {
-    return /* array */[];
-  } else {
-    var r = caml_make_vect(l, _1(f, a[0]));
-    for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
-      r[i] = _1(f, a[i]);
-    }
-    return r;
-  }
-}
-
-function to_list(a) {
-  var _i = a.length - 1 | 0;
-  var _res = /* [] */0;
-  while(true) {
-    var res = _res;
-    var i = _i;
-    if (i < 0) {
-      return res;
-    } else {
-      _res = /* :: */[
-        a[i],
-        res
-      ];
-      _i = i - 1 | 0;
-      continue ;
-    }
-  }}
-
-function fold_right$1(f, a, x) {
-  var r = x;
-  for(var i = a.length - 1 | 0; i >= 0; --i){
-    r = _2(f, a[i], r);
-  }
-  return r;
-}
-
-var Bottom = create("Array.Bottom");
-/* No side effect */
-
 function get$1(dict, k) {
   if ((k in dict)) {
     return some(dict[k]);
@@ -5028,12 +4911,12 @@ function map$3(f, param) {
   }
 }
 
-function mapi$2(f, param) {
+function mapi$1(f, param) {
   if (param) {
     var v = param[/* v */1];
-    var l$prime = mapi$2(f, param[/* l */0]);
+    var l$prime = mapi$1(f, param[/* l */0]);
     var d$prime = _2(f, v, param[/* d */2]);
-    var r$prime = mapi$2(f, param[/* r */3]);
+    var r$prime = mapi$1(f, param[/* r */3]);
     return /* Node */[
             /* l */l$prime,
             /* v */v,
@@ -5074,11 +4957,11 @@ function for_all(p, _param) {
     }
   }}
 
-function exists$1(p, _param) {
+function exists(p, _param) {
   while(true) {
     var param = _param;
     if (param) {
-      if (_2(p, param[/* v */1], param[/* d */2]) || exists$1(p, param[/* l */0])) {
+      if (_2(p, param[/* v */1], param[/* d */2]) || exists(p, param[/* l */0])) {
         return true;
       } else {
         _param = param[/* r */3];
@@ -5415,7 +5298,7 @@ var ObjectDict = {
   iter: iter$1,
   fold: fold,
   for_all: for_all,
-  exists: exists$1,
+  exists: exists,
   filter: filter$1,
   partition: partition,
   cardinal: cardinal,
@@ -5434,7 +5317,7 @@ var ObjectDict = {
   find_last: find_last,
   find_last_opt: find_last_opt,
   map: map$3,
-  mapi: mapi$2
+  mapi: mapi$1
 };
 
 var ParseFail = create("Tea_json.Decoder.ParseFail");
@@ -5518,7 +5401,7 @@ function list(param) {
                   }
                 };
                 try {
-                  return /* Ok */__(0, [map(parse, to_list(match[0]))]);
+                  return /* Ok */__(0, [map$1(parse, to_list(match[0]))]);
                 }
                 catch (raw_exn){
                   var exn = internalToOCamlException(raw_exn);
@@ -5551,7 +5434,7 @@ function array(param) {
                   }
                 };
                 try {
-                  return /* Ok */__(0, [map$2(parse, match[0])]);
+                  return /* Ok */__(0, [map(parse, match[0])]);
                 }
                 catch (raw_exn){
                   var exn = internalToOCamlException(raw_exn);
@@ -5600,7 +5483,7 @@ function keyValuePairs(param) {
                   }
                 };
                 try {
-                  return /* Ok */__(0, [fold_right$1(parse, keys, /* [] */0)]);
+                  return /* Ok */__(0, [fold_right(parse, keys, /* [] */0)]);
                 }
                 catch (raw_exn){
                   var exn = internalToOCamlException(raw_exn);
@@ -5643,7 +5526,7 @@ function dict(param) {
                   }
                 };
                 try {
-                  return /* Ok */__(0, [fold_right$1(parse, keys, /* Empty */0)]);
+                  return /* Ok */__(0, [fold_right(parse, keys, /* Empty */0)]);
                 }
                 catch (raw_exn){
                   var exn = internalToOCamlException(raw_exn);
@@ -5680,7 +5563,7 @@ function field(key, param) {
 }
 
 function at(fields, dec) {
-  return fold_right(field, fields, dec);
+  return fold_right$1(field, fields, dec);
 }
 
 function index(idx, param) {
@@ -6193,131 +6076,48 @@ function draw_html(state) {
     return div$1(undefined, undefined, /* :: */[
                 class$prime("flex-1 flex"),
                 /* [] */0
-              ], mapi$1((function (param, param$1) {
-                      var i$1 = i;
-                      var j = param;
-                      var e = param$1;
-                      return div$1(undefined, undefined, /* :: */[
-                                  class$prime(e === /* Alive */1 ? "alive" : "dead"),
-                                  /* :: */[
-                                    onClick(/* Click */__(0, [
-                                            i$1,
-                                            j
-                                          ])),
-                                    /* [] */0
-                                  ]
-                                ], /* [] */0);
-                    }), line));
+              ], to_list(mapi((function (param, param$1) {
+                          var i$1 = i;
+                          var j = param;
+                          var e = param$1;
+                          return div$1(undefined, undefined, /* :: */[
+                                      class$prime(e === /* Alive */1 ? "alive" : "dead"),
+                                      /* :: */[
+                                        onClick(/* Click */__(0, [
+                                                i$1,
+                                                j
+                                              ])),
+                                        /* [] */0
+                                      ]
+                                    ], /* [] */0);
+                        }), line)));
   };
-  return mapi$1(draw_line, state.board);
+  return to_list(mapi(draw_line, state.board));
 }
 /* Tea_html Not a pure module */
 
 // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
 
-function lmatrix_mapij(f, a) {
-  return mapi$1((function (i, row) {
-                return mapi$1((function (j, e) {
+function matrix_mapij(f, a) {
+  return mapi((function (i, row) {
+                return mapi((function (j, e) {
                               return _3(f, i, j, e);
                             }), row);
               }), a);
-}
-
-function lmatrix_create(i, j, e) {
-  return init(i, (function (param) {
-                return init(j, (function (param) {
-                              return e;
-                            }));
-              }));
 }
 /* No side effect */
 
 // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
 
-function prune_top(_board) {
-  while(true) {
-    var board = _board;
-    if (board) {
-      if (exists((function (e) {
-                return e === /* Alive */1;
-              }), board[0])) {
-        return board;
-      } else {
-        _board = board[1];
-        continue ;
-      }
-    } else {
-      return /* [] */0;
-    }
-  }}
-
-function prune_left(_board) {
-  while(true) {
-    var board = _board;
-    var column = map(hd, board);
-    if (length(board) === 0) {
-      return /* [] */0;
-    } else if (exists((function (e) {
-              return e === /* Alive */1;
-            }), column)) {
-      return board;
-    } else {
-      _board = map(tl, board);
-      continue ;
-    }
-  }}
-
-function prune_right(board) {
-  return map(rev, prune_left(map(rev, board)));
-}
-
-function prune(board) {
-  var board$1 = prune_top(board);
-  return prune_left(prune_right(rev(prune_top(rev(board$1)))));
-}
-
-function resize(board) {
-  if (board === /* [] */0) {
-    return /* :: */[
-            /* :: */[
-              /* Dead */0,
-              /* [] */0
-            ],
-            /* [] */0
-          ];
-  } else {
-    var board2 = map((function (row) {
-            return /* :: */[
-                    /* Dead */0,
-                    append(row, /* :: */[
-                          /* Dead */0,
-                          /* [] */0
-                        ])
-                  ];
-          }), board);
-    var length$1 = length(hd(board2));
-    var column = init(length$1, (function (param) {
-            return /* Dead */0;
-          }));
-    return /* :: */[
-            column,
-            append(board2, /* :: */[
-                  column,
-                  /* [] */0
-                ])
-          ];
-  }
-}
-
 function next(board) {
   var is_alive = function (coords) {
     var j = coords[1];
     var i = coords[0];
-    if (i < 0 || i >= length(board) || j < 0 || j >= length(hd(board))) {
+    if (i < 0 || i >= board.length || j < 0 || j >= caml_array_get(board, 0).length) {
       return 0;
     } else {
-      var row = nth(board, i);
-      var cell = nth(row, j);
+      var row = caml_array_get(board, i);
+      var cell = caml_array_get(row, j);
       if (cell) {
         return 1;
       } else {
@@ -6326,7 +6126,7 @@ function next(board) {
     }
   };
   var sum_neighbourg = function (x, y) {
-    var coords = map((function (coords) {
+    var coords = map$1((function (coords) {
             return /* tuple */[
                     x + coords[0] | 0,
                     y + coords[1] | 0
@@ -6380,7 +6180,7 @@ function next(board) {
             ]
           ]
         ]);
-    var neighbourg = map(is_alive, coords);
+    var neighbourg = map$1(is_alive, coords);
     return fold_left((function (prim, prim$1) {
                   return prim + prim$1 | 0;
                 }), 0, neighbourg);
@@ -6399,7 +6199,7 @@ function next(board) {
       return /* Alive */1;
     }
   };
-  return lmatrix_mapij(next_one, board);
+  return matrix_mapij(next_one, board);
 }
 
 function flip_if_equal(i, j, i2, j2, e) {
@@ -6415,7 +6215,7 @@ function flip_if_equal(i, j, i2, j2, e) {
 }
 
 function flip(board, i, j) {
-  return lmatrix_mapij((function (param, param$1, param$2) {
+  return matrix_mapij((function (param, param$1, param$2) {
                 return flip_if_equal(i, j, param, param$1, param$2);
               }), board);
 }
@@ -6426,68 +6226,39 @@ function update$1(state, param) {
       case /* Nothing */0 :
           return state.board;
       case /* Next */1 :
-          var board = next(state.board);
-          return resize(prune(board));
+          return next(state.board);
       case /* Previous */2 :
           var match = state.previous;
           if (match) {
             return match[0];
           } else {
-            return /* [] */0;
+            return make_matrix(0, 0, /* Dead */0);
           }
       case /* Reset */3 :
-          return lmatrix_create(state.size.x, state.size.y, /* Dead */0);
+          return make_matrix(state.size.x, state.size.y, /* Dead */0);
       
     }
   } else {
     switch (param.tag | 0) {
       case /* Click */0 :
-          var board$1 = flip(state.board, param[0], param[1]);
-          return resize(prune(board$1));
+          return flip(state.board, param[0], param[1]);
       case /* ClickThenNext */1 :
-          var board$2 = next(flip(state.board, param[0], param[1]));
-          return resize(prune(board$2));
+          return next(flip(state.board, param[0], param[1]));
       case /* SetBoard */3 :
-          return resize(prune(param[0]));
+          return param[0];
       case /* SetBoardFromSeed */4 :
-          var my_array = ( JSON.parse(param[0]) );
-          var board$3 = to_list(map$2(to_list, my_array));
-          return resize(prune(board$3));
-      case /* SetX */6 :
-          var x = param[0];
-          var h = length(state.board);
-          if (h > 0) {
-            var w = length(hd(state.board));
-            if (w < x) {
-              return map((function (row) {
-                            return append(init(w - x | 0, (function (param) {
-                                              return /* Dead */0;
-                                            })), row);
-                          }), state.board);
-            } else {
-              return state.board;
-            }
-          } else {
-            return state.board;
-          }
-      case /* Select */2 :
+          return ( JSON.parse(param[0]) );
       case /* AddSeed */5 :
-      case /* SetY */7 :
           return state.board;
       case /* KeyPressed */8 :
           var match$1 = param[0].key_code;
-          if (match$1 !== 13) {
-            if (match$1 !== 32) {
-              return state.board;
-            } else {
-              var board$4 = next(state.board);
-              return resize(prune(board$4));
-            }
+          if (match$1 !== 13 && match$1 !== 32) {
+            return state.board;
           } else {
-            var board$5 = next(state.board);
-            return resize(prune(board$5));
+            return next(state.board);
           }
-      
+      default:
+        return state.board;
     }
   }
 }
@@ -6508,7 +6279,7 @@ function contents(b) {
   return sub_string(b.buffer, 0, b.position);
 }
 
-function resize$1(b, more) {
+function resize(b, more) {
   var len = b.length;
   var new_len = len;
   while((b.position + more | 0) > new_len) {
@@ -6523,7 +6294,7 @@ function resize$1(b, more) {
 function add_char(b, c) {
   var pos = b.position;
   if (pos >= b.length) {
-    resize$1(b, 1);
+    resize(b, 1);
   }
   b.buffer[pos] = c;
   b.position = pos + 1 | 0;
@@ -6534,7 +6305,7 @@ function add_string(b, s) {
   var len = s.length;
   var new_position = b.position + len | 0;
   if (new_position > b.length) {
-    resize$1(b, len);
+    resize(b, len);
   }
   blit_string(s, 0, b.buffer, b.position, len);
   b.position = new_position;
@@ -9496,14 +9267,14 @@ function downs($staropt$star, tagger) {
 
 // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
 
-function init$1(param) {
+function init(param) {
   return /* tuple */[
           {
             size: {
               x: 3,
               y: 3
             },
-            board: lmatrix_create(3, 3, /* Dead */0),
+            board: make_matrix(3, 3, /* Dead */0),
             previous: /* [] */0,
             seeds: /* :: */[
               {
@@ -9567,8 +9338,8 @@ function update$2(state, $$event) {
       },
       state.seeds
     ];
-  var size_x = length(board);
-  var size_y = length(board) === 0 ? 0 : length(hd(board));
+  var size_x = board.length;
+  var size_y = board.length === 0 ? 0 : caml_array_get(board, 0).length;
   var size = {
     x: size_x,
     y: size_y
@@ -9627,7 +9398,7 @@ function view(model) {
                       class$prime("flex-1"),
                       /* [] */0
                     ]
-                  ], map((function (s) {
+                  ], map$1((function (s) {
                           return view_link(s.name, /* SetBoardFromSeed */__(4, [s.str]));
                         }), model.seeds)),
               /* :: */[
@@ -9797,7 +9568,7 @@ function partial_arg_shutdown(param) {
 }
 
 var partial_arg = {
-  init: init$1,
+  init: init,
   update: update$2,
   view: view,
   subscriptions: subscriptions,
@@ -9809,4 +9580,4 @@ function main(param, param$1) {
 }
 /* Draw Not a pure module */
 
-export { init$1 as init, main, subscriptions, update$2 as update, view, view_button, view_link };
+export { init, main, subscriptions, update$2 as update, view, view_button, view_link };

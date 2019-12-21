@@ -2,12 +2,11 @@ open Global
 open Tea.App
 open Tea.Html
 open Tea.Cmd
-open Tea.Sub
 
 let init () =
   ({
     size = {x = 3; y = 3};
-    board = (lmatrix_create 3 3 Dead);
+    board = Array.make_matrix 3 3 Dead;
     previous = [];
     seeds = [
       {name = "Glisseur 1"; str = "[[0,1,0],[1,0,0],[1,1,1]]"};
@@ -33,8 +32,8 @@ let update state event =
   in
 
   let size = {
-    x = List.length board;
-    y = if List.length board = 0 then 0 else List.length (List.hd board)
+    x = Array.length board;
+    y = if Array.length board = 0 then 0 else Array.length board.(0)
   } in
 
   ({ (*state with*) board; previous; size; seeds}, NoCmd)
