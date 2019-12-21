@@ -108,8 +108,20 @@ let update state = function
       let my_array: cell array array = [%raw {| JSON.parse(param[0]) |}] in
     clamp my_array
   | SetX(x) ->
-    state.board
+    if x < state.size.x then
+      Array.sub state.board 0 x
+    else
+      let board = Matrix.make x state.size.y Dead in
+        Array.blit state.board 0 board 0 state.size.x;
+        board
   | SetY(y) ->
-    state.board
+    Array.map (fun row ->
+      if y < state.size.y then
+        Array.sub row 0 y
+      else
+        let row2 = Array.make y Dead in
+          Array.blit row 0 row2 0 state.size.y;
+          row2
+    ) state.board
   | _            ->
     state.board
