@@ -5,7 +5,7 @@
     "clean": "bsb -clean-world",
     "build": "bsb -make-world",
     "watch": "bsb -make-world -w",
-    "bundle": "rollup src/demo.bs.js --format esm --file bundle.js",
+    "bundle": "rollup src/main.bs.js --format esm --file bundle.js",
     "watch-bundle": "rollup src/main.bs.js --format esm --file bundle.js --watch"
   },
   "keywords": [

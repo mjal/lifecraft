@@ -2,34 +2,42 @@
 
 import * as Draw from "./draw.bs.js";
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
-import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Board from "./board.bs.js";
+import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
 import * as Global from "./global.bs.js";
-import * as Caml_int32 from "../node_modules/bs-platform/lib/es6/caml_int32.js";
+import * as Printf from "../node_modules/bs-platform/lib/es6/printf.js";
+import * as Tea_app from "../node_modules/bucklescript-tea/src-ocaml/tea_app.js";
+import * as Keyboard from "./Keyboard.bs.js";
+import * as Tea_html from "../node_modules/bucklescript-tea/src-ocaml/tea_html.js";
+import * as Caml_format from "../node_modules/bs-platform/lib/es6/caml_format.js";
 
-var pointer = {
-  contents: {
-    x: 0,
-    y: 0,
-    i: 0,
-    j: 0,
-    inside: false,
-    selecting: false
-  }
-};
-
-var state = {
-  contents: {
-    size: {
-      x: 3,
-      y: 3
-    },
-    board: Global.lmatrix_create(3, 3, /* Dead */0),
-    previous: /* [] */0,
-    seeds: /* [] */0
-  }
-};
+function init(param) {
+  return /* tuple */[
+          {
+            size: {
+              x: 3,
+              y: 3
+            },
+            board: Global.lmatrix_create(3, 3, /* Dead */0),
+            previous: /* [] */0,
+            seeds: /* :: */[
+              {
+                name: "Glisseur 1",
+                str: "[[0,1,0],[1,0,0],[1,1,1]]"
+              },
+              /* :: */[
+                {
+                  name: "Mathusalem 1",
+                  str: "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"
+                },
+                /* [] */0
+              ]
+            ]
+          },
+          /* NoCmd */0
+        ];
+}
 
 function update(state, $$event) {
   var board = Board.update(state, $$event);
@@ -44,7 +52,8 @@ function update(state, $$event) {
           ];
           break;
       case /* Previous */2 :
-          previous = List.tl(state.previous);
+          var match = state.previous;
+          previous = match ? match[1] : /* [] */0;
           break;
       default:
         previous = state.previous;
@@ -80,174 +89,249 @@ function update(state, $$event) {
     x: size_x,
     y: size_y
   };
-  return {
-          size: size,
-          board: board,
-          previous: previous,
-          seeds: seeds
-        };
+  return /* tuple */[
+          {
+            size: size,
+            board: board,
+            previous: previous,
+            seeds: seeds
+          },
+          /* NoCmd */0
+        ];
 }
 
-function send($$event) {
-  state.contents = update(state.contents, $$event);
-  clear_left_side();
-  List.iter((function (seed) {
-          add_seed(seed.name, seed.str);
-          return /* () */0;
-        }), state.contents.seeds);
-  set_html_size(state.contents.size.x, state.contents.size.y);
-  var sum = function (param) {
-    return List.fold_left((function (prim, prim$1) {
-                  return prim + prim$1 | 0;
-                }), 0, param);
-  };
-  var digify = function (param, param$1, e) {
-    if (e) {
-      return 1;
-    } else {
-      return 0;
-    }
-  };
-  var population = sum(List.map(sum, Global.lmatrix_mapij(digify, state.contents.board)));
-  set_html_population(population);
-  Draw.draw(state.contents);
-  Draw.draw_selection(pointer.contents.x, pointer.contents.y);
-  return /* () */0;
+function view_button(title, msg) {
+  return Tea_html.button(undefined, undefined, /* :: */[
+              Tea_html.onClick(msg),
+              /* :: */[
+                Tea_html.class$prime("flex-1"),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_html.text(title),
+              /* [] */0
+            ]);
 }
 
-function keydown(str) {
-  var tmp;
-  switch (str) {
-    case "ArrowLeft" :
-        tmp = /* Previous */2;
-        break;
-    case " " :
-    case "ArrowRight" :
-        tmp = /* Next */1;
-        break;
-    case "Escape" :
-        tmp = /* Reset */3;
-        break;
-    default:
-      console.log(str);
-      tmp = /* Nothing */0;
-  }
-  return send(tmp);
+function view_link(title, msg) {
+  return Tea_html.p(undefined, undefined, /* [] */0, /* :: */[
+              Tea_html.a(undefined, undefined, /* :: */[
+                    Tea_html.href("#"),
+                    /* :: */[
+                      Tea_html.onClick(msg),
+                      /* [] */0
+                    ]
+                  ], /* :: */[
+                    Tea_html.text(title),
+                    /* [] */0
+                  ]),
+              /* [] */0
+            ]);
 }
 
-function reset(param) {
-  return send(/* Reset */3);
+function view(model) {
+  return Tea_html.div(undefined, undefined, /* :: */[
+              Tea_html.id("container"),
+              /* :: */[
+                Tea_html.class$prime("flex"),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_html.div(undefined, undefined, /* :: */[
+                    Tea_html.id("left-side"),
+                    /* :: */[
+                      Tea_html.class$prime("flex-1"),
+                      /* [] */0
+                    ]
+                  ], List.map((function (s) {
+                          return view_link(s.name, /* SetBoardFromSeed */Block.__(4, [s.str]));
+                        }), model.seeds)),
+              /* :: */[
+                Tea_html.div(undefined, undefined, /* :: */[
+                      Tea_html.id("center"),
+                      /* :: */[
+                        Tea_html.class$prime("flex-1"),
+                        /* [] */0
+                      ]
+                    ], /* :: */[
+                      Tea_html.div(undefined, undefined, /* :: */[
+                            Tea_html.class$prime("flex"),
+                            /* [] */0
+                          ], /* :: */[
+                            Tea_html.div(undefined, undefined, /* :: */[
+                                  Tea_html.class$prime("flex-1 centered"),
+                                  /* :: */[
+                                    Tea_html.id("size"),
+                                    /* [] */0
+                                  ]
+                                ], /* :: */[
+                                  Tea_html.p(undefined, undefined, /* [] */0, /* :: */[
+                                        Tea_html.text(Curry._2(Printf.sprintf(/* Format */[
+                                                      /* String_literal */Block.__(11, [
+                                                          "Size : ",
+                                                          /* Int */Block.__(4, [
+                                                              /* Int_d */0,
+                                                              /* No_padding */0,
+                                                              /* No_precision */0,
+                                                              /* Char_literal */Block.__(12, [
+                                                                  /* "x" */120,
+                                                                  /* Int */Block.__(4, [
+                                                                      /* Int_d */0,
+                                                                      /* No_padding */0,
+                                                                      /* No_precision */0,
+                                                                      /* End_of_format */0
+                                                                    ])
+                                                                ])
+                                                            ])
+                                                        ]),
+                                                      "Size : %dx%d"
+                                                    ]), model.size.x, model.size.y)),
+                                        /* [] */0
+                                      ]),
+                                  /* [] */0
+                                ]),
+                            /* :: */[
+                              Tea_html.div(undefined, undefined, /* :: */[
+                                    Tea_html.class$prime("flex-1 centered"),
+                                    /* :: */[
+                                      Tea_html.id("population"),
+                                      /* [] */0
+                                    ]
+                                  ], /* :: */[
+                                    Tea_html.p(undefined, undefined, /* [] */0, /* :: */[
+                                          Tea_html.text("My Pop"),
+                                          /* [] */0
+                                        ]),
+                                    /* [] */0
+                                  ]),
+                              /* [] */0
+                            ]
+                          ]),
+                      /* :: */[
+                        Tea_html.div(undefined, undefined, /* :: */[
+                              Tea_html.class$prime("board"),
+                              /* [] */0
+                            ], Draw.draw_html(model)),
+                        /* :: */[
+                          Tea_html.div(undefined, undefined, /* :: */[
+                                Tea_html.class$prime("flex"),
+                                /* [] */0
+                              ], /* :: */[
+                                view_button("Reset", /* Reset */3),
+                                /* :: */[
+                                  view_button("Previous", /* Previous */2),
+                                  /* :: */[
+                                    view_button("Next", /* Next */1),
+                                    /* [] */0
+                                  ]
+                                ]
+                              ]),
+                          /* [] */0
+                        ]
+                      ]
+                    ]),
+                /* :: */[
+                  Tea_html.div(undefined, undefined, /* :: */[
+                        Tea_html.id("right-side"),
+                        /* :: */[
+                          Tea_html.class$prime("flex-1"),
+                          /* [] */0
+                        ]
+                      ], /* :: */[
+                        Tea_html.div(undefined, undefined, /* :: */[
+                              Tea_html.class$prime("flex"),
+                              /* [] */0
+                            ], /* :: */[
+                              Tea_html.span(undefined, undefined, /* :: */[
+                                    Tea_html.class$prime("flex-1"),
+                                    /* [] */0
+                                  ], /* :: */[
+                                    Tea_html.text("x = "),
+                                    /* [] */0
+                                  ]),
+                              /* :: */[
+                                Tea_html.input$prime(undefined, undefined, /* :: */[
+                                      Tea_html.class$prime("flex-1"),
+                                      /* :: */[
+                                        Tea_html.type$prime("text"),
+                                        /* :: */[
+                                          Tea_html.value(String(model.size.x)),
+                                          /* :: */[
+                                            Tea_html.onInput(undefined, (function (x) {
+                                                    return /* SetX */Block.__(6, [Caml_format.caml_int_of_string(x)]);
+                                                  })),
+                                            /* [] */0
+                                          ]
+                                        ]
+                                      ]
+                                    ], /* [] */0),
+                                /* :: */[
+                                  Tea_html.span(undefined, undefined, /* :: */[
+                                        Tea_html.class$prime("flex-1"),
+                                        /* [] */0
+                                      ], /* :: */[
+                                        Tea_html.text("y = "),
+                                        /* [] */0
+                                      ]),
+                                  /* :: */[
+                                    Tea_html.input$prime(undefined, undefined, /* :: */[
+                                          Tea_html.class$prime("flex-1"),
+                                          /* :: */[
+                                            Tea_html.type$prime("text"),
+                                            /* :: */[
+                                              Tea_html.value(String(model.size.y)),
+                                              /* :: */[
+                                                Tea_html.onInput(undefined, (function (y) {
+                                                        return /* SetY */Block.__(7, [Caml_format.caml_int_of_string(y)]);
+                                                      })),
+                                                /* [] */0
+                                              ]
+                                            ]
+                                          ]
+                                        ], /* [] */0),
+                                    /* [] */0
+                                  ]
+                                ]
+                              ]
+                            ]),
+                        /* [] */0
+                      ]),
+                  /* [] */0
+                ]
+              ]
+            ]);
 }
 
-function previous(param) {
-  return send(/* Previous */2);
+function subscriptions(param) {
+  return Keyboard.downs(undefined, (function (k) {
+                return /* KeyPressed */Block.__(8, [k]);
+              }));
 }
 
-function next(param) {
-  return send(/* Next */1);
+function partial_arg_shutdown(param) {
+  return /* NoCmd */0;
 }
 
-function save(param) {
-  var seed_array = $$Array.of_list(List.map($$Array.of_list, state.contents.board));
-  console.log(seed_array);
-  var seed_json = (JSON.stringify(seed_array));
-  var name = ( window.prompt("Choose a name for it", "Untitled") );
-  return send(/* AddSeed */Block.__(5, [
-                name,
-                seed_json
-              ]));
+var partial_arg = {
+  init: init,
+  update: update,
+  view: view,
+  subscriptions: subscriptions,
+  shutdown: partial_arg_shutdown
+};
+
+function main(param, param$1) {
+  return Tea_app.program(partial_arg, param, param$1);
 }
-
-function mousedown(x, y) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: init.x,
-    y: init.y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: true
-  };
-  var i = Caml_int32.div(x, Caml_int32.div(canvas.width, state.contents.size.x));
-  var j = Caml_int32.div(y, Caml_int32.div(canvas.height, state.contents.size.y));
-  return send(/* Click */Block.__(0, [
-                i,
-                j
-              ]));
-}
-
-function mouseup(param) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: init.x,
-    y: init.y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: false
-  };
-  return /* () */0;
-}
-
-function mousemove(x, y) {
-  var init = pointer.contents;
-  pointer.contents = {
-    x: x,
-    y: y,
-    i: init.i,
-    j: init.j,
-    inside: init.inside,
-    selecting: init.selecting
-  };
-  if (state.contents.size.x !== 0 && state.contents.size.y !== 0) {
-    var i = Caml_int32.div(x, Caml_int32.div(canvas.width, state.contents.size.x));
-    var j = Caml_int32.div(y, Caml_int32.div(canvas.height, state.contents.size.y));
-    return send(/* Select */Block.__(2, [
-                  i,
-                  j
-                ]));
-  } else {
-    return /* () */0;
-  }
-}
-
-bind_mousemove(mousemove);
-
-bind_mousedown(mousedown);
-
-bind_mouseup(mouseup);
-
-function set_state(state_str) {
-  var my_array = ( JSON.parse(state_str) );
-  var my_state = $$Array.to_list($$Array.map($$Array.to_list, my_array));
-  return send(/* SetBoard */Block.__(3, [my_state]));
-}
-
-bind_set_state_to_js(set_state);
-
-bind_keydown(keydown);
-
-bind_button(".next", next);
-
-bind_button(".previous", previous);
-
-bind_button(".reset", reset);
-
-bind_button(".save", save);
-
-send(/* AddSeed */Block.__(5, [
-        "Glisseur 1",
-        "[[0,1,0],[1,0,0],[1,1,1]]"
-      ]));
-
-send(/* AddSeed */Block.__(5, [
-        "Mathusalem 1",
-        "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"
-      ]));
-
-set_state("[[0,0,0,0],[0,1,1,0],[0,0,0,0]]");
 
 export {
+  init ,
+  update ,
+  view_button ,
+  view_link ,
+  view ,
+  subscriptions ,
+  main ,
   
 }
-/* state Not a pure module */
+/* Draw Not a pure module */
