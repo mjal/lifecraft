@@ -26,9 +26,3 @@ type state = {
 }
 
 type pointer = { x: int; y: int; i: int; j: int; inside: bool; selecting: bool }
-
-let matrix_mapij f a =
-  Array.mapi (fun i row -> Array.mapi (fun j e -> f i j e) row) a
-
-let matrix_iterij f a =
-  Array.iteri (fun i row -> Array.iteri (fun j e -> f i j e) row) a

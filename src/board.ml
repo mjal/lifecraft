@@ -72,7 +72,7 @@ let next board =
     | Dead, 3  -> Alive
     | _ -> Dead
   in
-  matrix_mapij next_one board
+  Matrix.mapij next_one board
 
 let flip_if_equal i j i2 j2 e =
   if i == i2 && j == j2 then
@@ -81,7 +81,7 @@ let flip_if_equal i j i2 j2 e =
     e
 
 let flip board i j =
-  matrix_mapij (flip_if_equal i j) board
+  Matrix.mapij (flip_if_equal i j) board
 
 let update state = function
   | Next               ->
@@ -93,9 +93,9 @@ let update state = function
       | _ -> state.board
     end
   | Previous           ->
-    (match state.previous with | [] -> Array.make_matrix 0 0 Dead | hd::_ -> hd)
+    (match state.previous with | [] -> Matrix.make 0 0 Dead | hd::_ -> hd)
   | Reset              ->
-    Array.make_matrix state.size.x state.size.y Dead
+    Matrix.make state.size.x state.size.y Dead
   | Click(i,j)         ->
     state.board |. flip i j |. clamp
   | ClickThenNext(i,j) ->
