@@ -2,12 +2,12 @@
 
 import * as Draw from "./draw.bs.js";
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
-import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Board from "./board.bs.js";
 import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
 import * as Printf from "../node_modules/bs-platform/lib/es6/printf.js";
 import * as Tea_app from "../node_modules/bucklescript-tea/src-ocaml/tea_app.js";
+import * as Tea_cmd from "../node_modules/bucklescript-tea/src-ocaml/tea_cmd.js";
 import * as Keyboard from "./Keyboard.bs.js";
 import * as Tea_html from "../node_modules/bucklescript-tea/src-ocaml/tea_html.js";
 import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
@@ -17,10 +17,10 @@ function init(param) {
   return /* tuple */[
           {
             size: {
-              x: 3,
-              y: 3
+              x: 9,
+              y: 9
             },
-            board: $$Array.make_matrix(3, 3, /* Dead */0),
+            board: /* array */[/* array */[]],
             previous: /* [] */0,
             seeds: /* :: */[
               {
@@ -34,14 +34,17 @@ function init(param) {
                 },
                 /* [] */0
               ]
-            ]
+            ],
+            rule: /* B3S23 */0,
+            auto_clamp: false
           },
-          /* NoCmd */0
+          Tea_cmd.msg(/* Reset */5)
         ];
 }
 
 function update(state, $$event) {
-  var board = Board.update(state, $$event);
+  var match = Board.update(state, $$event);
+  var board = match[0];
   var previous;
   var exit = 0;
   if (typeof $$event === "number") {
@@ -53,8 +56,8 @@ function update(state, $$event) {
           ];
           break;
       case /* Previous */2 :
-          var match = state.previous;
-          previous = match ? match[1] : /* [] */0;
+          var match$1 = state.previous;
+          previous = match$1 ? match$1[1] : /* [] */0;
           break;
       default:
         previous = state.previous;
@@ -90,14 +93,19 @@ function update(state, $$event) {
     x: size_x,
     y: size_y
   };
+  var rule;
+  rule = typeof $$event === "number" || $$event.tag !== /* SetRule */8 ? state.rule : $$event[0];
+  var auto_clamp = typeof $$event === "number" && $$event === 3 ? !state.auto_clamp : state.auto_clamp;
   return /* tuple */[
           {
             size: size,
             board: board,
             previous: previous,
-            seeds: seeds
+            seeds: seeds,
+            rule: rule,
+            auto_clamp: auto_clamp
           },
-          /* NoCmd */0
+          match[1]
         ];
 }
 
@@ -131,6 +139,7 @@ function view_link(title, msg) {
 }
 
 function view(model) {
+  var name = model.auto_clamp ? "Auto clamp: On" : "Auto clamp: Off";
   return Tea_html.div(undefined, undefined, /* :: */[
               Tea_html.id("container"),
               /* :: */[
@@ -144,9 +153,43 @@ function view(model) {
                       Tea_html.class$prime("flex-1"),
                       /* [] */0
                     ]
-                  ], List.map((function (s) {
-                          return view_link(s.name, /* SetBoardFromSeed */Block.__(4, [s.str]));
-                        }), model.seeds)),
+                  ], List.cons(Tea_html.select(undefined, undefined, /* :: */[
+                            Tea_html.onChange(undefined, (function (i) {
+                                    var match = Caml_format.caml_int_of_string(i);
+                                    if (match !== 0) {
+                                      return /* SetRule */Block.__(8, [/* B36S23 */1]);
+                                    } else {
+                                      return /* SetRule */Block.__(8, [/* B3S23 */0]);
+                                    }
+                                  })),
+                            /* [] */0
+                          ], /* :: */[
+                            Tea_html.option$prime(undefined, undefined, /* :: */[
+                                  Tea_html.value("0"),
+                                  /* :: */[
+                                    Tea_html.Attributes.selected(model.rule === /* B3S23 */0),
+                                    /* [] */0
+                                  ]
+                                ], /* :: */[
+                                  Tea_html.text("B3S23"),
+                                  /* [] */0
+                                ]),
+                            /* :: */[
+                              Tea_html.option$prime(undefined, undefined, /* :: */[
+                                    Tea_html.value("1"),
+                                    /* :: */[
+                                      Tea_html.Attributes.selected(model.rule === /* B36S23 */1),
+                                      /* [] */0
+                                    ]
+                                  ], /* :: */[
+                                    Tea_html.text("B36S23"),
+                                    /* [] */0
+                                  ]),
+                              /* [] */0
+                            ]
+                          ]), List.map((function (s) {
+                              return view_link(s.name, /* SetBoardFromSeed */Block.__(4, [s.str]));
+                            }), model.seeds))),
               /* :: */[
                 Tea_html.div(undefined, undefined, /* :: */[
                       Tea_html.id("center"),
@@ -218,7 +261,7 @@ function view(model) {
                                 Tea_html.class$prime("flex"),
                                 /* [] */0
                               ], /* :: */[
-                                view_button("Reset", /* Reset */3),
+                                view_button("Reset", /* Reset */5),
                                 /* :: */[
                                   view_button("Previous", /* Previous */2),
                                   /* :: */[
@@ -290,7 +333,16 @@ function view(model) {
                                             ]
                                           ]
                                         ], /* [] */0),
-                                    /* [] */0
+                                    /* :: */[
+                                      view_button("Clamp", /* Clamp */4),
+                                      /* :: */[
+                                        Tea_html.br(/* [] */0),
+                                        /* :: */[
+                                          view_button(name, /* ToggleAutoClamp */3),
+                                          /* [] */0
+                                        ]
+                                      ]
+                                    ]
                                   ]
                                 ]
                               ]
@@ -305,7 +357,7 @@ function view(model) {
 
 function subscriptions(param) {
   return Keyboard.downs(undefined, (function (k) {
-                return /* KeyPressed */Block.__(8, [k]);
+                return /* KeyPressed */Block.__(9, [k]);
               }));
 }
 

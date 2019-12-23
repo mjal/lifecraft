@@ -5,17 +5,19 @@ open Tea.Cmd
 
 let init () =
   ({
-    size = {x = 3; y = 3};
-    board = Array.make_matrix 3 3 Dead;
+    size = {x = 9; y = 9};
+    board = [|[||]|];
     previous = [];
     seeds = [
       {name = "Glisseur 1"; str = "[[0,1,0],[1,0,0],[1,1,1]]"};
       {name = "Mathusalem 1"; str = "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"}
-    ]
-  }, NoCmd)
+    ];
+    rule = B3S23;
+    auto_clamp = false;
+  }, msg Reset)
 
 let update state event =
-  let board = Board.update state event in
+  let board, cmd = Board.update state event in
 
   (* use cons of x :: xs instead of append *)
   let previous = match event with
@@ -36,7 +38,17 @@ let update state event =
     y = if Array.length board = 0 then 0 else Array.length board.(0)
   } in
 
-  ({ (*state with*) board; previous; size; seeds}, NoCmd)
+  let rule = match event with
+    | SetRule(rule) -> rule
+    | _ -> state.rule
+  in
+
+  let auto_clamp = match event with
+    | ToggleAutoClamp -> not state.auto_clamp
+    | _ -> state.auto_clamp
+  in
+
+  ({ (*state with*) board; previous; size; seeds; rule; auto_clamp}, cmd (* Cmd.Batch *))
 
 let view_button title msg =
   button
@@ -54,7 +66,22 @@ let view_link title msg =
 let view model =
   div [id "container"; class' "flex"] [
     div [id "left-side"; class' "flex-1"]
-      (List.map (fun s -> view_link s.name (SetBoardFromSeed(s.str))) model.seeds)
+      @@ List.cons
+        (select
+          [onChange (fun i -> match (int_of_string i) with
+            | 0 -> SetRule(B3S23)
+            | _ -> SetRule(B36S23)
+          )]
+          [
+            option'
+              [ value "0"; Attributes.selected (model.rule = B3S23) ]
+              [text "B3S23"];
+            option'
+              [ value "1"; Attributes.selected (model.rule = B36S23) ]
+              [text "B36S23"];
+          ]
+        )
+        (List.map (fun s -> view_link s.name (SetBoardFromSeed(s.str))) model.seeds)
     ;
     div [id "center"; class' "flex-1"] [
       div [class' "flex"] [
@@ -91,6 +118,10 @@ let view model =
           value (Js.String.make model.size.y);
           onInput (fun y -> SetY (int_of_string y))
         ] [];
+        view_button "Clamp" Clamp;
+        br [];
+        let name = if model.auto_clamp then "Auto clamp: On" else "Auto clamp: Off" in
+          view_button name ToggleAutoClamp;
       ]
     ]
   ]

@@ -1,52 +1,17 @@
 open Global
 
-let rec prune_top board =
-  match board with
-  | [] -> []
-  | hd :: tl -> 
-    if List.exists (fun e -> e == Alive) hd then
-      board
-    else
-      prune_top tl
-
-let prune_bottom board =
-  List.rev (prune_top (List.rev board))
-
-let rec prune_left board =
-  let column = List.map List.hd board in
-  if List.length board = 0 then
-    []
-  else if List.exists (fun e -> e == Alive) column then
-    board
-  else
-    prune_left (List.map List.tl board)
-
-let prune_right board =
-  List.map List.rev (prune_left (List.map List.rev board))
-
-let prune board =
-  prune_left (prune_right (prune_bottom (prune_top board)))
-
-let resize board =
-  (*
-  if board == [] then
-    [[Dead]]
-  else
-    let board2 = List.map (fun row -> Dead :: (List.append row [Dead])) board in
-    let length = List.length (List.hd board2) in
-    let column = List.init length (fun _ -> Dead)  in
-    column :: (List.append board2 [column])
-  board
-  *)
-  board
-
 let clamp board =
-  (*
-  resize (prune board)
-  *)
-  board
+  let x1 = try Matrix.findi (Array.exists ((=) Alive)) board with Not_found -> 0 in
+  let x2 = try Matrix.findri (Array.exists ((=) Alive)) board with Not_found -> 0 in
+  let y1 = try Matrix.vfindi ((=) Alive) board with Not_found -> 0 in
+  let y2 = try Matrix.vfindri ((=) Alive) board with Not_found -> 0 in
+  let w  = (max (x2 - x1 + 1 + 2) 3) in
+  let h  = (max (y2 - y1 + 1 + 2) 3) in
+  let board2 = Array.make_matrix w h Dead in
+  let () = Matrix.blit board x1 y1 board2 1 1 (x2 - x1 + 1) (y2 - y1 + 1) in
+  board2
 
-let next board =
+let next rule board =
   let is_alive coords =
     let (i,j) = coords in
     if i < 0 || i >= Array.length board
@@ -70,6 +35,7 @@ let next board =
     | Alive, 2 -> Alive
     | Alive, 3 -> Alive
     | Dead, 3  -> Alive
+    | Dead, 6 -> begin match rule with | B3S23 -> Dead | B36S23 -> Alive end
     | _ -> Dead
   in
   Matrix.mapij next_one board
@@ -83,45 +49,54 @@ let flip_if_equal i j i2 j2 e =
 let flip board i j =
   Matrix.mapij (flip_if_equal i j) board
 
-let update state = function
-  | Next               ->
-    state.board |> next |> clamp
-  | KeyPressed k       ->
-    begin
-      match k.key_code with
-      | 13 (* Enter *) | 32 (* Space *) -> state.board |. next |. clamp
-      | _ -> state.board
-    end
-  | Previous           ->
-    (match state.previous with | [] -> Matrix.make 0 0 Dead | hd::_ -> hd)
-  | Reset              ->
-    Matrix.make state.size.x state.size.y Dead
-  | Click(i,j)         ->
-    state.board |. flip i j |. clamp
-  | ClickThenNext(i,j) ->
-    state.board |. flip i j |. next |. clamp
-  | Select(_,_)        ->
-    state.board
-  | SetBoard(board)    ->
-    clamp board
-  | SetBoardFromSeed(str) ->
-      let my_array: cell array array = [%raw {| JSON.parse(param[0]) |}] in
-    clamp my_array
-  | SetX(x) ->
-    if x < state.size.x then
-      Array.sub state.board 0 x
-    else
-      let board = Matrix.make x state.size.y Dead in
-        Array.blit state.board 0 board 0 state.size.x;
-        board
-  | SetY(y) ->
-    Array.map (fun row ->
-      if y < state.size.y then
-        Array.sub row 0 y
+let update state event =
+  let board = match event with
+    | Next               ->
+      state.board |> (next state.rule)
+    | KeyPressed k       ->
+      begin
+        match k.key_code with
+        | 13 (* Enter *) | 32 (* Space *) -> state.board |> (next state.rule)
+        | _ -> state.board
+      end
+    | Previous           ->
+      (match state.previous with | [] -> Matrix.make 0 0 Dead | hd::_ -> hd)
+    | Reset              ->
+      Matrix.make state.size.x state.size.y Dead
+    | Click(i,j)         ->
+      state.board |. flip i j
+    | ClickThenNext(i,j) ->
+      state.board |. flip i j |> (next state.rule)
+    | Select(_,_)        ->
+      state.board
+    | SetBoard(board)    -> board
+    | SetBoardFromSeed(str) ->
+      [%raw {| JSON.parse(param[0]) |}]
+    | SetX(x) ->
+      if x < state.size.x then
+        Array.sub state.board 0 x
       else
-        let row2 = Array.make y Dead in
-          Array.blit row 0 row2 0 state.size.y;
-          row2
-    ) state.board
-  | _            ->
-    state.board
+        let board = Matrix.make x state.size.y Dead in
+          Array.blit state.board 0 board 0 state.size.x;
+          board
+    | SetY(y) ->
+      Array.map (fun row ->
+        if y < state.size.y then
+          Array.sub row 0 y
+        else
+          let row2 = Array.make y Dead in
+            Array.blit row 0 row2 0 state.size.y;
+            row2
+      ) state.board
+    | Clamp ->
+      clamp state.board
+    | _            ->
+      state.board
+  in
+
+  let cmd = match event with
+    | Clamp -> Tea.Cmd.NoCmd
+    | _ -> (if state.auto_clamp then (Tea.Cmd.msg Clamp) else Tea.Cmd.NoCmd)
+  in
+
+  board, cmd

@@ -3,65 +3,76 @@
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Matrix from "./Matrix.bs.js";
+import * as Tea_cmd from "../node_modules/bucklescript-tea/src-ocaml/tea_cmd.js";
 import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
-
-function prune_top(_board) {
-  while(true) {
-    var board = _board;
-    if (board) {
-      if (List.exists((function (e) {
-                return e === /* Alive */1;
-              }), board[0])) {
-        return board;
-      } else {
-        _board = board[1];
-        continue ;
-      }
-    } else {
-      return /* [] */0;
-    }
-  };
-}
-
-function prune_bottom(board) {
-  return List.rev(prune_top(List.rev(board)));
-}
-
-function prune_left(_board) {
-  while(true) {
-    var board = _board;
-    var column = List.map(List.hd, board);
-    if (List.length(board) === 0) {
-      return /* [] */0;
-    } else if (List.exists((function (e) {
-              return e === /* Alive */1;
-            }), column)) {
-      return board;
-    } else {
-      _board = List.map(List.tl, board);
-      continue ;
-    }
-  };
-}
-
-function prune_right(board) {
-  return List.map(List.rev, prune_left(List.map(List.rev, board)));
-}
-
-function prune(board) {
-  var board$1 = prune_top(board);
-  return prune_left(prune_right(List.rev(prune_top(List.rev(board$1)))));
-}
-
-function resize(board) {
-  return board;
-}
+import * as Caml_primitive from "../node_modules/bs-platform/lib/es6/caml_primitive.js";
+import * as Caml_builtin_exceptions from "../node_modules/bs-platform/lib/es6/caml_builtin_exceptions.js";
 
 function clamp(board) {
-  return board;
+  var x1;
+  try {
+    x1 = Matrix.findi((function (param) {
+            return $$Array.exists((function (param) {
+                          return /* Alive */1 === param;
+                        }), param);
+          }), board);
+  }
+  catch (exn){
+    if (exn === Caml_builtin_exceptions.not_found) {
+      x1 = 0;
+    } else {
+      throw exn;
+    }
+  }
+  var x2;
+  try {
+    x2 = Matrix.findri((function (param) {
+            return $$Array.exists((function (param) {
+                          return /* Alive */1 === param;
+                        }), param);
+          }), board);
+  }
+  catch (exn$1){
+    if (exn$1 === Caml_builtin_exceptions.not_found) {
+      x2 = 0;
+    } else {
+      throw exn$1;
+    }
+  }
+  var y1;
+  try {
+    y1 = Matrix.vfindi((function (param) {
+            return /* Alive */1 === param;
+          }), board);
+  }
+  catch (exn$2){
+    if (exn$2 === Caml_builtin_exceptions.not_found) {
+      y1 = 0;
+    } else {
+      throw exn$2;
+    }
+  }
+  var y2;
+  try {
+    y2 = Matrix.vfindri((function (param) {
+            return /* Alive */1 === param;
+          }), board);
+  }
+  catch (exn$3){
+    if (exn$3 === Caml_builtin_exceptions.not_found) {
+      y2 = 0;
+    } else {
+      throw exn$3;
+    }
+  }
+  var w = Caml_primitive.caml_int_max(((x2 - x1 | 0) + 1 | 0) + 2 | 0, 3);
+  var h = Caml_primitive.caml_int_max(((y2 - y1 | 0) + 1 | 0) + 2 | 0, 3);
+  var board2 = $$Array.make_matrix(w, h, /* Dead */0);
+  Matrix.blit(board, x1, y1, board2, 1, 1, (x2 - x1 | 0) + 1 | 0, (y2 - y1 | 0) + 1 | 0);
+  return board2;
 }
 
-function next(board) {
+function next(rule, board) {
   var is_alive = function (coords) {
     var j = coords[1];
     var i = coords[0];
@@ -145,7 +156,7 @@ function next(board) {
       } else {
         return /* Dead */0;
       }
-    } else if (n !== 3) {
+    } else if (n !== 3 && (n !== 6 || !rule)) {
       return /* Dead */0;
     } else {
       return /* Alive */1;
@@ -172,76 +183,85 @@ function flip(board, i, j) {
               }), board);
 }
 
-function update(state, param) {
-  if (typeof param === "number") {
-    switch (param) {
-      case /* Nothing */0 :
-          return state.board;
+function update(state, $$event) {
+  var board;
+  if (typeof $$event === "number") {
+    switch ($$event) {
       case /* Next */1 :
-          return next(state.board);
+          board = next(state.rule, state.board);
+          break;
       case /* Previous */2 :
           var match = state.previous;
-          if (match) {
-            return match[0];
-          } else {
-            return Matrix.make(0, 0, /* Dead */0);
-          }
-      case /* Reset */3 :
-          return Matrix.make(state.size.x, state.size.y, /* Dead */0);
-      
+          board = match ? match[0] : Matrix.make(0, 0, /* Dead */0);
+          break;
+      case /* Clamp */4 :
+          board = clamp(state.board);
+          break;
+      case /* Reset */5 :
+          board = Matrix.make(state.size.x, state.size.y, /* Dead */0);
+          break;
+      default:
+        board = state.board;
     }
   } else {
-    switch (param.tag | 0) {
+    switch ($$event.tag | 0) {
       case /* Click */0 :
-          return flip(state.board, param[0], param[1]);
+          board = flip(state.board, $$event[0], $$event[1]);
+          break;
       case /* ClickThenNext */1 :
-          return next(flip(state.board, param[0], param[1]));
-      case /* SetBoard */3 :
-          return param[0];
-      case /* SetBoardFromSeed */4 :
-          return ( JSON.parse(param[0]) );
+          board = next(state.rule, flip(state.board, $$event[0], $$event[1]));
+          break;
       case /* Select */2 :
-      case /* AddSeed */5 :
-          return state.board;
+          board = state.board;
+          break;
+      case /* SetBoard */3 :
+          board = $$event[0];
+          break;
+      case /* SetBoardFromSeed */4 :
+          board = ( JSON.parse(param[0]) );
+          break;
       case /* SetX */6 :
-          var x = param[0];
+          var x = $$event[0];
           if (x < state.size.x) {
-            return $$Array.sub(state.board, 0, x);
+            board = $$Array.sub(state.board, 0, x);
           } else {
-            var board = Matrix.make(x, state.size.y, /* Dead */0);
-            $$Array.blit(state.board, 0, board, 0, state.size.x);
-            return board;
+            var board$1 = Matrix.make(x, state.size.y, /* Dead */0);
+            $$Array.blit(state.board, 0, board$1, 0, state.size.x);
+            board = board$1;
           }
+          break;
       case /* SetY */7 :
-          var y = param[0];
-          return $$Array.map((function (row) {
-                        if (y < state.size.y) {
-                          return $$Array.sub(row, 0, y);
-                        } else {
-                          var row2 = Caml_array.caml_make_vect(y, /* Dead */0);
-                          $$Array.blit(row, 0, row2, 0, state.size.y);
-                          return row2;
-                        }
-                      }), state.board);
-      case /* KeyPressed */8 :
-          var match$1 = param[0].key_code;
-          if (match$1 !== 13 && match$1 !== 32) {
-            return state.board;
-          } else {
-            return next(state.board);
-          }
-      
+          var y = $$event[0];
+          board = $$Array.map((function (row) {
+                  if (y < state.size.y) {
+                    return $$Array.sub(row, 0, y);
+                  } else {
+                    var row2 = Caml_array.caml_make_vect(y, /* Dead */0);
+                    $$Array.blit(row, 0, row2, 0, state.size.y);
+                    return row2;
+                  }
+                }), state.board);
+          break;
+      case /* KeyPressed */9 :
+          var match$1 = $$event[0].key_code;
+          board = match$1 !== 13 && match$1 !== 32 ? state.board : next(state.rule, state.board);
+          break;
+      default:
+        board = state.board;
     }
   }
+  var cmd = typeof $$event === "number" ? (
+      $$event !== 4 && state.auto_clamp ? Tea_cmd.msg(/* Clamp */4) : /* NoCmd */0
+    ) : (
+      state.auto_clamp ? Tea_cmd.msg(/* Clamp */4) : /* NoCmd */0
+    );
+  return /* tuple */[
+          board,
+          cmd
+        ];
 }
 
 export {
-  prune_top ,
-  prune_bottom ,
-  prune_left ,
-  prune_right ,
-  prune ,
-  resize ,
   clamp ,
   next ,
   flip_if_equal ,

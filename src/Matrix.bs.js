@@ -2,6 +2,8 @@
 
 import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
+import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
+import * as Caml_builtin_exceptions from "../node_modules/bs-platform/lib/es6/caml_builtin_exceptions.js";
 
 var make = $$Array.make_matrix;
 
@@ -13,9 +15,115 @@ function mapij(f, matrix) {
               }), matrix);
 }
 
+function findi(f, a) {
+  var f$1 = f;
+  var a$1 = a;
+  var _i = 0;
+  while(true) {
+    var i = _i;
+    if (i >= a$1.length) {
+      throw Caml_builtin_exceptions.not_found;
+    }
+    if (Curry._1(f$1, Caml_array.caml_array_get(a$1, i))) {
+      return i;
+    } else {
+      _i = i + 1 | 0;
+      continue ;
+    }
+  };
+}
+
+function findri(f, a) {
+  var f$1 = f;
+  var a$1 = a;
+  var _i = a.length - 1 | 0;
+  while(true) {
+    var i = _i;
+    if (i < 0) {
+      throw Caml_builtin_exceptions.not_found;
+    }
+    if (Curry._1(f$1, Caml_array.caml_array_get(a$1, i))) {
+      return i;
+    } else {
+      _i = i - 1 | 0;
+      continue ;
+    }
+  };
+}
+
+function vfindi(f, a) {
+  if (a.length === 0) {
+    throw Caml_builtin_exceptions.not_found;
+  }
+  var length = Caml_array.caml_array_get(a, 0).length;
+  var f$1 = f;
+  var a$1 = a;
+  var _i = 0;
+  while(true) {
+    var i = _i;
+    if (i >= length) {
+      throw Caml_builtin_exceptions.not_found;
+    }
+    var found = false;
+    for(var j = 0 ,j_finish = a$1.length - 1 | 0; j <= j_finish; ++j){
+      if (Curry._1(f$1, Caml_array.caml_array_get(Caml_array.caml_array_get(a$1, j), i))) {
+        found = true;
+      }
+      
+    }
+    if (found) {
+      return i;
+    } else {
+      _i = i + 1 | 0;
+      continue ;
+    }
+  };
+}
+
+function vfindri(f, a) {
+  if (a.length === 0) {
+    throw Caml_builtin_exceptions.not_found;
+  }
+  var length = Caml_array.caml_array_get(a, 0).length;
+  var f$1 = f;
+  var a$1 = a;
+  var _i = length - 1 | 0;
+  while(true) {
+    var i = _i;
+    if (i < 0) {
+      throw Caml_builtin_exceptions.not_found;
+    }
+    var found = false;
+    for(var j = 0 ,j_finish = a$1.length - 1 | 0; j <= j_finish; ++j){
+      if (Curry._1(f$1, Caml_array.caml_array_get(Caml_array.caml_array_get(a$1, j), i))) {
+        found = true;
+      }
+      
+    }
+    if (found) {
+      return i;
+    } else {
+      _i = i - 1 | 0;
+      continue ;
+    }
+  };
+}
+
+function blit(m1, x1, y1, m2, x2, y2, w, h) {
+  for(var i = 0 ,i_finish = w - 1 | 0; i <= i_finish; ++i){
+    $$Array.blit(Caml_array.caml_array_get(m1, x1 + i | 0), y1, Caml_array.caml_array_get(m2, x2 + i | 0), y2, h);
+  }
+  return /* () */0;
+}
+
 export {
   make ,
   mapij ,
+  findi ,
+  findri ,
+  vfindi ,
+  vfindri ,
+  blit ,
   
 }
 /* No side effect */

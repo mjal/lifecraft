@@ -1,0 +1,30 @@
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.centered { text-align: center }
+
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100%;
+}
+#container {
+  height: 100%;
+}
+#left-side {}
+#center {
+  display: relative;
+}
+#right-side {}
+#center {}
+.board {
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+.dead, .alive {
+  flex: 1;
+  border-right: 1px solid white;
+  border-bottom: 1px solid white;
+}
+.alive { background-color: black; }
+.dead { background-color: lightgrey; }
