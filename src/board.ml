@@ -71,7 +71,7 @@ let update state event =
       state.board
     | SetBoard(board)    -> board
     | SetBoardFromSeed(str) ->
-      [%raw {| JSON.parse(param[0]) |}]
+      [%raw {| JSON.parse($$event[0]) |}]
     | SetX(x) ->
       if x < state.size.x then
         Array.sub state.board 0 x

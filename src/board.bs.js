@@ -218,7 +218,7 @@ function update(state, $$event) {
           board = $$event[0];
           break;
       case /* SetBoardFromSeed */4 :
-          board = ( JSON.parse(param[0]) );
+          board = ( JSON.parse($$event[0]) );
           break;
       case /* SetX */6 :
           var x = $$event[0];
