@@ -5,7 +5,6 @@ import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Matrix from "./Matrix.bs.js";
 import * as Tea_cmd from "../node_modules/bucklescript-tea/src-ocaml/tea_cmd.js";
 import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
-import * as Caml_primitive from "../node_modules/bs-platform/lib/es6/caml_primitive.js";
 import * as Caml_builtin_exceptions from "../node_modules/bs-platform/lib/es6/caml_builtin_exceptions.js";
 
 function clamp(board) {
@@ -65,9 +64,7 @@ function clamp(board) {
       throw exn$3;
     }
   }
-  var w = Caml_primitive.caml_int_max(((x2 - x1 | 0) + 1 | 0) + 2 | 0, 3);
-  var h = Caml_primitive.caml_int_max(((y2 - y1 | 0) + 1 | 0) + 2 | 0, 3);
-  var board2 = $$Array.make_matrix(w, h, /* Dead */0);
+  var board2 = $$Array.make_matrix((x2 - x1 | 0) + 3 | 0, (y2 - y1 | 0) + 3 | 0, /* Dead */0);
   Matrix.blit(board, x1, y1, board2, 1, 1, (x2 - x1 | 0) + 1 | 0, (y2 - y1 | 0) + 1 | 0);
   return board2;
 }
@@ -183,6 +180,32 @@ function flip(board, i, j) {
               }), board);
 }
 
+function resize_x(board, x) {
+  var w = Matrix.width(board);
+  var h = Matrix.height(board);
+  if (x < w) {
+    return $$Array.sub(board, 0, x);
+  } else {
+    var board2 = Matrix.make(x, h, /* Dead */0);
+    $$Array.blit(board, 0, board, 0, w);
+    return board2;
+  }
+}
+
+function resize_y(board, y) {
+  Matrix.width(board);
+  var h = Matrix.height(board);
+  return $$Array.map((function (row) {
+                if (y < h) {
+                  return $$Array.sub(row, 0, y);
+                } else {
+                  var row2 = Caml_array.caml_make_vect(y, /* Dead */0);
+                  $$Array.blit(row, 0, row2, 0, h);
+                  return row2;
+                }
+              }), board);
+}
+
 function update(state, $$event) {
   var board;
   if (typeof $$event === "number") {
@@ -221,26 +244,10 @@ function update(state, $$event) {
           board = ( JSON.parse($$event[0]) );
           break;
       case /* SetX */6 :
-          var x = $$event[0];
-          if (x < state.size.x) {
-            board = $$Array.sub(state.board, 0, x);
-          } else {
-            var board$1 = Matrix.make(x, state.size.y, /* Dead */0);
-            $$Array.blit(state.board, 0, board$1, 0, state.size.x);
-            board = board$1;
-          }
+          board = resize_x(state.board, $$event[0]);
           break;
       case /* SetY */7 :
-          var y = $$event[0];
-          board = $$Array.map((function (row) {
-                  if (y < state.size.y) {
-                    return $$Array.sub(row, 0, y);
-                  } else {
-                    var row2 = Caml_array.caml_make_vect(y, /* Dead */0);
-                    $$Array.blit(row, 0, row2, 0, state.size.y);
-                    return row2;
-                  }
-                }), state.board);
+          board = resize_y(state.board, $$event[0]);
           break;
       case /* KeyPressed */9 :
           var match$1 = $$event[0].key_code;
@@ -266,6 +273,8 @@ export {
   next ,
   flip_if_equal ,
   flip ,
+  resize_x ,
+  resize_y ,
   update ,
   
 }

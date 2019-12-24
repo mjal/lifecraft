@@ -119,9 +119,11 @@ let view model =
           onInput (fun y -> SetY (int_of_string y))
         ] [];
         view_button "Clamp" Clamp;
-        br [];
-        let name = if model.auto_clamp then "Auto clamp: On" else "Auto clamp: Off" in
-          view_button name ToggleAutoClamp;
+      ];
+      div [class' "flex"] [
+        if model.auto_clamp
+        then view_button "Auto clamp: On" ToggleAutoClamp
+        else view_button "Auto clamp: Off"  ToggleAutoClamp
       ]
     ]
   ]

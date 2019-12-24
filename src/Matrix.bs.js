@@ -7,6 +7,19 @@ import * as Caml_builtin_exceptions from "../node_modules/bs-platform/lib/es6/ca
 
 var make = $$Array.make_matrix;
 
+function width(a) {
+  return a.length;
+}
+
+function height(a) {
+  var width = a.length;
+  if (width === 0) {
+    return 0;
+  } else {
+    return Caml_array.caml_array_get(a, 0).length;
+  }
+}
+
 function mapij(f, matrix) {
   return $$Array.mapi((function (i, row) {
                 return $$Array.mapi((function (j, e) {
@@ -118,6 +131,8 @@ function blit(m1, x1, y1, m2, x2, y2, w, h) {
 
 export {
   make ,
+  width ,
+  height ,
   mapij ,
   findi ,
   findri ,

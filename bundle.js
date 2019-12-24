@@ -6013,10 +6013,6 @@ function text(str) {
   return /* Text */__(1, [str]);
 }
 
-function br(props) {
-  return fullnode("", "br", "br", "br", props, /* [] */0);
-}
-
 function div$1($staropt$star, $staropt$star$1, props, nodes) {
   var key = $staropt$star !== undefined ? $staropt$star : "";
   var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
@@ -6275,6 +6271,19 @@ function draw_html(state) {
 
 var make$1 = make_matrix;
 
+function width(a) {
+  return a.length;
+}
+
+function height$1(a) {
+  var width = a.length;
+  if (width === 0) {
+    return 0;
+  } else {
+    return caml_array_get(a, 0).length;
+  }
+}
+
 function mapij(f, matrix) {
   return mapi((function (i, row) {
                 return mapi((function (j, e) {
@@ -6440,9 +6449,7 @@ function clamp(board) {
       throw exn$3;
     }
   }
-  var w = caml_int_max(((x2 - x1 | 0) + 1 | 0) + 2 | 0, 3);
-  var h = caml_int_max(((y2 - y1 | 0) + 1 | 0) + 2 | 0, 3);
-  var board2 = make_matrix(w, h, /* Dead */0);
+  var board2 = make_matrix((x2 - x1 | 0) + 3 | 0, (y2 - y1 | 0) + 3 | 0, /* Dead */0);
   blit$3(board, x1, y1, board2, 1, 1, (x2 - x1 | 0) + 1 | 0, (y2 - y1 | 0) + 1 | 0);
   return board2;
 }
@@ -6558,6 +6565,32 @@ function flip(board, i, j) {
               }), board);
 }
 
+function resize_x(board, x) {
+  var w = width(board);
+  var h = height$1(board);
+  if (x < w) {
+    return sub(board, 0, x);
+  } else {
+    var board2 = make$1(x, h, /* Dead */0);
+    blit(board, 0, board, 0, w);
+    return board2;
+  }
+}
+
+function resize_y(board, y) {
+  width(board);
+  var h = height$1(board);
+  return map((function (row) {
+                if (y < h) {
+                  return sub(row, 0, y);
+                } else {
+                  var row2 = caml_make_vect(y, /* Dead */0);
+                  blit(row, 0, row2, 0, h);
+                  return row2;
+                }
+              }), board);
+}
+
 function update$1(state, $$event) {
   var board;
   if (typeof $$event === "number") {
@@ -6596,26 +6629,10 @@ function update$1(state, $$event) {
           board = ( JSON.parse($$event[0]) );
           break;
       case /* SetX */6 :
-          var x = $$event[0];
-          if (x < state.size.x) {
-            board = sub(state.board, 0, x);
-          } else {
-            var board$1 = make$1(x, state.size.y, /* Dead */0);
-            blit(state.board, 0, board$1, 0, state.size.x);
-            board = board$1;
-          }
+          board = resize_x(state.board, $$event[0]);
           break;
       case /* SetY */7 :
-          var y = $$event[0];
-          board = map((function (row) {
-                  if (y < state.size.y) {
-                    return sub(row, 0, y);
-                  } else {
-                    var row2 = caml_make_vect(y, /* Dead */0);
-                    blit(row, 0, row2, 0, state.size.y);
-                    return row2;
-                  }
-                }), state.board);
+          board = resize_y(state.board, $$event[0]);
           break;
       case /* KeyPressed */9 :
           var match$1 = $$event[0].key_code;
@@ -9766,7 +9783,6 @@ function view_link(title, msg) {
 }
 
 function view(model) {
-  var name = model.auto_clamp ? "Auto clamp: On" : "Auto clamp: Off";
   return div$1(undefined, undefined, /* :: */[
               id$1("container"),
               /* :: */[
@@ -9962,19 +9978,22 @@ function view(model) {
                                         ], /* [] */0),
                                     /* :: */[
                                       view_button("Clamp", /* Clamp */4),
-                                      /* :: */[
-                                        br(/* [] */0),
-                                        /* :: */[
-                                          view_button(name, /* ToggleAutoClamp */3),
-                                          /* [] */0
-                                        ]
-                                      ]
+                                      /* [] */0
                                     ]
                                   ]
                                 ]
                               ]
                             ]),
-                        /* [] */0
+                        /* :: */[
+                          div$1(undefined, undefined, /* :: */[
+                                class$prime("flex"),
+                                /* [] */0
+                              ], /* :: */[
+                                model.auto_clamp ? view_button("Auto clamp: On", /* ToggleAutoClamp */3) : view_button("Auto clamp: Off", /* ToggleAutoClamp */3),
+                                /* [] */0
+                              ]),
+                          /* [] */0
+                        ]
                       ]),
                   /* [] */0
                 ]

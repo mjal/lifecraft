@@ -1,5 +1,13 @@
-let make i j e =
+let make (i:int) (j:int) (e: 'a) =
   Array.make_matrix i j e
+
+let width (a: 'a array array) =
+  Array.length a
+
+let height (a: 'a array array) =
+  let width = Array.length a in
+  if width = 0 then 0
+  else Array.length a.(0)
 
 let mapij f matrix =
   matrix  |> Array.mapi (fun i row -> row

@@ -139,7 +139,6 @@ function view_link(title, msg) {
 }
 
 function view(model) {
-  var name = model.auto_clamp ? "Auto clamp: On" : "Auto clamp: Off";
   return Tea_html.div(undefined, undefined, /* :: */[
               Tea_html.id("container"),
               /* :: */[
@@ -335,19 +334,22 @@ function view(model) {
                                         ], /* [] */0),
                                     /* :: */[
                                       view_button("Clamp", /* Clamp */4),
-                                      /* :: */[
-                                        Tea_html.br(/* [] */0),
-                                        /* :: */[
-                                          view_button(name, /* ToggleAutoClamp */3),
-                                          /* [] */0
-                                        ]
-                                      ]
+                                      /* [] */0
                                     ]
                                   ]
                                 ]
                               ]
                             ]),
-                        /* [] */0
+                        /* :: */[
+                          Tea_html.div(undefined, undefined, /* :: */[
+                                Tea_html.class$prime("flex"),
+                                /* [] */0
+                              ], /* :: */[
+                                model.auto_clamp ? view_button("Auto clamp: On", /* ToggleAutoClamp */3) : view_button("Auto clamp: Off", /* ToggleAutoClamp */3),
+                                /* [] */0
+                              ]),
+                          /* [] */0
+                        ]
                       ]),
                   /* [] */0
                 ]
