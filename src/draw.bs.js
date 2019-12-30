@@ -4,10 +4,6 @@ import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Tea_html from "../node_modules/bucklescript-tea/src-ocaml/tea_html.js";
 
-function draw(state) {
-  return /* () */0;
-}
-
 function draw_html(state) {
   var draw_line = function (i, line) {
     return Tea_html.div(undefined, undefined, /* :: */[
@@ -32,9 +28,13 @@ function draw_html(state) {
   return $$Array.to_list($$Array.mapi(draw_line, state.board));
 }
 
+function draw_canvas(state) {
+  return /* () */0;
+}
+
 export {
-  draw ,
   draw_html ,
+  draw_canvas ,
   
 }
 /* Tea_html Not a pure module */

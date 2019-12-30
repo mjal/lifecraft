@@ -1,7 +1,19 @@
 open Global
 open Tea.Html
 
-let draw state =
+let draw_html state =
+  let draw_cell i j e =
+    div [
+      class' (if e = Alive then "alive" else "dead");
+      onClick (Click(i,j))
+    ] []
+  in
+  let draw_line i line = 
+    div [class' "flex-1 flex"] ((Array.mapi (draw_cell i) line) |> Array.to_list)
+  in
+  (Array.mapi draw_line state.board) |> Array.to_list
+
+let draw_canvas state =
   (*
   let draw_one i j e =
     let dot_w = (canvas_width / state.size.x) in
@@ -22,16 +34,3 @@ let draw state =
       ()
   *)
   ()
-
-
-let draw_html state =
-  let draw_cell i j e =
-    div [
-      class' (if e = Alive then "alive" else "dead");
-      onClick (Click(i,j))
-    ] []
-  in
-  let draw_line i line = 
-    div [class' "flex-1 flex"] ((Array.mapi (draw_cell i) line) |> Array.to_list)
-  in
-  (Array.mapi draw_line state.board) |> Array.to_list

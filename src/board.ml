@@ -1,4 +1,5 @@
 open Global
+open Tea.Cmd
 
 let clamp board =
   let x1 = try Matrix.findi (Array.exists ((=) Alive)) board with Not_found -> 0 in
@@ -38,71 +39,51 @@ let next rule board =
   in
   Matrix.mapij next_one board
 
-let flip_if_equal i j i2 j2 e =
-  if i == i2 && j == j2 then
-    match e with | Alive -> Dead | Dead -> Alive
-  else
-    e
-
-let flip board i j =
-  Matrix.mapij (flip_if_equal i j) board
-
-(* TODO: 1 resize *)
-let resize_x board x =
-  let w = Matrix.width board in
-  let h = Matrix.height board in
-  if x < w then
-    Array.sub board 0 x
-  else
-    let board2 = Matrix.make x h Dead in
-    Array.blit board 0 board 0 w;
-    board2
-
-let resize_y board y =
-  let w = Matrix.width board in
-  let h = Matrix.height board in
-  Array.map (fun row ->
-    if y < h then
-      Array.sub row 0 y
+let flip i j board =
+  let flip_if_equal i j i2 j2 e =
+    if i == i2 && j == j2 then
+      match e with | Alive -> Dead | Dead -> Alive
     else
-      let row2 = Array.make y Dead in
-      Array.blit row 0 row2 0 h;
-      row2
-  ) board
+      e
+  in
+    Matrix.mapij (flip_if_equal i j) board
+
+let resize board x y =
+  let w = Matrix.width board in
+  let h = Matrix.height board in
+  let a = Matrix.make x y Dead in
+    Matrix.blit board 0 0 a x y w h;
+    a
 
 let update state event =
+  let w = Matrix.width state.board in
+  let h = Matrix.height state.board in
   let board = match event with
-    | Next               ->
-      state.board |> (next state.rule)
-    | KeyPressed k       ->
-      begin
-        match k.key_code with
-        | 13 (* Enter *) | 32 (* Space *) -> state.board |> (next state.rule)
-        | _ -> state.board
-      end
-    | Previous           ->
-      (match state.previous with | [] -> Matrix.make 0 0 Dead | hd::_ -> hd)
-    | Reset              ->
-      Matrix.make state.size.x state.size.y Dead
-    | Click(i,j)         ->
-      state.board |. flip i j
+    | Next -> state.board |> (next state.rule)
+    | Previous -> begin match state.previous with
+      | [] -> Matrix.make 0 0 Dead
+      | hd::_ -> hd
+    end
+    | Reset -> Matrix.make (Matrix.width state.board) (Matrix.height state.board) Dead
+    | Click(i,j) -> state.board |> flip i j
     | ClickThenNext(i,j) ->
-      state.board |. flip i j |> (next state.rule)
-    | Select(_,_)        ->
-      state.board
-    | SetBoard(board)    -> board
-    | SetBoardFromSeed(str) ->
-      [%raw {| JSON.parse($$event[0]) |}]
-    | SetX(x) -> resize_x state.board x
-    | SetY(y) -> resize_y state.board y
-    | Clamp ->
-      clamp state.board
-    | _            ->
-      state.board
+      state.board |> flip i j |> (next state.rule)
+    | SetBoard(board) -> board
+    | SetBoardFromSeed(str) -> [%raw {| JSON.parse($$event[0]) |}]
+    | SetX(x) -> resize state.board x h
+    | SetY(y) -> resize state.board w y
+    | Clamp -> clamp state.board
+    | _ -> state.board
   in
 
   let cmd = match event with
     | Clamp -> Tea.Cmd.NoCmd
+    | KeyPressed k       ->
+      begin
+        match k.key_code with
+        | 13 (* Enter *) | 32 (* Space *) -> msg Next
+        | _ -> NoCmd
+      end
     | _ -> (if state.auto_clamp then (Tea.Cmd.msg Clamp) else Tea.Cmd.NoCmd)
   in
 

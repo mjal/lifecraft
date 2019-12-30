@@ -2,7 +2,7 @@
 
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as $$Array from "../node_modules/bs-platform/lib/es6/array.js";
-import * as Matrix from "./Matrix.bs.js";
+import * as Matrix from "./matrix.bs.js";
 import * as Tea_cmd from "../node_modules/bucklescript-tea/src-ocaml/tea_cmd.js";
 import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
 import * as Caml_builtin_exceptions from "../node_modules/bs-platform/lib/es6/caml_builtin_exceptions.js";
@@ -162,51 +162,36 @@ function next(rule, board) {
   return Matrix.mapij(next_one, board);
 }
 
-function flip_if_equal(i, j, i2, j2, e) {
-  if (i === i2 && j === j2) {
-    if (e) {
-      return /* Dead */0;
-    } else {
-      return /* Alive */1;
-    }
-  } else {
-    return e;
-  }
-}
-
-function flip(board, i, j) {
+function flip(i, j, board) {
   return Matrix.mapij((function (param, param$1, param$2) {
-                return flip_if_equal(i, j, param, param$1, param$2);
-              }), board);
-}
-
-function resize_x(board, x) {
-  var w = Matrix.width(board);
-  var h = Matrix.height(board);
-  if (x < w) {
-    return $$Array.sub(board, 0, x);
-  } else {
-    var board2 = Matrix.make(x, h, /* Dead */0);
-    $$Array.blit(board, 0, board, 0, w);
-    return board2;
-  }
-}
-
-function resize_y(board, y) {
-  Matrix.width(board);
-  var h = Matrix.height(board);
-  return $$Array.map((function (row) {
-                if (y < h) {
-                  return $$Array.sub(row, 0, y);
+                var i$1 = i;
+                var j$1 = j;
+                var i2 = param;
+                var j2 = param$1;
+                var e = param$2;
+                if (i$1 === i2 && j$1 === j2) {
+                  if (e) {
+                    return /* Dead */0;
+                  } else {
+                    return /* Alive */1;
+                  }
                 } else {
-                  var row2 = Caml_array.caml_make_vect(y, /* Dead */0);
-                  $$Array.blit(row, 0, row2, 0, h);
-                  return row2;
+                  return e;
                 }
               }), board);
 }
 
+function resize(board, x, y) {
+  var w = Matrix.width(board);
+  var h = Matrix.height(board);
+  var a = Matrix.make(x, y, /* Dead */0);
+  Matrix.blit(board, 0, 0, a, x, y, w, h);
+  return a;
+}
+
 function update(state, $$event) {
+  var w = Matrix.width(state.board);
+  var h = Matrix.height(state.board);
   var board;
   if (typeof $$event === "number") {
     switch ($$event) {
@@ -221,7 +206,7 @@ function update(state, $$event) {
           board = clamp(state.board);
           break;
       case /* Reset */5 :
-          board = Matrix.make(state.size.x, state.size.y, /* Dead */0);
+          board = Matrix.make(Matrix.width(state.board), Matrix.height(state.board), /* Dead */0);
           break;
       default:
         board = state.board;
@@ -229,13 +214,10 @@ function update(state, $$event) {
   } else {
     switch ($$event.tag | 0) {
       case /* Click */0 :
-          board = flip(state.board, $$event[0], $$event[1]);
+          board = flip($$event[0], $$event[1], state.board);
           break;
       case /* ClickThenNext */1 :
-          board = next(state.rule, flip(state.board, $$event[0], $$event[1]));
-          break;
-      case /* Select */2 :
-          board = state.board;
+          board = next(state.rule, flip($$event[0], $$event[1], state.board));
           break;
       case /* SetBoard */3 :
           board = $$event[0];
@@ -244,24 +226,24 @@ function update(state, $$event) {
           board = ( JSON.parse($$event[0]) );
           break;
       case /* SetX */6 :
-          board = resize_x(state.board, $$event[0]);
+          board = resize(state.board, $$event[0], h);
           break;
       case /* SetY */7 :
-          board = resize_y(state.board, $$event[0]);
-          break;
-      case /* KeyPressed */9 :
-          var match$1 = $$event[0].key_code;
-          board = match$1 !== 13 && match$1 !== 32 ? state.board : next(state.rule, state.board);
+          board = resize(state.board, w, $$event[0]);
           break;
       default:
         board = state.board;
     }
   }
-  var cmd = typeof $$event === "number" ? (
-      $$event !== 4 && state.auto_clamp ? Tea_cmd.msg(/* Clamp */4) : /* NoCmd */0
-    ) : (
-      state.auto_clamp ? Tea_cmd.msg(/* Clamp */4) : /* NoCmd */0
-    );
+  var cmd;
+  if (typeof $$event === "number") {
+    cmd = $$event === /* Clamp */4 || !state.auto_clamp ? /* NoCmd */0 : Tea_cmd.msg(/* Clamp */4);
+  } else if ($$event.tag === /* KeyPressed */9) {
+    var match$1 = $$event[0].key_code;
+    cmd = match$1 !== 13 && match$1 !== 32 ? /* NoCmd */0 : Tea_cmd.msg(/* Next */1);
+  } else {
+    cmd = state.auto_clamp ? Tea_cmd.msg(/* Clamp */4) : /* NoCmd */0;
+  }
   return /* tuple */[
           board,
           cmd
@@ -271,10 +253,8 @@ function update(state, $$event) {
 export {
   clamp ,
   next ,
-  flip_if_equal ,
   flip ,
-  resize_x ,
-  resize_y ,
+  resize ,
   update ,
   
 }

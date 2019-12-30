@@ -19,16 +19,12 @@ type event =
   | Clamp
   | Reset
 
-type size = { x: int; y: int }
 type seed = { name: string; str: string }
 
 type state = {
-  size: size;
   board: cell array array;
   previous: cell array array list;
   seeds: seed list;
   rule: rule;
   auto_clamp: bool;
 }
-
-type pointer = { x: int; y: int; i: int; j: int; inside: bool; selecting: bool }
