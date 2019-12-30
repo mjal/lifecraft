@@ -18,5 +18,3 @@ tmux send-keys "python server.py" C-m
 tmux selectp -t 1
 
 tmux attach-session -t lifecraft
-
-firefox localhost:8000
