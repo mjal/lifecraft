@@ -33,31 +33,50 @@ let rec parse_header o l =
   match (o.state, l) with
   | _, ' ' :: tl -> parse_header o tl
   | _, '=' :: tl -> parse_header o tl
+  | _, ',' :: tl -> parse_header o tl
   | FindX, 'x' :: tl -> parse_header {o with state = ParseX } tl
   | FindY, 'y' :: tl -> parse_header {o with state = ParseY } tl
   | ParseX, '0'..'9' :: _ ->
       let l2, x = parse_int l in
       parse_header {o with x; state = FindY } l2
   | ParseY, '0'..'9' :: _tl ->
-      let _l2, y = parse_int l in
-      {o with y; state = Reading }
+      let l2, y = parse_int l in
+      parse_header {o with y; state = Reading } l2
+  | Reading, _ -> o
   | _, c :: _ -> raise (Invalid_argument (String.make 1 c))
   | _, []     -> raise (Failure "Incomplete header")
 
+let print_list l =
+  List.iter (fun e -> print_string (String.make 1 e)) l;
+  print_string "\n";
+;;
+
+let print_cell_list l =
+  List.iter (fun e -> print_string (if e = Dead then "x" else "o")) l;
+  print_string "\n";
+;;
+
 let parse_map o l =
-  let rec f n l =
+  let rec f n o l =
     match l with
-    | '0'..'9' :: _tl -> let l2, n = parse_int l in f n l2
-    | 'b' :: _tl -> {o with line = (List.init n (fun _ -> Dead))  @ o.line}
-    | 'o' :: _tl -> {o with line = (List.init n (fun _ -> Alive)) @ o.line}
-    | '$' :: _tl -> {o with line = []; grid = o.line :: o.grid}
-    | '!' :: _tl -> {o with state = End}
+    | '0'..'9' :: _tl -> let l2, n = parse_int l in f n o l2
+    | 'b' :: tl ->
+       let line = (List.init n (fun _ -> Dead))  @ o.line in
+       f 1 {o with line} tl
+    | 'o' :: tl ->
+       let line = (List.init n (fun _ -> Alive))  @ o.line in
+       f 1 {o with line} tl
+    | '$' :: tl ->
+       let grid = o.line :: o.grid in
+       f 1 {o with line = []; grid} tl
+    | '!' :: tl -> f 1 {o with state = End} tl
     | c   :: _ -> raise (Invalid_argument (String.make 1 c))
     | [] -> o
-  in f 1 l
+  in f 1 o l
 
 let parse_line o s =
   let l = explode s in
+  if l = [] then o else
   let c = List.hd l in
   if c = '#' then o
   else if o.state = FindX then parse_header o l
@@ -72,8 +91,29 @@ let parse o text =
   let ss = String.split_on_char '\n' text in
   parse_lines o ss
 
-let o = {x = 0; y = 0; state = FindX; line = []; grid = [] }
+let o = {x = 0; y = 0; state = FindX; line = []; grid = [] };;
 
-let r = parse_header o @@ explode "x 1 y 123";;
+#use "topfind";;
+#require "extlib";;
+let file = (Std.input_file "test.rle");;
 
-Printf.printf "x = %d y = %d" r.x r.y;
+let r = parse o file;;
+Printf.printf "x = %d y = %d\n" r.x r.y;
+
+let rec print_grid_line = function
+  | Dead :: tl ->
+     print_string "x";
+     print_grid_line tl
+  | Alive :: tl ->
+     print_string "o";
+     print_grid_line tl
+  | [] -> ()
+in
+let rec print_grid = function
+  | hd::tl ->
+     print_grid_line hd;
+     print_string "\n";
+     print_grid tl;
+  | _ -> ();
+in       
+print_grid r.grid;;
