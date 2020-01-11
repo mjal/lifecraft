@@ -6,7 +6,7 @@
     "build": "bsb -make-world",
     "watch": "bsb -make-world -w",
     "bundle": "rollup src/main.bs.js --format esm --file bundle.js",
-    "watch-bundle": "rollup src/main.bs.js --format esm --file bundle.js --watch"
+    "watch-bundle": "rollup src/index.js --format iife --file index.js --watch"
   },
   "keywords": [
     "BuckleScript"
@@ -16,5 +16,8 @@
   "devDependencies": {
     "bs-platform": "^7.0.1",
     "bucklescript-tea": "^0.12.1"
+  },
+  "dependencies": {
+    "bs-fetch": "^0.5.0"
   }
 }

@@ -10,12 +10,14 @@ html, body {
 #container {
   height: 100%;
 }
-#left-side {}
+#left-side {
+  width: 30%;
+}
 #center {
+  width: 70%;
   display: relative;
 }
 #right-side {}
-#center {}
 .board {
   height: 600px;
   display: flex;
@@ -28,3 +30,4 @@ html, body {
 }
 .alive { background-color: black; }
 .dead { background-color: lightgrey; }
+.small-i { width: 30px; }
