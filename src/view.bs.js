@@ -38,44 +38,45 @@ function view_link(title, msg) {
             ]);
 }
 
-function rules(model) {
-  return List.cons(Tea_html.select(undefined, undefined, /* :: */[
-                  Tea_html.onChange(undefined, (function (i) {
-                          var match = Caml_format.caml_int_of_string(i);
-                          if (match !== 0) {
-                            return /* SetRule */Block.__(8, [/* B36S23 */1]);
-                          } else {
-                            return /* SetRule */Block.__(8, [/* B3S23 */0]);
-                          }
-                        })),
+function rules_select(model) {
+  var rules = /* :: */[
+    /* tuple */[
+      "B3S23",
+      /* B3S23 */0,
+      0
+    ],
+    /* :: */[
+      /* tuple */[
+        "B36S23",
+        /* B36S23 */1,
+        1
+      ],
+      /* [] */0
+    ]
+  ];
+  var change_rule = function (str) {
+    var i = Caml_format.caml_int_of_string(str);
+    var res = List.find((function (e) {
+            return i === e[2];
+          }), rules);
+    return /* SetRule */Block.__(8, [res[1]]);
+  };
+  var rules_option = function (tuple) {
+    return Tea_html.option$prime(undefined, undefined, /* :: */[
+                Tea_html.value(String(tuple[2])),
+                /* :: */[
+                  Tea_html.Attributes.selected(model.rule === tuple[1]),
                   /* [] */0
-                ], /* :: */[
-                  Tea_html.option$prime(undefined, undefined, /* :: */[
-                        Tea_html.value("0"),
-                        /* :: */[
-                          Tea_html.Attributes.selected(model.rule === /* B3S23 */0),
-                          /* [] */0
-                        ]
-                      ], /* :: */[
-                        Tea_html.text("B3S23"),
-                        /* [] */0
-                      ]),
-                  /* :: */[
-                    Tea_html.option$prime(undefined, undefined, /* :: */[
-                          Tea_html.value("1"),
-                          /* :: */[
-                            Tea_html.Attributes.selected(model.rule === /* B36S23 */1),
-                            /* [] */0
-                          ]
-                        ], /* :: */[
-                          Tea_html.text("B36S23"),
-                          /* [] */0
-                        ]),
-                    /* [] */0
-                  ]
-                ]), List.map((function (s) {
-                    return view_link(s.name, /* SetBoardFromSeed */Block.__(4, [s.str]));
-                  }), model.seeds));
+                ]
+              ], /* :: */[
+                Tea_html.text(tuple[0]),
+                /* [] */0
+              ]);
+  };
+  return Tea_html.select(undefined, undefined, /* :: */[
+              Tea_html.onChange(undefined, change_rule),
+              /* [] */0
+            ], List.map(rules_option, rules));
 }
 
 function view(model) {
@@ -88,18 +89,105 @@ function view(model) {
             ], /* :: */[
               Tea_html.div(undefined, undefined, /* :: */[
                     Tea_html.id("left-side"),
+                    /* [] */0
+                  ], /* :: */[
+                    rules_select(model),
                     /* :: */[
-                      Tea_html.class$prime("flex-1"),
-                      /* [] */0
+                      Tea_html.div(undefined, undefined, /* [] */0, List.map((function (s) {
+                                  return view_link(s.name, /* SetBoardFromSeed */Block.__(4, [s.str]));
+                                }), model.seeds)),
+                      /* :: */[
+                        Tea_html.a(undefined, undefined, /* :: */[
+                              Tea_html.href("#"),
+                              /* :: */[
+                                Tea_html.onClick(/* Fetch */Block.__(10, ["test.rle"])),
+                                /* [] */0
+                              ]
+                            ], /* :: */[
+                              Tea_html.text("Hello"),
+                              /* [] */0
+                            ]),
+                        /* :: */[
+                          Tea_html.a(undefined, undefined, /* :: */[
+                                Tea_html.href("#"),
+                                /* :: */[
+                                  Tea_html.onClick(/* Fetch */Block.__(10, ["elephant.rle"])),
+                                  /* [] */0
+                                ]
+                              ], /* :: */[
+                                Tea_html.text("Elephant"),
+                                /* [] */0
+                              ]),
+                          /* :: */[
+                            Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
+                                  Tea_html.span(undefined, undefined, /* [] */0, /* :: */[
+                                        Tea_html.text("x = "),
+                                        /* [] */0
+                                      ]),
+                                  /* :: */[
+                                    Tea_html.input$prime(undefined, undefined, /* :: */[
+                                          Tea_html.type$prime("text"),
+                                          /* :: */[
+                                            Tea_html.class$prime("small-i"),
+                                            /* :: */[
+                                              Tea_html.value(String(Matrix.width(model.board))),
+                                              /* :: */[
+                                                Tea_html.onInput(undefined, (function (x) {
+                                                        return /* SetX */Block.__(6, [Caml_format.caml_int_of_string(x)]);
+                                                      })),
+                                                /* [] */0
+                                              ]
+                                            ]
+                                          ]
+                                        ], /* [] */0),
+                                    /* :: */[
+                                      Tea_html.span(undefined, undefined, /* [] */0, /* :: */[
+                                            Tea_html.text("y = "),
+                                            /* [] */0
+                                          ]),
+                                      /* :: */[
+                                        Tea_html.input$prime(undefined, undefined, /* :: */[
+                                              Tea_html.type$prime("text"),
+                                              /* :: */[
+                                                Tea_html.class$prime("small-i"),
+                                                /* :: */[
+                                                  Tea_html.value(String(Matrix.height(model.board))),
+                                                  /* :: */[
+                                                    Tea_html.onInput(undefined, (function (y) {
+                                                            return /* SetY */Block.__(7, [Caml_format.caml_int_of_string(y)]);
+                                                          })),
+                                                    /* [] */0
+                                                  ]
+                                                ]
+                                              ]
+                                            ], /* [] */0),
+                                        /* :: */[
+                                          view_button("Clamp", /* Clamp */4),
+                                          /* [] */0
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ]),
+                            /* :: */[
+                              Tea_html.div(undefined, undefined, /* :: */[
+                                    Tea_html.class$prime("flex"),
+                                    /* [] */0
+                                  ], /* :: */[
+                                    model.auto_clamp ? view_button("Auto clamp: On", /* ToggleAutoClamp */3) : view_button("Auto clamp: Off", /* ToggleAutoClamp */3),
+                                    /* [] */0
+                                  ]),
+                              /* [] */0
+                            ]
+                          ]
+                        ]
+                      ]
                     ]
-                  ], rules(model)),
+                  ]),
               /* :: */[
                 Tea_html.div(undefined, undefined, /* :: */[
                       Tea_html.id("center"),
-                      /* :: */[
-                        Tea_html.class$prime("flex-1"),
-                        /* [] */0
-                      ]
+                      /* [] */0
                     ], /* :: */[
                       Tea_html.div(undefined, undefined, /* :: */[
                             Tea_html.class$prime("flex"),
@@ -177,86 +265,7 @@ function view(model) {
                         ]
                       ]
                     ]),
-                /* :: */[
-                  Tea_html.div(undefined, undefined, /* :: */[
-                        Tea_html.id("right-side"),
-                        /* :: */[
-                          Tea_html.class$prime("flex-1"),
-                          /* [] */0
-                        ]
-                      ], /* :: */[
-                        Tea_html.div(undefined, undefined, /* :: */[
-                              Tea_html.class$prime("flex"),
-                              /* [] */0
-                            ], /* :: */[
-                              Tea_html.span(undefined, undefined, /* :: */[
-                                    Tea_html.class$prime("flex-1"),
-                                    /* [] */0
-                                  ], /* :: */[
-                                    Tea_html.text("x = "),
-                                    /* [] */0
-                                  ]),
-                              /* :: */[
-                                Tea_html.input$prime(undefined, undefined, /* :: */[
-                                      Tea_html.class$prime("flex-1"),
-                                      /* :: */[
-                                        Tea_html.type$prime("text"),
-                                        /* :: */[
-                                          Tea_html.value(String(Matrix.width(model.board))),
-                                          /* :: */[
-                                            Tea_html.onInput(undefined, (function (x) {
-                                                    return /* SetX */Block.__(6, [Caml_format.caml_int_of_string(x)]);
-                                                  })),
-                                            /* [] */0
-                                          ]
-                                        ]
-                                      ]
-                                    ], /* [] */0),
-                                /* :: */[
-                                  Tea_html.span(undefined, undefined, /* :: */[
-                                        Tea_html.class$prime("flex-1"),
-                                        /* [] */0
-                                      ], /* :: */[
-                                        Tea_html.text("y = "),
-                                        /* [] */0
-                                      ]),
-                                  /* :: */[
-                                    Tea_html.input$prime(undefined, undefined, /* :: */[
-                                          Tea_html.class$prime("flex-1"),
-                                          /* :: */[
-                                            Tea_html.type$prime("text"),
-                                            /* :: */[
-                                              Tea_html.value(String(Matrix.height(model.board))),
-                                              /* :: */[
-                                                Tea_html.onInput(undefined, (function (y) {
-                                                        return /* SetY */Block.__(7, [Caml_format.caml_int_of_string(y)]);
-                                                      })),
-                                                /* [] */0
-                                              ]
-                                            ]
-                                          ]
-                                        ], /* [] */0),
-                                    /* :: */[
-                                      view_button("Clamp", /* Clamp */4),
-                                      /* [] */0
-                                    ]
-                                  ]
-                                ]
-                              ]
-                            ]),
-                        /* :: */[
-                          Tea_html.div(undefined, undefined, /* :: */[
-                                Tea_html.class$prime("flex"),
-                                /* [] */0
-                              ], /* :: */[
-                                model.auto_clamp ? view_button("Auto clamp: On", /* ToggleAutoClamp */3) : view_button("Auto clamp: Off", /* ToggleAutoClamp */3),
-                                /* [] */0
-                              ]),
-                          /* [] */0
-                        ]
-                      ]),
-                  /* [] */0
-                ]
+                /* [] */0
               ]
             ]);
 }
@@ -264,7 +273,7 @@ function view(model) {
 export {
   view_button ,
   view_link ,
-  rules ,
+  rules_select ,
   view ,
   
 }

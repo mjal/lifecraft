@@ -2,25 +2,21 @@ open Global
 open Tea.Cmd
 
 let clamp board =
-  let x1 = try Matrix.findi (Array.exists ((=) Alive)) board with Not_found -> 0 in
-  let x2 = try Matrix.findri (Array.exists ((=) Alive)) board with Not_found -> 0 in
-  let y1 = try Matrix.vfindi ((=) Alive) board with Not_found -> 0 in
-  let y2 = try Matrix.vfindri ((=) Alive) board with Not_found -> 0 in
-  let board2 = Array.make_matrix (x2 - x1 + 3) (y2 - y1 + 3) Dead in
-  let () = Matrix.blit board x1 y1 board2 1 1 (x2 - x1 + 1) (y2 - y1 + 1) in
+  let is_alive = ((=) Alive) in
+  let x1, x2, y1, y2 = try 
+    (Matrix.findi is_alive board, Matrix.findri is_alive board,
+    Matrix.vfindi is_alive board, Matrix.vfindri is_alive board)
+  with Not_found -> (0,0,0,0) in
+  let w, h = (x2 - x1, y2 - y1) in
+  let board2 = Array.make_matrix (w + 3) (h + 3) Dead in
+  let () = Matrix.blit board x1 y1 board2 1 1 (w + 1) (h + 1) in
   board2
 
 let next rule board =
   let is_alive coords =
     let (i,j) = coords in
-    if i < 0 || i >= Array.length board
-    || j < 0 || j >= Array.length board.(0)
-    then
-      0
-    else
-      let row = Array.get board i in
-      let cell = Array.get row j in
-      match cell with | Dead -> 0 | Alive -> 1
+    if i < 0 || i >= Array.length board || j < 0 || j >= Array.length board.(0)
+    then 0 else match board.(i).(j) with | Dead -> 0 | Alive -> 1
   in 
   let sum_neighbourg x y =
     let offsets = [(-1,-1); (-1, 0); (-1, 1); (0, -1); (*(0, 0);*) (0, 1); (1, -1); (1, 0); (1, 1)] in

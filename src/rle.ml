@@ -1,4 +1,4 @@
-type cell = Dead | Alive
+open Global
 
 type state = FindX | ParseX | FindY | ParseY | Reading | End
 
@@ -6,8 +6,7 @@ type header = {
   state: state;
   line: cell list;
   grid: cell list list;
-  x: int;
-  y: int;
+  x: int; y: int;
 }
 
 let explode s =
@@ -49,12 +48,12 @@ let rec parse_header o l =
 let print_list l =
   List.iter (fun e -> print_string (String.make 1 e)) l;
   print_string "\n";
-;;
+  ()
 
 let print_cell_list l =
   List.iter (fun e -> print_string (if e = Dead then "x" else "o")) l;
   print_string "\n";
-;;
+  ()
 
 let parse_map o l =
   let rec f n o l =
@@ -87,18 +86,25 @@ let rec parse_lines o ss =
   | [] -> o
   | s :: tl -> parse_lines (parse_line o s) tl
 
-let parse o text = 
+let to_array o =
+  let dx = o.x - List.length o.grid in
+  let grid = o.grid (* if dx > 0 then o.grid @@ (List.init dx [||]) else o.grid in *) in
+  let resize_row n l =
+    let n2 = List.length l in
+    if n2 < n then List.append l (List.init (n - n2) (fun  _ -> Dead))
+    else if n2 > n then l (* TODO : clamp_list *)
+    else l
+  in
+  let grid2 = List.map (resize_row o.x) grid in
+  let grid3 = List.map (List.rev) grid2 in
+  Array.of_list (List.rev_map Array.of_list grid3)
+
+
+let parse text = 
+  let o = {x = 0; y = 0; state = FindX; line = []; grid = [] } in
   let ss = String.split_on_char '\n' text in
-  parse_lines o ss
-
-let o = {x = 0; y = 0; state = FindX; line = []; grid = [] };;
-
-#use "topfind";;
-#require "extlib";;
-let file = (Std.input_file "test.rle");;
-
-let r = parse o file;;
-Printf.printf "x = %d y = %d\n" r.x r.y;
+  let o2 = parse_lines o ss in
+  to_array o2
 
 let rec print_grid_line = function
   | Dead :: tl ->
@@ -108,12 +114,23 @@ let rec print_grid_line = function
      print_string "o";
      print_grid_line tl
   | [] -> ()
-in
+
 let rec print_grid = function
   | hd::tl ->
      print_grid_line hd;
      print_string "\n";
      print_grid tl;
   | _ -> ();
-in       
+
+(*
+let o = {x = 0; y = 0; state = FindX; line = []; grid = [] };;
+
+#use "topfind";;
+#require "extlib";;
+let file = (Std.input_file "test.rle");;
+
+let r = parse o file;;
+
+Printf.printf "x = %d y = %d\n" r.x r.y;
 print_grid r.grid;;
+*)

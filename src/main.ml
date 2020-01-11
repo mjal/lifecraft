@@ -35,17 +35,17 @@ let update state event =
     | ToggleAutoClamp -> not state.auto_clamp
     | _ -> state.auto_clamp
   in
-  ( { (*state with*) board; previous; seeds; rule; auto_clamp },
-    cmd (* Cmd.Batch *) )
+  let cmd2 = match event with
+  | Fetch (url) -> Tea.Http.getString url |> Tea.Http.send lifeData
+  | _ -> cmd in
+  let board2 = match event with
+  | LifeData (Ok data) -> Rle.parse data;
+  | LifeData (Error _e) -> board;
+  | _ -> board in
+  ( { (*state with*) board = board2; previous; seeds; rule; auto_clamp },
+    cmd2 (* Cmd.Batch *) )
 
 let subscriptions _ = Keyboard.downs (fun k -> KeyPressed k)
 
 let main =
-  program
-    {
-      init;
-      update;
-      view = View.view;
-      subscriptions;
-      shutdown = (fun _ -> NoCmd);
-    }
+  program { init; update; view = View.view; subscriptions; shutdown = (fun _ -> NoCmd); }

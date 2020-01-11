@@ -37,7 +37,7 @@ function findi(f, a) {
     if (i >= a$1.length) {
       throw Caml_builtin_exceptions.not_found;
     }
-    if (Curry._1(f$1, Caml_array.caml_array_get(a$1, i))) {
+    if ($$Array.exists(f$1, Caml_array.caml_array_get(a$1, i))) {
       return i;
     } else {
       _i = i + 1 | 0;
@@ -55,7 +55,7 @@ function findri(f, a) {
     if (i < 0) {
       throw Caml_builtin_exceptions.not_found;
     }
-    if (Curry._1(f$1, Caml_array.caml_array_get(a$1, i))) {
+    if ($$Array.exists(f$1, Caml_array.caml_array_get(a$1, i))) {
       return i;
     } else {
       _i = i - 1 | 0;

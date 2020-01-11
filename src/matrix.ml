@@ -13,17 +13,17 @@ let mapij f matrix =
   matrix  |> Array.mapi (fun i row -> row
           |> Array.mapi (fun j e -> f i j e))
 
-let findi (f: 'a array -> bool) (a: 'a array array) =
+let findi (f: 'a -> bool) (a: 'a array array) =
   let rec findi2 f a i =
     if i >= Array.length a then raise Not_found
-    else if f a.(i) then i
+    else if Array.exists f a.(i) then i
     else findi2 f a (i+1)
   in findi2 f a 0
 
-let findri (f: 'a array -> bool) (a: 'a array array) =
+let findri (f: 'a -> bool) (a: 'a array array) =
   let rec findri2 f a i =
     if i < 0 then raise Not_found
-    else if f a.(i) then i
+    else if Array.exists f a.(i) then i
     else findri2 f a (i-1)
   in findri2 f a ((Array.length a)-1)
 

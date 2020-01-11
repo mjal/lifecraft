@@ -8,64 +8,36 @@ import * as Caml_array from "../node_modules/bs-platform/lib/es6/caml_array.js";
 import * as Caml_builtin_exceptions from "../node_modules/bs-platform/lib/es6/caml_builtin_exceptions.js";
 
 function clamp(board) {
-  var x1;
+  var is_alive = function (param) {
+    return /* Alive */1 === param;
+  };
+  var match;
   try {
-    x1 = Matrix.findi((function (param) {
-            return $$Array.exists((function (param) {
-                          return /* Alive */1 === param;
-                        }), param);
-          }), board);
+    match = /* tuple */[
+      Matrix.findi(is_alive, board),
+      Matrix.findri(is_alive, board),
+      Matrix.vfindi(is_alive, board),
+      Matrix.vfindri(is_alive, board)
+    ];
   }
   catch (exn){
     if (exn === Caml_builtin_exceptions.not_found) {
-      x1 = 0;
+      match = /* tuple */[
+        0,
+        0,
+        0,
+        0
+      ];
     } else {
       throw exn;
     }
   }
-  var x2;
-  try {
-    x2 = Matrix.findri((function (param) {
-            return $$Array.exists((function (param) {
-                          return /* Alive */1 === param;
-                        }), param);
-          }), board);
-  }
-  catch (exn$1){
-    if (exn$1 === Caml_builtin_exceptions.not_found) {
-      x2 = 0;
-    } else {
-      throw exn$1;
-    }
-  }
-  var y1;
-  try {
-    y1 = Matrix.vfindi((function (param) {
-            return /* Alive */1 === param;
-          }), board);
-  }
-  catch (exn$2){
-    if (exn$2 === Caml_builtin_exceptions.not_found) {
-      y1 = 0;
-    } else {
-      throw exn$2;
-    }
-  }
-  var y2;
-  try {
-    y2 = Matrix.vfindri((function (param) {
-            return /* Alive */1 === param;
-          }), board);
-  }
-  catch (exn$3){
-    if (exn$3 === Caml_builtin_exceptions.not_found) {
-      y2 = 0;
-    } else {
-      throw exn$3;
-    }
-  }
-  var board2 = $$Array.make_matrix((x2 - x1 | 0) + 3 | 0, (y2 - y1 | 0) + 3 | 0, /* Dead */0);
-  Matrix.blit(board, x1, y1, board2, 1, 1, (x2 - x1 | 0) + 1 | 0, (y2 - y1 | 0) + 1 | 0);
+  var y1 = match[2];
+  var x1 = match[0];
+  var w = match[1] - x1 | 0;
+  var h = match[3] - y1 | 0;
+  var board2 = $$Array.make_matrix(w + 3 | 0, h + 3 | 0, /* Dead */0);
+  Matrix.blit(board, x1, y1, board2, 1, 1, w + 1 | 0, h + 1 | 0);
   return board2;
 }
 
@@ -76,9 +48,8 @@ function next(rule, board) {
     if (i < 0 || i >= board.length || j < 0 || j >= Caml_array.caml_array_get(board, 0).length) {
       return 0;
     } else {
-      var row = Caml_array.caml_array_get(board, i);
-      var cell = Caml_array.caml_array_get(row, j);
-      if (cell) {
+      var match = Caml_array.caml_array_get(Caml_array.caml_array_get(board, i), j);
+      if (match) {
         return 1;
       } else {
         return 0;

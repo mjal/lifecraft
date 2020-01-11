@@ -17,7 +17,10 @@ type event =
   | KeyPressed of Keyboard.key_event
   | ToggleAutoClamp
   | Clamp
+  | Fetch of string
+  | LifeData of (string, string Tea.Http.error) Tea.Result.t
   | Reset
+[@@bs.deriving {accessors}]
 
 type seed = { name: string; str: string }
 
