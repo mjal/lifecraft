@@ -12,6 +12,10 @@
 <body>
   <div id="app">
   </div>
-  <script src="index.js"></script>
+  <script type="module">
+    import { main } from './src/main.bs.js'
+    main(document.getElementById("app"))
+  </script>
+  <!--script src="bundle.js"></script-->
 </body>
 </html>
