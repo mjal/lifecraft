@@ -5,7 +5,7 @@ tmux start-server
 tmux new-session -d -s lifecraft
 
 tmux selectp -t 1 
-tmux send-keys "vim src/demo.ml +NERDTreeToggle" C-m 
+tmux send-keys "vim src/main.ml +NERDTreeToggle" C-m 
 
 # Split pane 1 horizontal by 65%, start redis-server
 tmux splitw -v -p 30
