@@ -42,7 +42,7 @@ function seed_link(param) {
               Tea_html.a(undefined, undefined, /* :: */[
                     Tea_html.href("#"),
                     /* :: */[
-                      Tea_html.onClick(/* Fetch */Block.__(9, [param[1]])),
+                      Tea_html.onClick(/* Fetch */Block.__(10, [param[1]])),
                       /* [] */0
                     ]
                   ], /* :: */[
@@ -78,6 +78,31 @@ function select_rule(model) {
             ], List.map(rules_option, Global.rule_list));
 }
 
+function select_backend(model) {
+  var backend_option = function (param) {
+    return Tea_html.option$prime(undefined, undefined, /* :: */[
+                Tea_html.value(String(param[2])),
+                /* :: */[
+                  Tea_html.Attributes.selected(model.backend === param[1]),
+                  /* [] */0
+                ]
+              ], /* :: */[
+                Tea_html.text(param[0]),
+                /* [] */0
+              ]);
+  };
+  return Tea_html.select(undefined, undefined, /* :: */[
+              Tea_html.onChange(undefined, (function (v) {
+                      var i = Caml_format.caml_int_of_string(v);
+                      var match = List.find((function (param) {
+                              return i === param[2];
+                            }), Global.backend_list);
+                      return /* SetBackend */Block.__(8, [match[1]]);
+                    })),
+              /* [] */0
+            ], List.map(backend_option, Global.backend_list));
+}
+
 function params_form(model) {
   return Tea_html.div(undefined, undefined, /* :: */[
               Tea_html.class$prime("flex"),
@@ -85,64 +110,67 @@ function params_form(model) {
             ], /* :: */[
               select_rule(model),
               /* :: */[
-                Tea_html.span(undefined, undefined, /* :: */[
-                      Tea_html.class$prime("label-i"),
-                      /* [] */0
-                    ], /* :: */[
-                      Tea_html.text("x = "),
-                      /* [] */0
-                    ]),
+                select_backend(model),
                 /* :: */[
-                  Tea_html.input$prime(undefined, undefined, /* :: */[
-                        Tea_html.type$prime("text"),
-                        /* :: */[
-                          Tea_html.class$prime("small-i"),
-                          /* :: */[
-                            Tea_html.value(String(Matrix.width(model.board))),
-                            /* :: */[
-                              Tea_html.onInput(undefined, (function (x) {
-                                      return /* Resize */Block.__(4, [
-                                                Caml_format.caml_int_of_string(x),
-                                                Matrix.height(model.board)
-                                              ]);
-                                    })),
-                              /* [] */0
-                            ]
-                          ]
-                        ]
-                      ], /* [] */0),
+                  Tea_html.span(undefined, undefined, /* :: */[
+                        Tea_html.class$prime("label-i"),
+                        /* [] */0
+                      ], /* :: */[
+                        Tea_html.text("x = "),
+                        /* [] */0
+                      ]),
                   /* :: */[
-                    Tea_html.span(undefined, undefined, /* :: */[
-                          Tea_html.class$prime("label-i"),
-                          /* [] */0
-                        ], /* :: */[
-                          Tea_html.text("y = "),
-                          /* [] */0
-                        ]),
-                    /* :: */[
-                      Tea_html.input$prime(undefined, undefined, /* :: */[
-                            Tea_html.type$prime("text"),
+                    Tea_html.input$prime(undefined, undefined, /* :: */[
+                          Tea_html.type$prime("text"),
+                          /* :: */[
+                            Tea_html.class$prime("small-i"),
                             /* :: */[
-                              Tea_html.class$prime("small-i"),
+                              Tea_html.value(String(Matrix.width(model.board))),
                               /* :: */[
-                                Tea_html.value(String(Matrix.height(model.board))),
-                                /* :: */[
-                                  Tea_html.onInput(undefined, (function (y) {
-                                          return /* Resize */Block.__(4, [
-                                                    Matrix.width(model.board),
-                                                    Caml_format.caml_int_of_string(y)
-                                                  ]);
-                                        })),
-                                  /* [] */0
-                                ]
+                                Tea_html.onInput(undefined, (function (x) {
+                                        return /* Resize */Block.__(4, [
+                                                  Caml_format.caml_int_of_string(x),
+                                                  Matrix.height(model.board)
+                                                ]);
+                                      })),
+                                /* [] */0
                               ]
                             ]
-                          ], /* [] */0),
+                          ]
+                        ], /* [] */0),
+                    /* :: */[
+                      Tea_html.span(undefined, undefined, /* :: */[
+                            Tea_html.class$prime("label-i"),
+                            /* [] */0
+                          ], /* :: */[
+                            Tea_html.text("y = "),
+                            /* [] */0
+                          ]),
                       /* :: */[
-                        view_button("Resize", /* Clamp */5),
+                        Tea_html.input$prime(undefined, undefined, /* :: */[
+                              Tea_html.type$prime("text"),
+                              /* :: */[
+                                Tea_html.class$prime("small-i"),
+                                /* :: */[
+                                  Tea_html.value(String(Matrix.height(model.board))),
+                                  /* :: */[
+                                    Tea_html.onInput(undefined, (function (y) {
+                                            return /* Resize */Block.__(4, [
+                                                      Matrix.width(model.board),
+                                                      Caml_format.caml_int_of_string(y)
+                                                    ]);
+                                          })),
+                                    /* [] */0
+                                  ]
+                                ]
+                              ]
+                            ], /* [] */0),
                         /* :: */[
-                          model.auto_clamp ? view_button("Auto: On", /* ToggleAutoClamp */4) : view_button("Auto: Off", /* ToggleAutoClamp */4),
-                          /* [] */0
+                          view_button("Resize", /* Clamp */5),
+                          /* :: */[
+                            model.auto_clamp ? view_button("Auto: On", /* ToggleAutoClamp */4) : view_button("Auto: Off", /* ToggleAutoClamp */4),
+                            /* [] */0
+                          ]
                         ]
                       ]
                     ]
@@ -178,7 +206,7 @@ function view(model) {
                       Tea_html.div(undefined, undefined, /* :: */[
                             Tea_html.class$prime("board"),
                             /* [] */0
-                          ], Draw.draw_html(model)),
+                          ], Draw.draw(model)),
                       /* :: */[
                         Tea_html.div(undefined, undefined, /* :: */[
                               Tea_html.class$prime("flex"),
@@ -206,6 +234,7 @@ export {
   view_link ,
   seed_link ,
   select_rule ,
+  select_backend ,
   params_form ,
   view ,
   

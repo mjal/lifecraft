@@ -43,16 +43,20 @@ function setRule(param_0) {
   return /* SetRule */Block.__(7, [param_0]);
 }
 
+function setBackend(param_0) {
+  return /* SetBackend */Block.__(8, [param_0]);
+}
+
 function keyPressed(param_0) {
-  return /* KeyPressed */Block.__(8, [param_0]);
+  return /* KeyPressed */Block.__(9, [param_0]);
 }
 
 function $$fetch(param_0) {
-  return /* Fetch */Block.__(9, [param_0]);
+  return /* Fetch */Block.__(10, [param_0]);
 }
 
 function lifeData(param_0) {
-  return /* LifeData */Block.__(10, [param_0]);
+  return /* LifeData */Block.__(11, [param_0]);
 }
 
 var b3S23 = /* B3S23 */0;
@@ -84,6 +88,29 @@ var rule_list = /* :: */[
       1
     ],
     /* [] */0
+  ]
+];
+
+var backend_list = /* :: */[
+  /* tuple */[
+    "Html",
+    /* Html */0,
+    0
+  ],
+  /* :: */[
+    /* tuple */[
+      "Svg",
+      /* Svg */1,
+      1
+    ],
+    /* :: */[
+      /* tuple */[
+        "Canvas",
+        /* Canvas */2,
+        2
+      ],
+      /* [] */0
+    ]
   ]
 ];
 
@@ -128,12 +155,14 @@ export {
   setX ,
   setY ,
   setRule ,
+  setBackend ,
   keyPressed ,
   toggleAutoClamp ,
   clamp ,
   $$fetch ,
   lifeData ,
   rule_list ,
+  backend_list ,
   seed_list ,
   
 }

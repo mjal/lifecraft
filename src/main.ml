@@ -9,6 +9,7 @@ let init () =
      geo = Infinite;
      previous = [];
      auto_clamp = true;
+     backend = Html;
    },
    msg Reset)
 
@@ -18,6 +19,7 @@ let subscriptions _ =
 let update state event =
   let state = match event with
   | SetRule rule -> { state with rule }
+  | SetBackend backend -> { state with backend }
   | Reset | Next | Flip(_) | Resize(_) | Clamp -> { state with previous = state.board :: state.previous; board = (Board.update state event) }
   | Previous ->
     let board, previous = begin match state.previous with

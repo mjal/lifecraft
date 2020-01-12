@@ -17,6 +17,7 @@ function init(param) {
             board: /* array */[/* array */[/* Dead */0]],
             rule: /* B3S23 */0,
             geo: /* Infinite */0,
+            backend: /* Html */0,
             previous: /* [] */0,
             auto_clamp: true
           },
@@ -26,7 +27,7 @@ function init(param) {
 
 function subscriptions(param) {
   return Keyboard.downs(undefined, (function (k) {
-                return /* KeyPressed */Block.__(8, [k]);
+                return /* KeyPressed */Block.__(9, [k]);
               }));
 }
 
@@ -48,6 +49,7 @@ function update(state, $$event) {
             board: match$1[0],
             rule: state.rule,
             geo: state.geo,
+            backend: state.backend,
             previous: match$1[1],
             auto_clamp: state.auto_clamp
           };
@@ -57,6 +59,7 @@ function update(state, $$event) {
             board: state.board,
             rule: state.rule,
             geo: state.geo,
+            backend: state.backend,
             previous: state.previous,
             auto_clamp: !state.auto_clamp
           };
@@ -80,22 +83,35 @@ function update(state, $$event) {
             board: state.board,
             rule: $$event[0],
             geo: state.geo,
+            backend: state.backend,
             previous: state.previous,
             auto_clamp: state.auto_clamp
           };
           break;
-      case /* LifeData */10 :
+      case /* SetBackend */8 :
+          state$1 = {
+            board: state.board,
+            rule: state.rule,
+            geo: state.geo,
+            backend: $$event[0],
+            previous: state.previous,
+            auto_clamp: state.auto_clamp
+          };
+          break;
+      case /* LifeData */11 :
           var match$2 = $$event[0];
           state$1 = match$2.tag ? ({
                 board: Matrix.make(0, 0, /* Dead */0),
                 rule: state.rule,
                 geo: state.geo,
+                backend: state.backend,
                 previous: state.previous,
                 auto_clamp: state.auto_clamp
               }) : ({
                 board: Rle.parse(match$2[0]),
                 rule: state.rule,
                 geo: state.geo,
+                backend: state.backend,
                 previous: state.previous,
                 auto_clamp: state.auto_clamp
               });
@@ -109,6 +125,7 @@ function update(state, $$event) {
       board: Board.update(state, $$event),
       rule: state.rule,
       geo: state.geo,
+      backend: state.backend,
       previous: /* :: */[
         state.board,
         state.previous
@@ -129,14 +146,14 @@ function update(state, $$event) {
       case /* Flip */0 :
           exit$1 = 1;
           break;
-      case /* KeyPressed */8 :
+      case /* KeyPressed */9 :
           var match$3 = $$event[0].key_code;
           cmd = match$3 !== 13 && match$3 !== 32 ? /* NoCmd */0 : Tea_cmd.msg(/* Next */2);
           break;
-      case /* Fetch */9 :
+      case /* Fetch */10 :
           cmd = Tea_http.send(Global.lifeData, Tea_http.getString($$event[0]));
           break;
-      case /* LifeData */10 :
+      case /* LifeData */11 :
           if ($$event[0].tag) {
             cmd = /* NoCmd */0;
           } else {

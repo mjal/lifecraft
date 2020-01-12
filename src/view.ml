@@ -22,9 +22,19 @@ let select_rule model =
     ] [text str]
   in select [onChange (fun v -> v |> int_of_string |> change_rule)] (List.map rules_option rule_list)
 
+let select_backend model =
+  let change_backend i = let _,backend,_ = List.find (fun (_,_,j) -> i = j) backend_list in SetBackend(backend) in
+  let backend_option (str, enum, i) =
+    option' [
+      value (string_of_int i);
+      Attributes.selected (model.backend = enum)
+    ] [text str]
+  in select [onChange (fun v -> v |> int_of_string |> change_backend)] (List.map backend_option backend_list)
+
 let params_form model =
   div [class' "flex"] [
     select_rule model;
+    select_backend model;
     span [class' "label-i"] [text "x = "];
     input' [
       type' "text"; class' "small-i";
@@ -58,7 +68,7 @@ let view model =
           p [] [text "Unimplemented"]
         ]
       ];*)
-      div [class' "board"] (Draw.draw_html model);
+      div [class' "board"] (Draw.draw model);
       (*node "canvas" [Vdom.attribute "" "width" "640"; Vdom.attribute "" "height" "640"] []; *)
       div [class' "flex"] [
         view_button "Reset" Reset;

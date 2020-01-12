@@ -259,17 +259,14 @@ function parse_map(o, l) {
                 $$String.make(1, c)
               ];
         }
-        var grid_000 = o$1.line;
-        var grid_001 = o$1.grid;
-        var grid = /* :: */[
-          grid_000,
-          grid_001
-        ];
         _l = l$1[1];
         _o = {
           state: o$1.state,
           line: /* [] */0,
-          grid: grid,
+          grid: /* :: */[
+            o$1.line,
+            o$1.grid
+          ],
           x: o$1.x,
           y: o$1.y
         };
@@ -287,6 +284,17 @@ function parse_map(o, l) {
         _n = 1;
         continue ;
       }
+    } else if (o$1.line !== /* [] */0) {
+      return {
+              state: o$1.state,
+              line: /* [] */0,
+              grid: /* :: */[
+                o$1.line,
+                o$1.grid
+              ],
+              x: o$1.x,
+              y: o$1.y
+            };
     } else {
       return o$1;
     }

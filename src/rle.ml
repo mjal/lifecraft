@@ -65,12 +65,10 @@ let parse_map o l =
     | 'o' :: tl ->
        let line = (List.init n (fun _ -> Alive))  @ o.line in
        f 1 {o with line} tl
-    | '$' :: tl ->
-       let grid = o.line :: o.grid in
-       f 1 {o with line = []; grid} tl
+    | '$' :: tl -> f 1 {o with line = []; grid = o.line :: o.grid} tl
     | '!' :: tl -> f 1 {o with state = End} tl
-    | c   :: _ -> raise (Invalid_argument (String.make 1 c))
-    | [] -> o
+    | c   :: _  -> raise (Invalid_argument (String.make 1 c))
+    | []        -> if o.line != [] then { o with grid = o.line :: o.grid; line = [] } else o
   in f 1 o l
 
 let parse_line o s =
