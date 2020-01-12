@@ -4,6 +4,7 @@ import * as Draw from "./draw.bs.js";
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
+import * as Global from "./global.bs.js";
 import * as Matrix from "./matrix.bs.js";
 import * as Printf from "../node_modules/bs-platform/lib/es6/printf.js";
 import * as Tea_html from "../node_modules/bucklescript-tea/src-ocaml/tea_html.js";
@@ -38,45 +39,29 @@ function view_link(title, msg) {
             ]);
 }
 
-function rules_select(model) {
-  var rules = /* :: */[
-    /* tuple */[
-      "B3S23",
-      /* B3S23 */0,
-      0
-    ],
-    /* :: */[
-      /* tuple */[
-        "B36S23",
-        /* B36S23 */1,
-        1
-      ],
-      /* [] */0
-    ]
-  ];
-  var change_rule = function (str) {
-    var i = Caml_format.caml_int_of_string(str);
-    var res = List.find((function (e) {
-            return i === e[2];
-          }), rules);
-    return /* SetRule */Block.__(8, [res[1]]);
-  };
-  var rules_option = function (tuple) {
+function select_rule(model) {
+  var rules_option = function (param) {
     return Tea_html.option$prime(undefined, undefined, /* :: */[
-                Tea_html.value(String(tuple[2])),
+                Tea_html.value(String(param[2])),
                 /* :: */[
-                  Tea_html.Attributes.selected(model.rule === tuple[1]),
+                  Tea_html.Attributes.selected(model.rule === param[1]),
                   /* [] */0
                 ]
               ], /* :: */[
-                Tea_html.text(tuple[0]),
+                Tea_html.text(param[0]),
                 /* [] */0
               ]);
   };
   return Tea_html.select(undefined, undefined, /* :: */[
-              Tea_html.onChange(undefined, change_rule),
+              Tea_html.onChange(undefined, (function (v) {
+                      var i = Caml_format.caml_int_of_string(v);
+                      var match = List.find((function (param) {
+                              return i === param[2];
+                            }), Global.rule_list);
+                      return /* SetRule */Block.__(8, [match[1]]);
+                    })),
               /* [] */0
-            ], List.map(rules_option, rules));
+            ], List.map(rules_option, Global.rule_list));
 }
 
 function view(model) {
@@ -91,31 +76,47 @@ function view(model) {
                     Tea_html.id("left-side"),
                     /* [] */0
                   ], /* :: */[
-                    rules_select(model),
+                    select_rule(model),
                     /* :: */[
-                      Tea_html.div(undefined, undefined, /* [] */0, List.map((function (s) {
-                                  return view_link(s.name, /* SetBoardFromSeed */Block.__(4, [s.str]));
-                                }), model.seeds)),
+                      Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
+                            Tea_html.a(undefined, undefined, /* :: */[
+                                  Tea_html.href("#"),
+                                  /* :: */[
+                                    Tea_html.onClick(/* Fetch */Block.__(10, ["test.rle"])),
+                                    /* [] */0
+                                  ]
+                                ], /* :: */[
+                                  Tea_html.text("Test"),
+                                  /* [] */0
+                                ]),
+                            /* [] */0
+                          ]),
                       /* :: */[
-                        Tea_html.a(undefined, undefined, /* :: */[
-                              Tea_html.href("#"),
-                              /* :: */[
-                                Tea_html.onClick(/* Fetch */Block.__(10, ["test.rle"])),
-                                /* [] */0
-                              ]
-                            ], /* :: */[
-                              Tea_html.text("Hello"),
+                        Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
+                              Tea_html.a(undefined, undefined, /* :: */[
+                                    Tea_html.href("#"),
+                                    /* :: */[
+                                      Tea_html.onClick(/* Fetch */Block.__(10, ["elephant.rle"])),
+                                      /* [] */0
+                                    ]
+                                  ], /* :: */[
+                                    Tea_html.text("Elephant"),
+                                    /* [] */0
+                                  ]),
                               /* [] */0
                             ]),
                         /* :: */[
-                          Tea_html.a(undefined, undefined, /* :: */[
-                                Tea_html.href("#"),
-                                /* :: */[
-                                  Tea_html.onClick(/* Fetch */Block.__(10, ["elephant.rle"])),
-                                  /* [] */0
-                                ]
-                              ], /* :: */[
-                                Tea_html.text("Elephant"),
+                          Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
+                                Tea_html.a(undefined, undefined, /* :: */[
+                                      Tea_html.href("#"),
+                                      /* :: */[
+                                        Tea_html.onClick(/* Fetch */Block.__(10, ["ufo.rle"])),
+                                        /* [] */0
+                                      ]
+                                    ], /* :: */[
+                                      Tea_html.text("UFO"),
+                                      /* [] */0
+                                    ]),
                                 /* [] */0
                               ]),
                           /* :: */[
@@ -273,7 +274,7 @@ function view(model) {
 export {
   view_button ,
   view_link ,
-  rules_select ,
+  select_rule ,
   view ,
   
 }

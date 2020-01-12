@@ -78,6 +78,22 @@ var clamp = /* Clamp */4;
 
 var reset = /* Reset */5;
 
+var rule_list = /* :: */[
+  /* tuple */[
+    "B3S23",
+    /* B3S23 */0,
+    0
+  ],
+  /* :: */[
+    /* tuple */[
+      "B36S23",
+      /* B36S23 */1,
+      1
+    ],
+    /* [] */0
+  ]
+];
+
 export {
   b3S23 ,
   b36S23 ,
@@ -99,6 +115,7 @@ export {
   $$fetch ,
   lifeData ,
   reset ,
+  rule_list ,
   
 }
 /* No side effect */

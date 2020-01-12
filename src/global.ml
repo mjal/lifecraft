@@ -31,3 +31,5 @@ type state = {
   rule: rule;
   auto_clamp: bool;
 }
+
+let rule_list = [("B3S23", B3S23, 0); ("B36S23", B36S23, 1)]

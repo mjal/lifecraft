@@ -7,25 +7,31 @@ let view_button title msg =
 let view_link title msg =
   p [] [ a [ href "#"; onClick msg ] [ text title ] ]
 
-let rules_select model =
-  let rules = [("B3S23", B3S23, 0); ("B36S23", B36S23, 1)] in
-  let change_rule str =
-    let i = int_of_string str in
-    let res = List.find (fun e -> let _,_,j = e in i == j) rules in
-    let _,rule,_ = res in SetRule(rule)
+let select_rule model =
+  let change_rule i =
+    let _,rule,_ = List.find (fun (_,_,j) -> i = j) rule_list in
+    SetRule(rule)
   in
-  let rules_option tuple =
-    let str, rule, i = tuple in
-    option' [ value (string_of_int i); Attributes.selected (model.rule = rule) ] [text str]
-  in select [onChange change_rule] (List.map rules_option rules)
+  let rules_option (str, rule, i) =
+    option' [
+      value (string_of_int i);
+      Attributes.selected (model.rule = rule)
+    ] [text str]
+  in select [onChange (fun v -> v |> int_of_string |> change_rule)] (List.map rules_option rule_list)
 
 let view model =
   div [id "container"; class' "flex"] [
     div [id "left-side"] [
-      (rules_select model);
-      (div [] (List.map (fun s -> view_link s.name (SetBoardFromSeed(s.str))) model.seeds));
-      a [href "#"; onClick (Fetch("test.rle"))] [text "Hello"];
-      a [href "#"; onClick (Fetch("elephant.rle"))] [text "Elephant"];
+      (select_rule model);
+      div [] [
+        a [href "#"; onClick (Fetch("test.rle"))] [text "Test"];
+      ];
+      div [] [
+        a [href "#"; onClick (Fetch("elephant.rle"))] [text "Elephant"];
+      ];
+      div [] [
+        a [href "#"; onClick (Fetch("ufo.rle"))] [text "UFO"];
+      ];
       div [] [
         span [] [text "x = "];
         input' [type' "text"; class' "small-i"; value (Js.String.make (Matrix.width  model.board)); onInput (fun x -> SetX(int_of_string x)) ] [];
