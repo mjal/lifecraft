@@ -591,22 +591,6 @@
       return 1;
     }
   }
-
-  function caml_int_max(x, y) {
-    if (x > y) {
-      return x;
-    } else {
-      return y;
-    }
-  }
-
-  function caml_float_max(x, y) {
-    if (x > y) {
-      return x;
-    } else {
-      return y;
-    }
-  }
   /* No side effect */
 
   function for_in (o,foo){
@@ -716,10 +700,6 @@
         }
       }
     }}
-
-  function caml_notequal(a, b) {
-    return !caml_equal(a, b);
-  }
   /* No side effect */
 
   function caml_fill_bytes(s, i, l, c) {
@@ -846,426 +826,6 @@
     return res;
   }
   /* No side effect */
-
-  var imul = ( Math.imul || function (x,y) {
-    y |= 0; return ((((x >> 16) * y) << 16) + (x & 0xffff) * y)|0; 
-  }
-  );
-  /* imul Not a pure module */
-
-  function repeat (count,self){
-      if (self.repeat){
-          return self.repeat(count)
-      }
-      if (self.length == 0 || count == 0) {
-              return '';
-          }
-      // Ensuring count is a 31-bit integer allows us to heavily optimize the
-      // main part. But anyway, most current (August 2014) browsers can't handle
-      // strings 1 << 28 chars or longer, so:
-      if (self.length * count >= 1 << 28) {
-              throw new RangeError('repeat count must not overflow maximum string size');
-      }
-      var rpt = '';
-      for (;;) {
-              if ((count & 1) == 1) {
-                  rpt += self;
-              }
-              count >>>= 1;
-              if (count == 0) {
-                  break;
-              }
-              self += self;
-      }
-      return rpt;
-
-  }/* No side effect */
-
-  var min_int = {
-    hi: -2147483648,
-    lo: 0
-  };
-
-  var max_int = {
-    hi: 2147483647,
-    lo: 1
-  };
-
-  var one = {
-    hi: 0,
-    lo: 1
-  };
-
-  var zero = {
-    hi: 0,
-    lo: 0
-  };
-
-  var neg_one = {
-    hi: -1,
-    lo: 4294967295
-  };
-
-  function neg_signed(x) {
-    return (x & 2147483648) !== 0;
-  }
-
-  function add(param, param$1) {
-    var other_low_ = param$1.lo;
-    var this_low_ = param.lo;
-    var lo = this_low_ + other_low_ & 4294967295;
-    var overflow = neg_signed(this_low_) && (neg_signed(other_low_) || !neg_signed(lo)) || neg_signed(other_low_) && !neg_signed(lo) ? 1 : 0;
-    var hi = param.hi + param$1.hi + overflow & 4294967295;
-    return {
-            hi: hi,
-            lo: (lo >>> 0)
-          };
-  }
-
-  function not(param) {
-    var hi = param.hi ^ -1;
-    var lo = param.lo ^ -1;
-    return {
-            hi: hi,
-            lo: (lo >>> 0)
-          };
-  }
-
-  function eq(x, y) {
-    if (x.hi === y.hi) {
-      return x.lo === y.lo;
-    } else {
-      return false;
-    }
-  }
-
-  function neg(x) {
-    if (eq(x, min_int)) {
-      return min_int;
-    } else {
-      return add(not(x), one);
-    }
-  }
-
-  function lsl_(x, numBits) {
-    if (numBits === 0) {
-      return x;
-    } else {
-      var lo = x.lo;
-      if (numBits >= 32) {
-        return {
-                hi: (lo << (numBits - 32 | 0)),
-                lo: 0
-              };
-      } else {
-        var hi = (lo >>> (32 - numBits | 0)) | (x.hi << numBits);
-        return {
-                hi: hi,
-                lo: ((lo << numBits) >>> 0)
-              };
-      }
-    }
-  }
-
-  function asr_(x, numBits) {
-    if (numBits === 0) {
-      return x;
-    } else {
-      var hi = x.hi;
-      if (numBits < 32) {
-        var hi$1 = (hi >> numBits);
-        var lo = (hi << (32 - numBits | 0)) | (x.lo >>> numBits);
-        return {
-                hi: hi$1,
-                lo: (lo >>> 0)
-              };
-      } else {
-        var lo$1 = (hi >> (numBits - 32 | 0));
-        return {
-                hi: hi >= 0 ? 0 : -1,
-                lo: (lo$1 >>> 0)
-              };
-      }
-    }
-  }
-
-  function is_zero(param) {
-    if (param.hi !== 0 || param.lo !== 0) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  function mul(_this, _other) {
-    while(true) {
-      var other = _other;
-      var $$this = _this;
-      var lo;
-      var this_hi = $$this.hi;
-      var exit = 0;
-      var exit$1 = 0;
-      var exit$2 = 0;
-      if (this_hi !== 0 || $$this.lo !== 0) {
-        exit$2 = 4;
-      } else {
-        return zero;
-      }
-      if (exit$2 === 4) {
-        if (other.hi !== 0 || other.lo !== 0) {
-          exit$1 = 3;
-        } else {
-          return zero;
-        }
-      }
-      if (exit$1 === 3) {
-        if (this_hi !== -2147483648 || $$this.lo !== 0) {
-          exit = 2;
-        } else {
-          lo = other.lo;
-        }
-      }
-      if (exit === 2) {
-        var other_hi = other.hi;
-        var lo$1 = $$this.lo;
-        var exit$3 = 0;
-        if (other_hi !== -2147483648 || other.lo !== 0) {
-          exit$3 = 3;
-        } else {
-          lo = lo$1;
-        }
-        if (exit$3 === 3) {
-          var other_lo = other.lo;
-          if (this_hi < 0) {
-            if (other_hi < 0) {
-              _other = neg(other);
-              _this = neg($$this);
-              continue ;
-            } else {
-              return neg(mul(neg($$this), other));
-            }
-          } else if (other_hi < 0) {
-            return neg(mul($$this, neg(other)));
-          } else {
-            var a48 = (this_hi >>> 16);
-            var a32 = this_hi & 65535;
-            var a16 = (lo$1 >>> 16);
-            var a00 = lo$1 & 65535;
-            var b48 = (other_hi >>> 16);
-            var b32 = other_hi & 65535;
-            var b16 = (other_lo >>> 16);
-            var b00 = other_lo & 65535;
-            var c48 = 0;
-            var c32 = 0;
-            var c16 = 0;
-            var c00 = a00 * b00;
-            c16 = (c00 >>> 16) + a16 * b00;
-            c32 = (c16 >>> 16);
-            c16 = (c16 & 65535) + a00 * b16;
-            c32 = c32 + (c16 >>> 16) + a32 * b00;
-            c48 = (c32 >>> 16);
-            c32 = (c32 & 65535) + a16 * b16;
-            c48 = c48 + (c32 >>> 16);
-            c32 = (c32 & 65535) + a00 * b32;
-            c48 = c48 + (c32 >>> 16);
-            c32 = c32 & 65535;
-            c48 = c48 + (a48 * b00 + a32 * b16 + a16 * b32 + a00 * b48) & 65535;
-            var hi = c32 | (c48 << 16);
-            var lo$2 = c00 & 65535 | ((c16 & 65535) << 16);
-            return {
-                    hi: hi,
-                    lo: (lo$2 >>> 0)
-                  };
-          }
-        }
-        
-      }
-      if ((lo & 1) === 0) {
-        return zero;
-      } else {
-        return min_int;
-      }
-    }}
-
-  function ge(param, param$1) {
-    var other_hi = param$1.hi;
-    var hi = param.hi;
-    if (hi > other_hi) {
-      return true;
-    } else if (hi < other_hi) {
-      return false;
-    } else {
-      return param.lo >= param$1.lo;
-    }
-  }
-
-  function neq(x, y) {
-    return !eq(x, y);
-  }
-
-  function lt(x, y) {
-    return !ge(x, y);
-  }
-
-  function gt(x, y) {
-    if (x.hi > y.hi) {
-      return true;
-    } else if (x.hi < y.hi) {
-      return false;
-    } else {
-      return x.lo > y.lo;
-    }
-  }
-
-  function to_float(param) {
-    return param.hi * (0x100000000) + param.lo;
-  }
-
-  function of_float(x) {
-    if (isNaN(x) || !isFinite(x)) {
-      return zero;
-    } else if (x <= -9.22337203685477581e+18) {
-      return min_int;
-    } else if (x + 1 >= 9.22337203685477581e+18) {
-      return max_int;
-    } else if (x < 0) {
-      return neg(of_float(-x));
-    } else {
-      var hi = x / 4294967296 | 0;
-      var lo = x % 4294967296 | 0;
-      return {
-              hi: hi,
-              lo: (lo >>> 0)
-            };
-    }
-  }
-
-  function div(_self, _other) {
-    while(true) {
-      var other = _other;
-      var self = _self;
-      var self_hi = self.hi;
-      var exit = 0;
-      var exit$1 = 0;
-      if (other.hi !== 0 || other.lo !== 0) {
-        exit$1 = 2;
-      } else {
-        throw division_by_zero;
-      }
-      if (exit$1 === 2) {
-        if (self_hi !== -2147483648) {
-          if (self_hi !== 0 || self.lo !== 0) {
-            exit = 1;
-          } else {
-            return zero;
-          }
-        } else if (self.lo !== 0) {
-          exit = 1;
-        } else if (eq(other, one) || eq(other, neg_one)) {
-          return self;
-        } else if (eq(other, min_int)) {
-          return one;
-        } else {
-          var other_hi = other.hi;
-          var half_this = asr_(self, 1);
-          var approx = lsl_(div(half_this, other), 1);
-          if (approx.hi === 0 && approx.lo === 0) {
-            if (other_hi < 0) {
-              return one;
-            } else {
-              return neg(one);
-            }
-          }
-          var y = mul(other, approx);
-          var rem = add(self, neg(y));
-          return add(approx, div(rem, other));
-        }
-      }
-      if (exit === 1) {
-        var other_hi$1 = other.hi;
-        if (other_hi$1 === -2147483648 && other.lo === 0) {
-          return zero;
-        }
-        if (self_hi < 0) {
-          if (other_hi$1 < 0) {
-            _other = neg(other);
-            _self = neg(self);
-            continue ;
-          } else {
-            return neg(div(neg(self), other));
-          }
-        } else if (other_hi$1 < 0) {
-          return neg(div(self, neg(other)));
-        } else {
-          var res = zero;
-          var rem$1 = self;
-          while(ge(rem$1, other)) {
-            var approx$1 = caml_float_max(1, Math.floor(to_float(rem$1) / to_float(other)));
-            var log2 = Math.ceil(Math.log(approx$1) / Math.LN2);
-            var delta = log2 <= 48 ? 1 : Math.pow(2, log2 - 48);
-            var approxRes = of_float(approx$1);
-            var approxRem = mul(approxRes, other);
-            while(approxRem.hi < 0 || gt(approxRem, rem$1)) {
-              approx$1 = approx$1 - delta;
-              approxRes = of_float(approx$1);
-              approxRem = mul(approxRes, other);
-            }          if (is_zero(approxRes)) {
-              approxRes = one;
-            }
-            res = add(res, approxRes);
-            rem$1 = add(rem$1, neg(approxRem));
-          }        return res;
-        }
-      }
-      
-    }}
-
-  function div_mod(self, other) {
-    var quotient = div(self, other);
-    var y = mul(quotient, other);
-    return /* tuple */[
-            quotient,
-            add(self, neg(y))
-          ];
-  }
-
-  function to_int32(x) {
-    return x.lo | 0;
-  }
-
-  function to_hex(x) {
-    var x_lo = x.lo;
-    var x_hi = x.hi;
-    var aux = function (v) {
-      return (v >>> 0).toString(16);
-    };
-    if (x_hi === 0 && x_lo === 0) {
-      return "0";
-    }
-    if (x_lo !== 0) {
-      if (x_hi !== 0) {
-        var lo = aux(x_lo);
-        var pad = 8 - lo.length | 0;
-        if (pad <= 0) {
-          return aux(x_hi) + lo;
-        } else {
-          return aux(x_hi) + (repeat(pad, "0") + lo);
-        }
-      } else {
-        return aux(x_lo);
-      }
-    } else {
-      return aux(x_hi) + "00000000";
-    }
-  }
-
-  function discard_sign(x) {
-    return {
-            hi: 2147483647 & x.hi,
-            lo: x.lo
-          };
-  }
-  /* Caml_int32 Not a pure module */
 
   function parse_digit(c) {
     if (c >= 65) {
@@ -1446,530 +1006,6 @@
     }
     return or_res;
   }
-
-  function int_of_base(param) {
-    switch (param) {
-      case /* Oct */0 :
-          return 8;
-      case /* Hex */1 :
-          return 16;
-      case /* Dec */2 :
-          return 10;
-      
-    }
-  }
-
-  function lowercase(c) {
-    if (c >= /* "A" */65 && c <= /* "Z" */90 || c >= /* "\192" */192 && c <= /* "\214" */214 || c >= /* "\216" */216 && c <= /* "\222" */222) {
-      return c + 32 | 0;
-    } else {
-      return c;
-    }
-  }
-
-  function parse_format(fmt) {
-    var len = fmt.length;
-    if (len > 31) {
-      throw [
-            invalid_argument,
-            "format_int: format too long"
-          ];
-    }
-    var f = {
-      justify: "+",
-      signstyle: "-",
-      filter: " ",
-      alternate: false,
-      base: /* Dec */2,
-      signedconv: false,
-      width: 0,
-      uppercase: false,
-      sign: 1,
-      prec: -1,
-      conv: "f"
-    };
-    var _i = 0;
-    while(true) {
-      var i = _i;
-      if (i >= len) {
-        return f;
-      } else {
-        var c = fmt.charCodeAt(i);
-        var exit = 0;
-        if (c >= 69) {
-          if (c >= 88) {
-            if (c >= 121) {
-              exit = 1;
-            } else {
-              switch (c - 88 | 0) {
-                case 0 :
-                    f.base = /* Hex */1;
-                    f.uppercase = true;
-                    _i = i + 1 | 0;
-                    continue ;
-                case 13 :
-                case 14 :
-                case 15 :
-                    exit = 5;
-                    break;
-                case 12 :
-                case 17 :
-                    exit = 4;
-                    break;
-                case 23 :
-                    f.base = /* Oct */0;
-                    _i = i + 1 | 0;
-                    continue ;
-                case 29 :
-                    f.base = /* Dec */2;
-                    _i = i + 1 | 0;
-                    continue ;
-                case 1 :
-                case 2 :
-                case 3 :
-                case 4 :
-                case 5 :
-                case 6 :
-                case 7 :
-                case 8 :
-                case 9 :
-                case 10 :
-                case 11 :
-                case 16 :
-                case 18 :
-                case 19 :
-                case 20 :
-                case 21 :
-                case 22 :
-                case 24 :
-                case 25 :
-                case 26 :
-                case 27 :
-                case 28 :
-                case 30 :
-                case 31 :
-                    exit = 1;
-                    break;
-                case 32 :
-                    f.base = /* Hex */1;
-                    _i = i + 1 | 0;
-                    continue ;
-                
-              }
-            }
-          } else if (c >= 72) {
-            exit = 1;
-          } else {
-            f.signedconv = true;
-            f.uppercase = true;
-            f.conv = String.fromCharCode(lowercase(c));
-            _i = i + 1 | 0;
-            continue ;
-          }
-        } else {
-          switch (c) {
-            case 35 :
-                f.alternate = true;
-                _i = i + 1 | 0;
-                continue ;
-            case 32 :
-            case 43 :
-                exit = 2;
-                break;
-            case 45 :
-                f.justify = "-";
-                _i = i + 1 | 0;
-                continue ;
-            case 46 :
-                f.prec = 0;
-                var j = i + 1 | 0;
-                while((function(j){
-                    return function () {
-                      var w = fmt.charCodeAt(j) - /* "0" */48 | 0;
-                      return w >= 0 && w <= 9;
-                    }
-                    }(j))()) {
-                  f.prec = (imul(f.prec, 10) + fmt.charCodeAt(j) | 0) - /* "0" */48 | 0;
-                  j = j + 1 | 0;
-                }              _i = j;
-                continue ;
-            case 33 :
-            case 34 :
-            case 36 :
-            case 37 :
-            case 38 :
-            case 39 :
-            case 40 :
-            case 41 :
-            case 42 :
-            case 44 :
-            case 47 :
-                exit = 1;
-                break;
-            case 48 :
-                f.filter = "0";
-                _i = i + 1 | 0;
-                continue ;
-            case 49 :
-            case 50 :
-            case 51 :
-            case 52 :
-            case 53 :
-            case 54 :
-            case 55 :
-            case 56 :
-            case 57 :
-                exit = 3;
-                break;
-            default:
-              exit = 1;
-          }
-        }
-        switch (exit) {
-          case 1 :
-              _i = i + 1 | 0;
-              continue ;
-          case 2 :
-              f.signstyle = String.fromCharCode(c);
-              _i = i + 1 | 0;
-              continue ;
-          case 3 :
-              f.width = 0;
-              var j$1 = i;
-              while((function(j$1){
-                  return function () {
-                    var w = fmt.charCodeAt(j$1) - /* "0" */48 | 0;
-                    return w >= 0 && w <= 9;
-                  }
-                  }(j$1))()) {
-                f.width = (imul(f.width, 10) + fmt.charCodeAt(j$1) | 0) - /* "0" */48 | 0;
-                j$1 = j$1 + 1 | 0;
-              }            _i = j$1;
-              continue ;
-          case 4 :
-              f.signedconv = true;
-              f.base = /* Dec */2;
-              _i = i + 1 | 0;
-              continue ;
-          case 5 :
-              f.signedconv = true;
-              f.conv = String.fromCharCode(c);
-              _i = i + 1 | 0;
-              continue ;
-          
-        }
-      }
-    }}
-
-  function finish_formatting(config, rawbuffer) {
-    var justify = config.justify;
-    var signstyle = config.signstyle;
-    var filter = config.filter;
-    var alternate = config.alternate;
-    var base = config.base;
-    var signedconv = config.signedconv;
-    var width = config.width;
-    var uppercase = config.uppercase;
-    var sign = config.sign;
-    var len = rawbuffer.length;
-    if (signedconv && (sign < 0 || signstyle !== "-")) {
-      len = len + 1 | 0;
-    }
-    if (alternate) {
-      if (base === /* Oct */0) {
-        len = len + 1 | 0;
-      } else if (base === /* Hex */1) {
-        len = len + 2 | 0;
-      }
-      
-    }
-    var buffer = "";
-    if (justify === "+" && filter === " ") {
-      for(var i = len ,i_finish = width - 1 | 0; i <= i_finish; ++i){
-        buffer = buffer + filter;
-      }
-    }
-    if (signedconv) {
-      if (sign < 0) {
-        buffer = buffer + "-";
-      } else if (signstyle !== "-") {
-        buffer = buffer + signstyle;
-      }
-      
-    }
-    if (alternate && base === /* Oct */0) {
-      buffer = buffer + "0";
-    }
-    if (alternate && base === /* Hex */1) {
-      buffer = buffer + "0x";
-    }
-    if (justify === "+" && filter === "0") {
-      for(var i$1 = len ,i_finish$1 = width - 1 | 0; i$1 <= i_finish$1; ++i$1){
-        buffer = buffer + filter;
-      }
-    }
-    buffer = uppercase ? buffer + rawbuffer.toUpperCase() : buffer + rawbuffer;
-    if (justify === "-") {
-      for(var i$2 = len ,i_finish$2 = width - 1 | 0; i$2 <= i_finish$2; ++i$2){
-        buffer = buffer + " ";
-      }
-    }
-    return buffer;
-  }
-
-  function caml_format_int(fmt, i) {
-    if (fmt === "%d") {
-      return String(i);
-    } else {
-      var f = parse_format(fmt);
-      var f$1 = f;
-      var i$1 = i;
-      var i$2 = i$1 < 0 ? (
-          f$1.signedconv ? (f$1.sign = -1, -i$1) : (i$1 >>> 0)
-        ) : i$1;
-      var s = i$2.toString(int_of_base(f$1.base));
-      if (f$1.prec >= 0) {
-        f$1.filter = " ";
-        var n = f$1.prec - s.length | 0;
-        if (n > 0) {
-          s = repeat(n, "0") + s;
-        }
-        
-      }
-      return finish_formatting(f$1, s);
-    }
-  }
-
-  function caml_int64_format(fmt, x) {
-    var f = parse_format(fmt);
-    var x$1 = f.signedconv && lt(x, /* int64 */{
-          hi: 0,
-          lo: 0
-        }) ? (f.sign = -1, neg(x)) : x;
-    var s = "";
-    var match = f.base;
-    switch (match) {
-      case /* Oct */0 :
-          var wbase = /* int64 */{
-            hi: 0,
-            lo: 8
-          };
-          var cvtbl = "01234567";
-          if (lt(x$1, /* int64 */{
-                  hi: 0,
-                  lo: 0
-                })) {
-            var y = discard_sign(x$1);
-            var match$1 = div_mod(y, wbase);
-            var quotient = add(/* int64 */{
-                  hi: 268435456,
-                  lo: 0
-                }, match$1[0]);
-            var modulus = match$1[1];
-            s = String.fromCharCode(cvtbl.charCodeAt(to_int32(modulus))) + s;
-            while(neq(quotient, /* int64 */{
-                    hi: 0,
-                    lo: 0
-                  })) {
-              var match$2 = div_mod(quotient, wbase);
-              quotient = match$2[0];
-              modulus = match$2[1];
-              s = String.fromCharCode(cvtbl.charCodeAt(to_int32(modulus))) + s;
-            }        } else {
-            var match$3 = div_mod(x$1, wbase);
-            var quotient$1 = match$3[0];
-            var modulus$1 = match$3[1];
-            s = String.fromCharCode(cvtbl.charCodeAt(to_int32(modulus$1))) + s;
-            while(neq(quotient$1, /* int64 */{
-                    hi: 0,
-                    lo: 0
-                  })) {
-              var match$4 = div_mod(quotient$1, wbase);
-              quotient$1 = match$4[0];
-              modulus$1 = match$4[1];
-              s = String.fromCharCode(cvtbl.charCodeAt(to_int32(modulus$1))) + s;
-            }        }
-          break;
-      case /* Hex */1 :
-          s = to_hex(x$1) + s;
-          break;
-      case /* Dec */2 :
-          var wbase$1 = /* int64 */{
-            hi: 0,
-            lo: 10
-          };
-          var cvtbl$1 = "0123456789";
-          if (lt(x$1, /* int64 */{
-                  hi: 0,
-                  lo: 0
-                })) {
-            var y$1 = discard_sign(x$1);
-            var match$5 = div_mod(y$1, wbase$1);
-            var match$6 = div_mod(add(/* int64 */{
-                      hi: 0,
-                      lo: 8
-                    }, match$5[1]), wbase$1);
-            var quotient$2 = add(add(/* int64 */{
-                      hi: 214748364,
-                      lo: 3435973836
-                    }, match$5[0]), match$6[0]);
-            var modulus$2 = match$6[1];
-            s = String.fromCharCode(cvtbl$1.charCodeAt(to_int32(modulus$2))) + s;
-            while(neq(quotient$2, /* int64 */{
-                    hi: 0,
-                    lo: 0
-                  })) {
-              var match$7 = div_mod(quotient$2, wbase$1);
-              quotient$2 = match$7[0];
-              modulus$2 = match$7[1];
-              s = String.fromCharCode(cvtbl$1.charCodeAt(to_int32(modulus$2))) + s;
-            }        } else {
-            var match$8 = div_mod(x$1, wbase$1);
-            var quotient$3 = match$8[0];
-            var modulus$3 = match$8[1];
-            s = String.fromCharCode(cvtbl$1.charCodeAt(to_int32(modulus$3))) + s;
-            while(neq(quotient$3, /* int64 */{
-                    hi: 0,
-                    lo: 0
-                  })) {
-              var match$9 = div_mod(quotient$3, wbase$1);
-              quotient$3 = match$9[0];
-              modulus$3 = match$9[1];
-              s = String.fromCharCode(cvtbl$1.charCodeAt(to_int32(modulus$3))) + s;
-            }        }
-          break;
-      
-    }
-    if (f.prec >= 0) {
-      f.filter = " ";
-      var n = f.prec - s.length | 0;
-      if (n > 0) {
-        s = repeat(n, "0") + s;
-      }
-      
-    }
-    return finish_formatting(f, s);
-  }
-
-  function caml_format_float(fmt, x) {
-    var f = parse_format(fmt);
-    var prec = f.prec < 0 ? 6 : f.prec;
-    var x$1 = x < 0 ? (f.sign = -1, -x) : x;
-    var s = "";
-    if (isNaN(x$1)) {
-      s = "nan";
-      f.filter = " ";
-    } else if (isFinite(x$1)) {
-      var match = f.conv;
-      switch (match) {
-        case "e" :
-            s = x$1.toExponential(prec);
-            var i = s.length;
-            if (s[i - 3 | 0] === "e") {
-              s = s.slice(0, i - 1 | 0) + ("0" + s.slice(i - 1 | 0));
-            }
-            break;
-        case "f" :
-            s = x$1.toFixed(prec);
-            break;
-        case "g" :
-            var prec$1 = prec !== 0 ? prec : 1;
-            s = x$1.toExponential(prec$1 - 1 | 0);
-            var j = s.indexOf("e");
-            var exp = Number(s.slice(j + 1 | 0)) | 0;
-            if (exp < -4 || x$1 >= 1e21 || x$1.toFixed().length > prec$1) {
-              var i$1 = j - 1 | 0;
-              while(s[i$1] === "0") {
-                i$1 = i$1 - 1 | 0;
-              }            if (s[i$1] === ".") {
-                i$1 = i$1 - 1 | 0;
-              }
-              s = s.slice(0, i$1 + 1 | 0) + s.slice(j);
-              var i$2 = s.length;
-              if (s[i$2 - 3 | 0] === "e") {
-                s = s.slice(0, i$2 - 1 | 0) + ("0" + s.slice(i$2 - 1 | 0));
-              }
-              
-            } else {
-              var p = prec$1;
-              if (exp < 0) {
-                p = p - (exp + 1 | 0) | 0;
-                s = x$1.toFixed(p);
-              } else {
-                while((function () {
-                        s = x$1.toFixed(p);
-                        return s.length > (prec$1 + 1 | 0);
-                      })()) {
-                  p = p - 1 | 0;
-                }            }
-              if (p !== 0) {
-                var k = s.length - 1 | 0;
-                while(s[k] === "0") {
-                  k = k - 1 | 0;
-                }              if (s[k] === ".") {
-                  k = k - 1 | 0;
-                }
-                s = s.slice(0, k + 1 | 0);
-              }
-              
-            }
-            break;
-          
-      }
-    } else {
-      s = "inf";
-      f.filter = " ";
-    }
-    return finish_formatting(f, s);
-  }
-
-  function caml_hexstring_of_float (x,prec,style){ 
-    if (!isFinite(x)) {
-      if (isNaN(x)) return "nan";
-      return x > 0 ? "infinity":"-infinity";
-    }
-    var sign = (x==0 && 1/x == -Infinity)?1:(x>=0)?0:1;
-    if(sign) x = -x;
-    var exp = 0;
-    if (x == 0) ;
-    else if (x < 1) {
-      while (x < 1 && exp > -1022)  { x *= 2; exp--; }
-    } else {
-      while (x >= 2) { x /= 2; exp++; }
-    }
-    var exp_sign = exp < 0 ? '' : '+';
-    var sign_str = '';
-    if (sign) sign_str = '-';
-    else {
-      switch(style){
-      case 43 /* '+' */: sign_str = '+'; break;
-      case 32 /* ' ' */: sign_str = ' '; break;
-      }
-    }
-    if (prec >= 0 && prec < 13) {
-      /* If a precision is given, and is small, round mantissa accordingly */
-        var cst = Math.pow(2,prec * 4);
-        x = Math.round(x * cst) / cst;
-    }
-    var x_str = x.toString(16);
-    if(prec >= 0){
-        var idx = x_str.indexOf('.');
-      if(idx<0) {
-        x_str += '.' +  '0'.repeat(prec);
-      }
-      else {
-        var size = idx+1+prec;
-        if(x_str.length < size)
-          x_str += '0'.repeat(size - x_str.length);
-        else
-          x_str = x_str.substr(0,size);
-      }
-    }
-    return  (sign_str + '0x' + x_str + 'p' + exp_sign + exp.toString(10));
-  }
-  var caml_nativeint_format = caml_format_int;
-
-  var caml_int32_format = caml_format_int;
   /* No side effect */
 
   function get(s, i) {
@@ -2072,265 +1108,9 @@
   }
   /* No side effect */
 
-  function erase_rel(param) {
-    if (typeof param === "number") {
-      return /* End_of_fmtty */0;
-    } else {
-      switch (param.tag | 0) {
-        case /* Char_ty */0 :
-            return /* Char_ty */__(0, [erase_rel(param[0])]);
-        case /* String_ty */1 :
-            return /* String_ty */__(1, [erase_rel(param[0])]);
-        case /* Int_ty */2 :
-            return /* Int_ty */__(2, [erase_rel(param[0])]);
-        case /* Int32_ty */3 :
-            return /* Int32_ty */__(3, [erase_rel(param[0])]);
-        case /* Nativeint_ty */4 :
-            return /* Nativeint_ty */__(4, [erase_rel(param[0])]);
-        case /* Int64_ty */5 :
-            return /* Int64_ty */__(5, [erase_rel(param[0])]);
-        case /* Float_ty */6 :
-            return /* Float_ty */__(6, [erase_rel(param[0])]);
-        case /* Bool_ty */7 :
-            return /* Bool_ty */__(7, [erase_rel(param[0])]);
-        case /* Format_arg_ty */8 :
-            return /* Format_arg_ty */__(8, [
-                      param[0],
-                      erase_rel(param[1])
-                    ]);
-        case /* Format_subst_ty */9 :
-            var ty1 = param[0];
-            return /* Format_subst_ty */__(9, [
-                      ty1,
-                      ty1,
-                      erase_rel(param[2])
-                    ]);
-        case /* Alpha_ty */10 :
-            return /* Alpha_ty */__(10, [erase_rel(param[0])]);
-        case /* Theta_ty */11 :
-            return /* Theta_ty */__(11, [erase_rel(param[0])]);
-        case /* Any_ty */12 :
-            return /* Any_ty */__(12, [erase_rel(param[0])]);
-        case /* Reader_ty */13 :
-            return /* Reader_ty */__(13, [erase_rel(param[0])]);
-        case /* Ignored_reader_ty */14 :
-            return /* Ignored_reader_ty */__(14, [erase_rel(param[0])]);
-        
-      }
-    }
-  }
-
-  function concat_fmtty(fmtty1, fmtty2) {
-    if (typeof fmtty1 === "number") {
-      return fmtty2;
-    } else {
-      switch (fmtty1.tag | 0) {
-        case /* Char_ty */0 :
-            return /* Char_ty */__(0, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* String_ty */1 :
-            return /* String_ty */__(1, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Int_ty */2 :
-            return /* Int_ty */__(2, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Int32_ty */3 :
-            return /* Int32_ty */__(3, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Nativeint_ty */4 :
-            return /* Nativeint_ty */__(4, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Int64_ty */5 :
-            return /* Int64_ty */__(5, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Float_ty */6 :
-            return /* Float_ty */__(6, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Bool_ty */7 :
-            return /* Bool_ty */__(7, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Format_arg_ty */8 :
-            return /* Format_arg_ty */__(8, [
-                      fmtty1[0],
-                      concat_fmtty(fmtty1[1], fmtty2)
-                    ]);
-        case /* Format_subst_ty */9 :
-            return /* Format_subst_ty */__(9, [
-                      fmtty1[0],
-                      fmtty1[1],
-                      concat_fmtty(fmtty1[2], fmtty2)
-                    ]);
-        case /* Alpha_ty */10 :
-            return /* Alpha_ty */__(10, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Theta_ty */11 :
-            return /* Theta_ty */__(11, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Any_ty */12 :
-            return /* Any_ty */__(12, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Reader_ty */13 :
-            return /* Reader_ty */__(13, [concat_fmtty(fmtty1[0], fmtty2)]);
-        case /* Ignored_reader_ty */14 :
-            return /* Ignored_reader_ty */__(14, [concat_fmtty(fmtty1[0], fmtty2)]);
-        
-      }
-    }
-  }
-
-  function concat_fmt(fmt1, fmt2) {
-    if (typeof fmt1 === "number") {
-      return fmt2;
-    } else {
-      switch (fmt1.tag | 0) {
-        case /* Char */0 :
-            return /* Char */__(0, [concat_fmt(fmt1[0], fmt2)]);
-        case /* Caml_char */1 :
-            return /* Caml_char */__(1, [concat_fmt(fmt1[0], fmt2)]);
-        case /* String */2 :
-            return /* String */__(2, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Caml_string */3 :
-            return /* Caml_string */__(3, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Int */4 :
-            return /* Int */__(4, [
-                      fmt1[0],
-                      fmt1[1],
-                      fmt1[2],
-                      concat_fmt(fmt1[3], fmt2)
-                    ]);
-        case /* Int32 */5 :
-            return /* Int32 */__(5, [
-                      fmt1[0],
-                      fmt1[1],
-                      fmt1[2],
-                      concat_fmt(fmt1[3], fmt2)
-                    ]);
-        case /* Nativeint */6 :
-            return /* Nativeint */__(6, [
-                      fmt1[0],
-                      fmt1[1],
-                      fmt1[2],
-                      concat_fmt(fmt1[3], fmt2)
-                    ]);
-        case /* Int64 */7 :
-            return /* Int64 */__(7, [
-                      fmt1[0],
-                      fmt1[1],
-                      fmt1[2],
-                      concat_fmt(fmt1[3], fmt2)
-                    ]);
-        case /* Float */8 :
-            return /* Float */__(8, [
-                      fmt1[0],
-                      fmt1[1],
-                      fmt1[2],
-                      concat_fmt(fmt1[3], fmt2)
-                    ]);
-        case /* Bool */9 :
-            return /* Bool */__(9, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Flush */10 :
-            return /* Flush */__(10, [concat_fmt(fmt1[0], fmt2)]);
-        case /* String_literal */11 :
-            return /* String_literal */__(11, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Char_literal */12 :
-            return /* Char_literal */__(12, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Format_arg */13 :
-            return /* Format_arg */__(13, [
-                      fmt1[0],
-                      fmt1[1],
-                      concat_fmt(fmt1[2], fmt2)
-                    ]);
-        case /* Format_subst */14 :
-            return /* Format_subst */__(14, [
-                      fmt1[0],
-                      fmt1[1],
-                      concat_fmt(fmt1[2], fmt2)
-                    ]);
-        case /* Alpha */15 :
-            return /* Alpha */__(15, [concat_fmt(fmt1[0], fmt2)]);
-        case /* Theta */16 :
-            return /* Theta */__(16, [concat_fmt(fmt1[0], fmt2)]);
-        case /* Formatting_lit */17 :
-            return /* Formatting_lit */__(17, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Formatting_gen */18 :
-            return /* Formatting_gen */__(18, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Reader */19 :
-            return /* Reader */__(19, [concat_fmt(fmt1[0], fmt2)]);
-        case /* Scan_char_set */20 :
-            return /* Scan_char_set */__(20, [
-                      fmt1[0],
-                      fmt1[1],
-                      concat_fmt(fmt1[2], fmt2)
-                    ]);
-        case /* Scan_get_counter */21 :
-            return /* Scan_get_counter */__(21, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Scan_next_char */22 :
-            return /* Scan_next_char */__(22, [concat_fmt(fmt1[0], fmt2)]);
-        case /* Ignored_param */23 :
-            return /* Ignored_param */__(23, [
-                      fmt1[0],
-                      concat_fmt(fmt1[1], fmt2)
-                    ]);
-        case /* Custom */24 :
-            return /* Custom */__(24, [
-                      fmt1[0],
-                      fmt1[1],
-                      concat_fmt(fmt1[2], fmt2)
-                    ]);
-        
-      }
-    }
-  }
-  /* No side effect */
-
   var Exit = create("Pervasives.Exit");
 
-  function abs(x) {
-    if (x >= 0) {
-      return x;
-    } else {
-      return -x | 0;
-    }
-  }
-
-  var min_int$1 = -2147483648;
-
-  function classify_float(x) {
-    if (isFinite(x)) {
-      if (Math.abs(x) >= 2.22507385850720138e-308) {
-        return /* FP_normal */0;
-      } else if (x !== 0) {
-        return /* FP_subnormal */1;
-      } else {
-        return /* FP_zero */2;
-      }
-    } else if (isNaN(x)) {
-      return /* FP_nan */4;
-    } else {
-      return /* FP_infinite */3;
-    }
-  }
-
-  function string_of_bool(b) {
-    if (b) {
-      return "true";
-    } else {
-      return "false";
-    }
-  }
+  var min_int = -2147483648;
 
   function $at(l1, l2) {
     if (l1) {
@@ -2343,7 +1123,7 @@
     }
   }
 
-  var max_int$1 = 2147483647;
+  var max_int = 2147483647;
   /* No side effect */
 
   function length(l) {
@@ -2695,77 +1475,6 @@
   var Bottom = create("Array.Bottom");
   /* No side effect */
 
-  function escaped(c) {
-    var exit = 0;
-    if (c >= 40) {
-      if (c !== 92) {
-        exit = c >= 127 ? 1 : 2;
-      } else {
-        return "\\\\";
-      }
-    } else if (c >= 32) {
-      if (c >= 39) {
-        return "\\'";
-      } else {
-        exit = 2;
-      }
-    } else if (c >= 14) {
-      exit = 1;
-    } else {
-      switch (c) {
-        case 8 :
-            return "\\b";
-        case 9 :
-            return "\\t";
-        case 10 :
-            return "\\n";
-        case 0 :
-        case 1 :
-        case 2 :
-        case 3 :
-        case 4 :
-        case 5 :
-        case 6 :
-        case 7 :
-        case 11 :
-        case 12 :
-            exit = 1;
-            break;
-        case 13 :
-            return "\\r";
-        
-      }
-    }
-    switch (exit) {
-      case 1 :
-          var s = [
-            0,
-            0,
-            0,
-            0
-          ];
-          s[0] = /* "\\" */92;
-          s[1] = 48 + (c / 100 | 0) | 0;
-          s[2] = 48 + (c / 10 | 0) % 10 | 0;
-          s[3] = 48 + c % 10 | 0;
-          return bytes_to_string(s);
-      case 2 :
-          var s$1 = [0];
-          s$1[0] = c;
-          return bytes_to_string(s$1);
-      
-    }
-  }
-
-  function uppercase_ascii(c) {
-    if (c >= /* "a" */97 && c <= /* "z" */122) {
-      return c - 32 | 0;
-    } else {
-      return c;
-    }
-  }
-  /* No side effect */
-
   function make(n, c) {
     var s = caml_create_bytes(n);
     caml_fill_bytes(s, 0, n, c);
@@ -2793,154 +1502,6 @@
     var r = caml_create_bytes(len);
     caml_blit_bytes(s, ofs, r, 0, len);
     return r;
-  }
-
-  function sub_string(b, ofs, len) {
-    return bytes_to_string(sub(b, ofs, len));
-  }
-
-  function blit$1(s1, ofs1, s2, ofs2, len) {
-    if (len < 0 || ofs1 < 0 || ofs1 > (s1.length - len | 0) || ofs2 < 0 || ofs2 > (s2.length - len | 0)) {
-      throw [
-            invalid_argument,
-            "Bytes.blit"
-          ];
-    }
-    return caml_blit_bytes(s1, ofs1, s2, ofs2, len);
-  }
-
-  function blit_string(s1, ofs1, s2, ofs2, len) {
-    if (len < 0 || ofs1 < 0 || ofs1 > (s1.length - len | 0) || ofs2 < 0 || ofs2 > (s2.length - len | 0)) {
-      throw [
-            invalid_argument,
-            "String.blit / Bytes.blit_string"
-          ];
-    }
-    return caml_blit_string(s1, ofs1, s2, ofs2, len);
-  }
-
-  function escaped$1(s) {
-    var n = 0;
-    for(var i = 0 ,i_finish = s.length - 1 | 0; i <= i_finish; ++i){
-      var match = s[i];
-      var tmp;
-      if (match >= 32) {
-        var switcher = match - 34 | 0;
-        tmp = switcher > 58 || switcher < 0 ? (
-            switcher >= 93 ? 4 : 1
-          ) : (
-            switcher > 57 || switcher < 1 ? 2 : 1
-          );
-      } else {
-        tmp = match >= 11 ? (
-            match !== 13 ? 4 : 2
-          ) : (
-            match >= 8 ? 2 : 4
-          );
-      }
-      n = n + tmp | 0;
-    }
-    if (n === s.length) {
-      return copy(s);
-    } else {
-      var s$prime = caml_create_bytes(n);
-      n = 0;
-      for(var i$1 = 0 ,i_finish$1 = s.length - 1 | 0; i$1 <= i_finish$1; ++i$1){
-        var c = s[i$1];
-        var exit = 0;
-        if (c >= 35) {
-          if (c !== 92) {
-            if (c >= 127) {
-              exit = 1;
-            } else {
-              s$prime[n] = c;
-            }
-          } else {
-            exit = 2;
-          }
-        } else if (c >= 32) {
-          if (c >= 34) {
-            exit = 2;
-          } else {
-            s$prime[n] = c;
-          }
-        } else if (c >= 14) {
-          exit = 1;
-        } else {
-          switch (c) {
-            case 8 :
-                s$prime[n] = /* "\\" */92;
-                n = n + 1 | 0;
-                s$prime[n] = /* "b" */98;
-                break;
-            case 9 :
-                s$prime[n] = /* "\\" */92;
-                n = n + 1 | 0;
-                s$prime[n] = /* "t" */116;
-                break;
-            case 10 :
-                s$prime[n] = /* "\\" */92;
-                n = n + 1 | 0;
-                s$prime[n] = /* "n" */110;
-                break;
-            case 0 :
-            case 1 :
-            case 2 :
-            case 3 :
-            case 4 :
-            case 5 :
-            case 6 :
-            case 7 :
-            case 11 :
-            case 12 :
-                exit = 1;
-                break;
-            case 13 :
-                s$prime[n] = /* "\\" */92;
-                n = n + 1 | 0;
-                s$prime[n] = /* "r" */114;
-                break;
-            
-          }
-        }
-        switch (exit) {
-          case 1 :
-              s$prime[n] = /* "\\" */92;
-              n = n + 1 | 0;
-              s$prime[n] = 48 + (c / 100 | 0) | 0;
-              n = n + 1 | 0;
-              s$prime[n] = 48 + (c / 10 | 0) % 10 | 0;
-              n = n + 1 | 0;
-              s$prime[n] = 48 + c % 10 | 0;
-              break;
-          case 2 :
-              s$prime[n] = /* "\\" */92;
-              n = n + 1 | 0;
-              s$prime[n] = c;
-              break;
-          
-        }
-        n = n + 1 | 0;
-      }
-      return s$prime;
-    }
-  }
-
-  function map$2(f, s) {
-    var l = s.length;
-    if (l === 0) {
-      return s;
-    } else {
-      var r = caml_create_bytes(l);
-      for(var i = 0 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
-        r[i] = _1(f, s[i]);
-      }
-      return r;
-    }
-  }
-
-  function uppercase_ascii$1(s) {
-    return map$2(uppercase_ascii, s);
   }
   /* No side effect */
 
@@ -3013,41 +1574,6 @@
     }
   }
 
-  function escaped$2(s) {
-    var needs_escape = function (_i) {
-      while(true) {
-        var i = _i;
-        if (i >= s.length) {
-          return false;
-        } else {
-          var match = s.charCodeAt(i);
-          if (match >= 32) {
-            var switcher = match - 34 | 0;
-            if (switcher > 58 || switcher < 0) {
-              if (switcher >= 93) {
-                return true;
-              } else {
-                _i = i + 1 | 0;
-                continue ;
-              }
-            } else if (switcher > 57 || switcher < 1) {
-              return true;
-            } else {
-              _i = i + 1 | 0;
-              continue ;
-            }
-          } else {
-            return true;
-          }
-        }
-      }  };
-    if (needs_escape(0)) {
-      return bytes_to_string(escaped$1(bytes_of_string(s)));
-    } else {
-      return s;
-    }
-  }
-
   function split_on_char(sep, s) {
     var r = /* [] */0;
     var j = s.length;
@@ -3066,8 +1592,6 @@
             r
           ];
   }
-
-  var blit$2 = blit_string;
   /* No side effect */
 
   // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
@@ -4976,7 +3500,7 @@
     }
   }
 
-  function add$1(x, data, m) {
+  function add(x, data, m) {
     if (m) {
       var r = m[/* r */3];
       var d = m[/* d */2];
@@ -4996,14 +3520,14 @@
                 ];
         }
       } else if (c < 0) {
-        var ll = add$1(x, data, l);
+        var ll = add(x, data, l);
         if (l === ll) {
           return m;
         } else {
           return bal(ll, v, d, r);
         }
       } else {
-        var rr = add$1(x, data, r);
+        var rr = add(x, data, r);
         if (r === rr) {
           return m;
         } else {
@@ -5432,11 +3956,11 @@
       }
     }}
 
-  function map$3(f, param) {
+  function map$2(f, param) {
     if (param) {
-      var l$prime = map$3(f, param[/* l */0]);
+      var l$prime = map$2(f, param[/* l */0]);
       var d$prime = _1(f, param[/* d */2]);
-      var r$prime = map$3(f, param[/* r */3]);
+      var r$prime = map$2(f, param[/* r */3]);
       return /* Node */[
               /* l */l$prime,
               /* v */param[/* v */1],
@@ -5825,7 +4349,7 @@
     empty: /* Empty */0,
     is_empty: is_empty,
     mem: mem,
-    add: add$1,
+    add: add,
     update: update,
     singleton: singleton,
     remove: remove,
@@ -5854,7 +4378,7 @@
     find_first_opt: find_first_opt,
     find_last: find_last,
     find_last_opt: find_last_opt,
-    map: map$3,
+    map: map$2,
     mapi: mapi$1
   };
 
@@ -5875,7 +4399,7 @@
           return /* Error */__(1, ["Non-int value"]);
         } else {
           var n = match[0];
-          if (n > min_int$1 && n < max_int$1) {
+          if (n > min_int && n < max_int) {
             return /* Ok */__(0, [n | 0]);
           } else {
             return /* Error */__(1, ["number out of int range"]);
@@ -6054,7 +4578,7 @@
                               match$1[0]
                             ];
                       } else {
-                        return add$1(k, match$1[0], d);
+                        return add(k, match$1[0], d);
                       }
                     } else {
                       throw [
@@ -6489,7 +5013,7 @@
     return /* Text */__(1, [str]);
   }
 
-  function div$1($staropt$star, $staropt$star$1, props, nodes) {
+  function div($staropt$star, $staropt$star$1, props, nodes) {
     var key = $staropt$star !== undefined ? $staropt$star : "";
     var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
     return fullnode("", "div", key, unique, props, nodes);
@@ -6499,12 +5023,6 @@
     var key = $staropt$star !== undefined ? $staropt$star : "";
     var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
     return fullnode("", "span", key, unique, props, nodes);
-  }
-
-  function p($staropt$star, $staropt$star$1, props, nodes) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
-    return fullnode("", "p", key, unique, props, nodes);
   }
 
   function a($staropt$star, $staropt$star$1, props, nodes) {
@@ -6720,17 +5238,17 @@
 
   function draw_html(state) {
     var draw_line = function (i, line) {
-      return div$1(undefined, undefined, /* :: */[
+      return div(undefined, undefined, /* :: */[
                   class$prime("flex-1 flex"),
                   /* [] */0
                 ], to_list(mapi((function (param, param$1) {
                             var i$1 = i;
                             var j = param;
                             var e = param$1;
-                            return div$1(undefined, undefined, /* :: */[
+                            return div(undefined, undefined, /* :: */[
                                         class$prime(e === /* Alive */1 ? "alive" : "dead"),
                                         /* :: */[
-                                          onClick(/* Click */__(0, [
+                                          onClick(/* Flip */__(0, [
                                                   i$1,
                                                   j
                                                 ])),
@@ -6746,7 +5264,7 @@
   // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
 
   function lifeData(param_0) {
-    return /* LifeData */__(11, [param_0]);
+    return /* LifeData */__(10, [param_0]);
   }
 
   var rule_list = /* :: */[
@@ -6762,6 +5280,32 @@
         1
       ],
       /* [] */0
+    ]
+  ];
+
+  var seed_list = /* :: */[
+    /* tuple */[
+      "Test",
+      "test.rle"
+    ],
+    /* :: */[
+      /* tuple */[
+        "Elephant",
+        "elephant.rle"
+      ],
+      /* :: */[
+        /* tuple */[
+          "UFO",
+          "ufo.rle"
+        ],
+        /* :: */[
+          /* tuple */[
+            "Bob",
+            "bob.rle"
+          ],
+          /* [] */0
+        ]
+      ]
     ]
   ];
   /* No side effect */
@@ -6881,2967 +5425,11 @@
       }
     }}
 
-  function blit$3(m1, x1, y1, m2, x2, y2, w, h) {
+  function blit$1(m1, x1, y1, m2, x2, y2, w, h) {
     for(var i = 0 ,i_finish = w - 1 | 0; i <= i_finish; ++i){
       blit(caml_array_get(m1, x1 + i | 0), y1, caml_array_get(m2, x2 + i | 0), y2, h);
     }
     return /* () */0;
-  }
-  /* No side effect */
-
-  function create$2(n) {
-    var n$1 = n < 1 ? 1 : n;
-    var s = caml_create_bytes(n$1);
-    return {
-            buffer: s,
-            position: 0,
-            length: n$1,
-            initial_buffer: s
-          };
-  }
-
-  function contents(b) {
-    return sub_string(b.buffer, 0, b.position);
-  }
-
-  function resize(b, more) {
-    var len = b.length;
-    var new_len = len;
-    while((b.position + more | 0) > new_len) {
-      new_len = (new_len << 1);
-    }  var new_buffer = caml_create_bytes(new_len);
-    blit$1(b.buffer, 0, new_buffer, 0, b.position);
-    b.buffer = new_buffer;
-    b.length = new_len;
-    return /* () */0;
-  }
-
-  function add_char(b, c) {
-    var pos = b.position;
-    if (pos >= b.length) {
-      resize(b, 1);
-    }
-    b.buffer[pos] = c;
-    b.position = pos + 1 | 0;
-    return /* () */0;
-  }
-
-  function add_string(b, s) {
-    var len = s.length;
-    var new_position = b.position + len | 0;
-    if (new_position > b.length) {
-      resize(b, len);
-    }
-    blit_string(s, 0, b.buffer, b.position, len);
-    b.position = new_position;
-    return /* () */0;
-  }
-  /* No side effect */
-
-  function buffer_check_size(buf, overhead) {
-    var len = buf.bytes.length;
-    var min_len = buf.ind + overhead | 0;
-    if (min_len > len) {
-      var new_len = caml_int_max((len << 1), min_len);
-      var new_str = caml_create_bytes(new_len);
-      blit$1(buf.bytes, 0, new_str, 0, len);
-      buf.bytes = new_str;
-      return /* () */0;
-    } else {
-      return 0;
-    }
-  }
-
-  function buffer_add_char(buf, c) {
-    buffer_check_size(buf, 1);
-    buf.bytes[buf.ind] = c;
-    buf.ind = buf.ind + 1 | 0;
-    return /* () */0;
-  }
-
-  function buffer_add_string(buf, s) {
-    var str_len = s.length;
-    buffer_check_size(buf, str_len);
-    blit$2(s, 0, buf.bytes, buf.ind, str_len);
-    buf.ind = buf.ind + str_len | 0;
-    return /* () */0;
-  }
-
-  function buffer_contents(buf) {
-    return sub_string(buf.bytes, 0, buf.ind);
-  }
-
-  function char_of_fconv(fconv) {
-    switch (fconv) {
-      case /* Float_f */0 :
-      case /* Float_pf */1 :
-      case /* Float_sf */2 :
-          return /* "f" */102;
-      case /* Float_e */3 :
-      case /* Float_pe */4 :
-      case /* Float_se */5 :
-          return /* "e" */101;
-      case /* Float_E */6 :
-      case /* Float_pE */7 :
-      case /* Float_sE */8 :
-          return /* "E" */69;
-      case /* Float_g */9 :
-      case /* Float_pg */10 :
-      case /* Float_sg */11 :
-          return /* "g" */103;
-      case /* Float_G */12 :
-      case /* Float_pG */13 :
-      case /* Float_sG */14 :
-          return /* "G" */71;
-      case /* Float_F */15 :
-          return /* "F" */70;
-      case /* Float_h */16 :
-      case /* Float_ph */17 :
-      case /* Float_sh */18 :
-          return /* "h" */104;
-      case /* Float_H */19 :
-      case /* Float_pH */20 :
-      case /* Float_sH */21 :
-          return /* "H" */72;
-      
-    }
-  }
-
-  function bprint_fconv_flag(buf, fconv) {
-    switch (fconv) {
-      case /* Float_f */0 :
-      case /* Float_e */3 :
-      case /* Float_E */6 :
-      case /* Float_g */9 :
-      case /* Float_G */12 :
-      case /* Float_F */15 :
-      case /* Float_h */16 :
-      case /* Float_H */19 :
-          return /* () */0;
-      case /* Float_pf */1 :
-      case /* Float_pe */4 :
-      case /* Float_pE */7 :
-      case /* Float_pg */10 :
-      case /* Float_pG */13 :
-      case /* Float_ph */17 :
-      case /* Float_pH */20 :
-          return buffer_add_char(buf, /* "+" */43);
-      case /* Float_sf */2 :
-      case /* Float_se */5 :
-      case /* Float_sE */8 :
-      case /* Float_sg */11 :
-      case /* Float_sG */14 :
-      case /* Float_sh */18 :
-      case /* Float_sH */21 :
-          return buffer_add_char(buf, /* " " */32);
-      
-    }
-  }
-
-  function string_of_formatting_lit(formatting_lit) {
-    if (typeof formatting_lit === "number") {
-      switch (formatting_lit) {
-        case /* Close_box */0 :
-            return "@]";
-        case /* Close_tag */1 :
-            return "@}";
-        case /* FFlush */2 :
-            return "@?";
-        case /* Force_newline */3 :
-            return "@\n";
-        case /* Flush_newline */4 :
-            return "@.";
-        case /* Escaped_at */5 :
-            return "@@";
-        case /* Escaped_percent */6 :
-            return "@%";
-        
-      }
-    } else {
-      switch (formatting_lit.tag | 0) {
-        case /* Break */0 :
-        case /* Magic_size */1 :
-            return formatting_lit[0];
-        case /* Scan_indic */2 :
-            return "@" + bytes_to_string(make(1, formatting_lit[0]));
-        
-      }
-    }
-  }
-
-  function bprint_fmtty(buf, _fmtty) {
-    while(true) {
-      var fmtty = _fmtty;
-      if (typeof fmtty === "number") {
-        return /* () */0;
-      } else {
-        switch (fmtty.tag | 0) {
-          case /* Char_ty */0 :
-              buffer_add_string(buf, "%c");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* String_ty */1 :
-              buffer_add_string(buf, "%s");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Int_ty */2 :
-              buffer_add_string(buf, "%i");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Int32_ty */3 :
-              buffer_add_string(buf, "%li");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Nativeint_ty */4 :
-              buffer_add_string(buf, "%ni");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Int64_ty */5 :
-              buffer_add_string(buf, "%Li");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Float_ty */6 :
-              buffer_add_string(buf, "%f");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Bool_ty */7 :
-              buffer_add_string(buf, "%B");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Format_arg_ty */8 :
-              buffer_add_string(buf, "%{");
-              bprint_fmtty(buf, fmtty[0]);
-              buffer_add_string(buf, "%}");
-              _fmtty = fmtty[1];
-              continue ;
-          case /* Format_subst_ty */9 :
-              buffer_add_string(buf, "%(");
-              bprint_fmtty(buf, fmtty[0]);
-              buffer_add_string(buf, "%)");
-              _fmtty = fmtty[2];
-              continue ;
-          case /* Alpha_ty */10 :
-              buffer_add_string(buf, "%a");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Theta_ty */11 :
-              buffer_add_string(buf, "%t");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Any_ty */12 :
-              buffer_add_string(buf, "%?");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Reader_ty */13 :
-              buffer_add_string(buf, "%r");
-              _fmtty = fmtty[0];
-              continue ;
-          case /* Ignored_reader_ty */14 :
-              buffer_add_string(buf, "%_r");
-              _fmtty = fmtty[0];
-              continue ;
-          
-        }
-      }
-    }}
-
-  function symm(param) {
-    if (typeof param === "number") {
-      return /* End_of_fmtty */0;
-    } else {
-      switch (param.tag | 0) {
-        case /* Char_ty */0 :
-            return /* Char_ty */__(0, [symm(param[0])]);
-        case /* String_ty */1 :
-            return /* String_ty */__(1, [symm(param[0])]);
-        case /* Int_ty */2 :
-            return /* Int_ty */__(2, [symm(param[0])]);
-        case /* Int32_ty */3 :
-            return /* Int32_ty */__(3, [symm(param[0])]);
-        case /* Nativeint_ty */4 :
-            return /* Nativeint_ty */__(4, [symm(param[0])]);
-        case /* Int64_ty */5 :
-            return /* Int64_ty */__(5, [symm(param[0])]);
-        case /* Float_ty */6 :
-            return /* Float_ty */__(6, [symm(param[0])]);
-        case /* Bool_ty */7 :
-            return /* Bool_ty */__(7, [symm(param[0])]);
-        case /* Format_arg_ty */8 :
-            return /* Format_arg_ty */__(8, [
-                      param[0],
-                      symm(param[1])
-                    ]);
-        case /* Format_subst_ty */9 :
-            return /* Format_subst_ty */__(9, [
-                      param[1],
-                      param[0],
-                      symm(param[2])
-                    ]);
-        case /* Alpha_ty */10 :
-            return /* Alpha_ty */__(10, [symm(param[0])]);
-        case /* Theta_ty */11 :
-            return /* Theta_ty */__(11, [symm(param[0])]);
-        case /* Any_ty */12 :
-            return /* Any_ty */__(12, [symm(param[0])]);
-        case /* Reader_ty */13 :
-            return /* Reader_ty */__(13, [symm(param[0])]);
-        case /* Ignored_reader_ty */14 :
-            return /* Ignored_reader_ty */__(14, [symm(param[0])]);
-        
-      }
-    }
-  }
-
-  function fmtty_rel_det(param) {
-    if (typeof param === "number") {
-      return /* tuple */[
-              (function (param) {
-                  return /* Refl */0;
-                }),
-              (function (param) {
-                  return /* Refl */0;
-                }),
-              (function (param) {
-                  return /* Refl */0;
-                }),
-              (function (param) {
-                  return /* Refl */0;
-                })
-            ];
-    } else {
-      switch (param.tag | 0) {
-        case /* Char_ty */0 :
-            var match = fmtty_rel_det(param[0]);
-            var af = match[1];
-            var fa = match[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match[2],
-                    match[3]
-                  ];
-        case /* String_ty */1 :
-            var match$1 = fmtty_rel_det(param[0]);
-            var af$1 = match$1[1];
-            var fa$1 = match$1[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$1, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$1, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$1[2],
-                    match$1[3]
-                  ];
-        case /* Int_ty */2 :
-            var match$2 = fmtty_rel_det(param[0]);
-            var af$2 = match$2[1];
-            var fa$2 = match$2[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$2, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$2, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$2[2],
-                    match$2[3]
-                  ];
-        case /* Int32_ty */3 :
-            var match$3 = fmtty_rel_det(param[0]);
-            var af$3 = match$3[1];
-            var fa$3 = match$3[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$3, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$3, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$3[2],
-                    match$3[3]
-                  ];
-        case /* Nativeint_ty */4 :
-            var match$4 = fmtty_rel_det(param[0]);
-            var af$4 = match$4[1];
-            var fa$4 = match$4[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$4, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$4, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$4[2],
-                    match$4[3]
-                  ];
-        case /* Int64_ty */5 :
-            var match$5 = fmtty_rel_det(param[0]);
-            var af$5 = match$5[1];
-            var fa$5 = match$5[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$5, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$5, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$5[2],
-                    match$5[3]
-                  ];
-        case /* Float_ty */6 :
-            var match$6 = fmtty_rel_det(param[0]);
-            var af$6 = match$6[1];
-            var fa$6 = match$6[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$6, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$6, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$6[2],
-                    match$6[3]
-                  ];
-        case /* Bool_ty */7 :
-            var match$7 = fmtty_rel_det(param[0]);
-            var af$7 = match$7[1];
-            var fa$7 = match$7[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$7, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$7, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$7[2],
-                    match$7[3]
-                  ];
-        case /* Format_arg_ty */8 :
-            var match$8 = fmtty_rel_det(param[1]);
-            var af$8 = match$8[1];
-            var fa$8 = match$8[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$8, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$8, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$8[2],
-                    match$8[3]
-                  ];
-        case /* Format_subst_ty */9 :
-            var match$9 = fmtty_rel_det(param[2]);
-            var de = match$9[3];
-            var ed = match$9[2];
-            var af$9 = match$9[1];
-            var fa$9 = match$9[0];
-            var ty = trans(symm(param[0]), param[1]);
-            var match$10 = fmtty_rel_det(ty);
-            var jd = match$10[3];
-            var dj = match$10[2];
-            var ga = match$10[1];
-            var ag = match$10[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$9, /* Refl */0);
-                        _1(ag, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(ga, /* Refl */0);
-                        _1(af$9, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(ed, /* Refl */0);
-                        _1(dj, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(jd, /* Refl */0);
-                        _1(de, /* Refl */0);
-                        return /* Refl */0;
-                      })
-                  ];
-        case /* Alpha_ty */10 :
-            var match$11 = fmtty_rel_det(param[0]);
-            var af$10 = match$11[1];
-            var fa$10 = match$11[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$10, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$10, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$11[2],
-                    match$11[3]
-                  ];
-        case /* Theta_ty */11 :
-            var match$12 = fmtty_rel_det(param[0]);
-            var af$11 = match$12[1];
-            var fa$11 = match$12[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$11, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$11, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$12[2],
-                    match$12[3]
-                  ];
-        case /* Any_ty */12 :
-            var match$13 = fmtty_rel_det(param[0]);
-            var af$12 = match$13[1];
-            var fa$12 = match$13[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$12, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$12, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    match$13[2],
-                    match$13[3]
-                  ];
-        case /* Reader_ty */13 :
-            var match$14 = fmtty_rel_det(param[0]);
-            var de$1 = match$14[3];
-            var ed$1 = match$14[2];
-            var af$13 = match$14[1];
-            var fa$13 = match$14[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$13, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$13, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(ed$1, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(de$1, /* Refl */0);
-                        return /* Refl */0;
-                      })
-                  ];
-        case /* Ignored_reader_ty */14 :
-            var match$15 = fmtty_rel_det(param[0]);
-            var de$2 = match$15[3];
-            var ed$2 = match$15[2];
-            var af$14 = match$15[1];
-            var fa$14 = match$15[0];
-            return /* tuple */[
-                    (function (param) {
-                        _1(fa$14, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(af$14, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(ed$2, /* Refl */0);
-                        return /* Refl */0;
-                      }),
-                    (function (param) {
-                        _1(de$2, /* Refl */0);
-                        return /* Refl */0;
-                      })
-                  ];
-        
-      }
-    }
-  }
-
-  function trans(ty1, ty2) {
-    var exit = 0;
-    if (typeof ty1 === "number") {
-      if (typeof ty2 === "number") {
-        return /* End_of_fmtty */0;
-      } else {
-        switch (ty2.tag | 0) {
-          case /* Format_arg_ty */8 :
-              exit = 6;
-              break;
-          case /* Format_subst_ty */9 :
-              exit = 7;
-              break;
-          case /* Alpha_ty */10 :
-              exit = 1;
-              break;
-          case /* Theta_ty */11 :
-              exit = 2;
-              break;
-          case /* Any_ty */12 :
-              exit = 3;
-              break;
-          case /* Reader_ty */13 :
-              exit = 4;
-              break;
-          case /* Ignored_reader_ty */14 :
-              exit = 5;
-              break;
-          default:
-            throw [
-                  assert_failure,
-                  /* tuple */[
-                    "camlinternalFormat.ml",
-                    846,
-                    23
-                  ]
-                ];
-        }
-      }
-    } else {
-      switch (ty1.tag | 0) {
-        case /* Char_ty */0 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Char_ty */0 :
-                    return /* Char_ty */__(0, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* String_ty */1 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* String_ty */1 :
-                    return /* String_ty */__(1, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Int_ty */2 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Int_ty */2 :
-                    return /* Int_ty */__(2, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Int32_ty */3 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Int32_ty */3 :
-                    return /* Int32_ty */__(3, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Nativeint_ty */4 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Nativeint_ty */4 :
-                    return /* Nativeint_ty */__(4, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Int64_ty */5 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Int64_ty */5 :
-                    return /* Int64_ty */__(5, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Float_ty */6 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Float_ty */6 :
-                    return /* Float_ty */__(6, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Bool_ty */7 :
-            if (typeof ty2 === "number") {
-              exit = 8;
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Bool_ty */7 :
-                    return /* Bool_ty */__(7, [trans(ty1[0], ty2[0])]);
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    exit = 7;
-                    break;
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                
-              }
-            }
-            break;
-        case /* Format_arg_ty */8 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      832,
-                      26
-                    ]
-                  ];
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Format_arg_ty */8 :
-                    return /* Format_arg_ty */__(8, [
-                              trans(ty1[0], ty2[0]),
-                              trans(ty1[1], ty2[1])
-                            ]);
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                default:
-                  throw [
-                        assert_failure,
-                        /* tuple */[
-                          "camlinternalFormat.ml",
-                          832,
-                          26
-                        ]
-                      ];
-              }
-            }
-            break;
-        case /* Format_subst_ty */9 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      842,
-                      28
-                    ]
-                  ];
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Format_arg_ty */8 :
-                    exit = 6;
-                    break;
-                case /* Format_subst_ty */9 :
-                    var ty = trans(symm(ty1[1]), ty2[0]);
-                    var match = fmtty_rel_det(ty);
-                    _1(match[1], /* Refl */0);
-                    _1(match[3], /* Refl */0);
-                    return /* Format_subst_ty */__(9, [
-                              ty1[0],
-                              ty2[1],
-                              trans(ty1[2], ty2[2])
-                            ]);
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    exit = 5;
-                    break;
-                default:
-                  throw [
-                        assert_failure,
-                        /* tuple */[
-                          "camlinternalFormat.ml",
-                          842,
-                          28
-                        ]
-                      ];
-              }
-            }
-            break;
-        case /* Alpha_ty */10 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      810,
-                      21
-                    ]
-                  ];
-            } else if (ty2.tag === /* Alpha_ty */10) {
-              return /* Alpha_ty */__(10, [trans(ty1[0], ty2[0])]);
-            } else {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      810,
-                      21
-                    ]
-                  ];
-            }
-        case /* Theta_ty */11 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      814,
-                      21
-                    ]
-                  ];
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    return /* Theta_ty */__(11, [trans(ty1[0], ty2[0])]);
-                default:
-                  throw [
-                        assert_failure,
-                        /* tuple */[
-                          "camlinternalFormat.ml",
-                          814,
-                          21
-                        ]
-                      ];
-              }
-            }
-            break;
-        case /* Any_ty */12 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      818,
-                      19
-                    ]
-                  ];
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    return /* Any_ty */__(12, [trans(ty1[0], ty2[0])]);
-                default:
-                  throw [
-                        assert_failure,
-                        /* tuple */[
-                          "camlinternalFormat.ml",
-                          818,
-                          19
-                        ]
-                      ];
-              }
-            }
-            break;
-        case /* Reader_ty */13 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      822,
-                      22
-                    ]
-                  ];
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    return /* Reader_ty */__(13, [trans(ty1[0], ty2[0])]);
-                default:
-                  throw [
-                        assert_failure,
-                        /* tuple */[
-                          "camlinternalFormat.ml",
-                          822,
-                          22
-                        ]
-                      ];
-              }
-            }
-            break;
-        case /* Ignored_reader_ty */14 :
-            if (typeof ty2 === "number") {
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      827,
-                      30
-                    ]
-                  ];
-            } else {
-              switch (ty2.tag | 0) {
-                case /* Alpha_ty */10 :
-                    exit = 1;
-                    break;
-                case /* Theta_ty */11 :
-                    exit = 2;
-                    break;
-                case /* Any_ty */12 :
-                    exit = 3;
-                    break;
-                case /* Reader_ty */13 :
-                    exit = 4;
-                    break;
-                case /* Ignored_reader_ty */14 :
-                    return /* Ignored_reader_ty */__(14, [trans(ty1[0], ty2[0])]);
-                default:
-                  throw [
-                        assert_failure,
-                        /* tuple */[
-                          "camlinternalFormat.ml",
-                          827,
-                          30
-                        ]
-                      ];
-              }
-            }
-            break;
-        
-      }
-    }
-    switch (exit) {
-      case 1 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  811,
-                  21
-                ]
-              ];
-      case 2 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  815,
-                  21
-                ]
-              ];
-      case 3 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  819,
-                  19
-                ]
-              ];
-      case 4 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  823,
-                  22
-                ]
-              ];
-      case 5 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  828,
-                  30
-                ]
-              ];
-      case 6 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  833,
-                  26
-                ]
-              ];
-      case 7 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  843,
-                  28
-                ]
-              ];
-      case 8 :
-          throw [
-                assert_failure,
-                /* tuple */[
-                  "camlinternalFormat.ml",
-                  847,
-                  23
-                ]
-              ];
-      
-    }
-  }
-
-  var Type_mismatch = create("CamlinternalFormat.Type_mismatch");
-
-  function type_padding(pad, fmtty) {
-    if (typeof pad === "number") {
-      return /* Padding_fmtty_EBB */[
-              /* No_padding */0,
-              fmtty
-            ];
-    } else if (pad.tag) {
-      if (typeof fmtty === "number") {
-        throw Type_mismatch;
-      } else if (fmtty.tag === /* Int_ty */2) {
-        return /* Padding_fmtty_EBB */[
-                /* Arg_padding */__(1, [pad[0]]),
-                fmtty[0]
-              ];
-      } else {
-        throw Type_mismatch;
-      }
-    } else {
-      return /* Padding_fmtty_EBB */[
-              /* Lit_padding */__(0, [
-                  pad[0],
-                  pad[1]
-                ]),
-              fmtty
-            ];
-    }
-  }
-
-  function type_padprec(pad, prec, fmtty) {
-    var match = type_padding(pad, fmtty);
-    if (typeof prec === "number") {
-      if (prec !== 0) {
-        var match$1 = match[1];
-        if (typeof match$1 === "number") {
-          throw Type_mismatch;
-        } else if (match$1.tag === /* Int_ty */2) {
-          return /* Padprec_fmtty_EBB */[
-                  match[0],
-                  /* Arg_precision */1,
-                  match$1[0]
-                ];
-        } else {
-          throw Type_mismatch;
-        }
-      } else {
-        return /* Padprec_fmtty_EBB */[
-                match[0],
-                /* No_precision */0,
-                match[1]
-              ];
-      }
-    } else {
-      return /* Padprec_fmtty_EBB */[
-              match[0],
-              /* Lit_precision */[prec[0]],
-              match[1]
-            ];
-    }
-  }
-
-  function type_ignored_format_substitution(sub_fmtty, fmt, fmtty) {
-    if (typeof sub_fmtty === "number") {
-      return /* Fmtty_fmt_EBB */[
-              /* End_of_fmtty */0,
-              type_format_gen(fmt, fmtty)
-            ];
-    } else {
-      switch (sub_fmtty.tag | 0) {
-        case /* Char_ty */0 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag) {
-              throw Type_mismatch;
-            } else {
-              var match = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Char_ty */__(0, [match[0]]),
-                      match[1]
-                    ];
-            }
-        case /* String_ty */1 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* String_ty */1) {
-              var match$1 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* String_ty */__(1, [match$1[0]]),
-                      match$1[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Int_ty */2 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Int_ty */2) {
-              var match$2 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Int_ty */__(2, [match$2[0]]),
-                      match$2[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Int32_ty */3 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Int32_ty */3) {
-              var match$3 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Int32_ty */__(3, [match$3[0]]),
-                      match$3[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Nativeint_ty */4 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Nativeint_ty */4) {
-              var match$4 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Nativeint_ty */__(4, [match$4[0]]),
-                      match$4[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Int64_ty */5 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Int64_ty */5) {
-              var match$5 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Int64_ty */__(5, [match$5[0]]),
-                      match$5[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Float_ty */6 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Float_ty */6) {
-              var match$6 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Float_ty */__(6, [match$6[0]]),
-                      match$6[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Bool_ty */7 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Bool_ty */7) {
-              var match$7 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Bool_ty */__(7, [match$7[0]]),
-                      match$7[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Format_arg_ty */8 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Format_arg_ty */8) {
-              var sub2_fmtty$prime = fmtty[0];
-              if (caml_notequal(/* Fmtty_EBB */[sub_fmtty[0]], /* Fmtty_EBB */[sub2_fmtty$prime])) {
-                throw Type_mismatch;
-              }
-              var match$8 = type_ignored_format_substitution(sub_fmtty[1], fmt, fmtty[1]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Format_arg_ty */__(8, [
-                          sub2_fmtty$prime,
-                          match$8[0]
-                        ]),
-                      match$8[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Format_subst_ty */9 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Format_subst_ty */9) {
-              var sub2_fmtty$prime$1 = fmtty[1];
-              var sub1_fmtty$prime = fmtty[0];
-              if (caml_notequal(/* Fmtty_EBB */[erase_rel(sub_fmtty[0])], /* Fmtty_EBB */[erase_rel(sub1_fmtty$prime)])) {
-                throw Type_mismatch;
-              }
-              if (caml_notequal(/* Fmtty_EBB */[erase_rel(sub_fmtty[1])], /* Fmtty_EBB */[erase_rel(sub2_fmtty$prime$1)])) {
-                throw Type_mismatch;
-              }
-              var sub_fmtty$prime = trans(symm(sub1_fmtty$prime), sub2_fmtty$prime$1);
-              var match$9 = fmtty_rel_det(sub_fmtty$prime);
-              _1(match$9[1], /* Refl */0);
-              _1(match$9[3], /* Refl */0);
-              var match$10 = type_ignored_format_substitution(erase_rel(sub_fmtty[2]), fmt, fmtty[2]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Format_subst_ty */__(9, [
-                          sub1_fmtty$prime,
-                          sub2_fmtty$prime$1,
-                          symm(match$10[0])
-                        ]),
-                      match$10[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Alpha_ty */10 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Alpha_ty */10) {
-              var match$11 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Alpha_ty */__(10, [match$11[0]]),
-                      match$11[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Theta_ty */11 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Theta_ty */11) {
-              var match$12 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Theta_ty */__(11, [match$12[0]]),
-                      match$12[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Any_ty */12 :
-            throw Type_mismatch;
-        case /* Reader_ty */13 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Reader_ty */13) {
-              var match$13 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Reader_ty */__(13, [match$13[0]]),
-                      match$13[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Ignored_reader_ty */14 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Ignored_reader_ty */14) {
-              var match$14 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
-              return /* Fmtty_fmt_EBB */[
-                      /* Ignored_reader_ty */__(14, [match$14[0]]),
-                      match$14[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        
-      }
-    }
-  }
-
-  function type_format_gen(fmt, fmtty) {
-    if (typeof fmt === "number") {
-      return /* Fmt_fmtty_EBB */[
-              /* End_of_format */0,
-              fmtty
-            ];
-    } else {
-      switch (fmt.tag | 0) {
-        case /* Char */0 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag) {
-              throw Type_mismatch;
-            } else {
-              var match = type_format_gen(fmt[0], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Char */__(0, [match[0]]),
-                      match[1]
-                    ];
-            }
-        case /* Caml_char */1 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag) {
-              throw Type_mismatch;
-            } else {
-              var match$1 = type_format_gen(fmt[0], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Caml_char */__(1, [match$1[0]]),
-                      match$1[1]
-                    ];
-            }
-        case /* String */2 :
-            var match$2 = type_padding(fmt[0], fmtty);
-            var match$3 = match$2[1];
-            if (typeof match$3 === "number") {
-              throw Type_mismatch;
-            } else if (match$3.tag === /* String_ty */1) {
-              var match$4 = type_format_gen(fmt[1], match$3[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* String */__(2, [
-                          match$2[0],
-                          match$4[0]
-                        ]),
-                      match$4[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Caml_string */3 :
-            var match$5 = type_padding(fmt[0], fmtty);
-            var match$6 = match$5[1];
-            if (typeof match$6 === "number") {
-              throw Type_mismatch;
-            } else if (match$6.tag === /* String_ty */1) {
-              var match$7 = type_format_gen(fmt[1], match$6[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Caml_string */__(3, [
-                          match$5[0],
-                          match$7[0]
-                        ]),
-                      match$7[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Int */4 :
-            var match$8 = type_padprec(fmt[1], fmt[2], fmtty);
-            var match$9 = match$8[2];
-            if (typeof match$9 === "number") {
-              throw Type_mismatch;
-            } else if (match$9.tag === /* Int_ty */2) {
-              var match$10 = type_format_gen(fmt[3], match$9[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Int */__(4, [
-                          fmt[0],
-                          match$8[0],
-                          match$8[1],
-                          match$10[0]
-                        ]),
-                      match$10[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Int32 */5 :
-            var match$11 = type_padprec(fmt[1], fmt[2], fmtty);
-            var match$12 = match$11[2];
-            if (typeof match$12 === "number") {
-              throw Type_mismatch;
-            } else if (match$12.tag === /* Int32_ty */3) {
-              var match$13 = type_format_gen(fmt[3], match$12[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Int32 */__(5, [
-                          fmt[0],
-                          match$11[0],
-                          match$11[1],
-                          match$13[0]
-                        ]),
-                      match$13[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Nativeint */6 :
-            var match$14 = type_padprec(fmt[1], fmt[2], fmtty);
-            var match$15 = match$14[2];
-            if (typeof match$15 === "number") {
-              throw Type_mismatch;
-            } else if (match$15.tag === /* Nativeint_ty */4) {
-              var match$16 = type_format_gen(fmt[3], match$15[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Nativeint */__(6, [
-                          fmt[0],
-                          match$14[0],
-                          match$14[1],
-                          match$16[0]
-                        ]),
-                      match$16[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Int64 */7 :
-            var match$17 = type_padprec(fmt[1], fmt[2], fmtty);
-            var match$18 = match$17[2];
-            if (typeof match$18 === "number") {
-              throw Type_mismatch;
-            } else if (match$18.tag === /* Int64_ty */5) {
-              var match$19 = type_format_gen(fmt[3], match$18[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Int64 */__(7, [
-                          fmt[0],
-                          match$17[0],
-                          match$17[1],
-                          match$19[0]
-                        ]),
-                      match$19[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Float */8 :
-            var match$20 = type_padprec(fmt[1], fmt[2], fmtty);
-            var match$21 = match$20[2];
-            if (typeof match$21 === "number") {
-              throw Type_mismatch;
-            } else if (match$21.tag === /* Float_ty */6) {
-              var match$22 = type_format_gen(fmt[3], match$21[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Float */__(8, [
-                          fmt[0],
-                          match$20[0],
-                          match$20[1],
-                          match$22[0]
-                        ]),
-                      match$22[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Bool */9 :
-            var match$23 = type_padding(fmt[0], fmtty);
-            var match$24 = match$23[1];
-            if (typeof match$24 === "number") {
-              throw Type_mismatch;
-            } else if (match$24.tag === /* Bool_ty */7) {
-              var match$25 = type_format_gen(fmt[1], match$24[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Bool */__(9, [
-                          match$23[0],
-                          match$25[0]
-                        ]),
-                      match$25[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Flush */10 :
-            var match$26 = type_format_gen(fmt[0], fmtty);
-            return /* Fmt_fmtty_EBB */[
-                    /* Flush */__(10, [match$26[0]]),
-                    match$26[1]
-                  ];
-        case /* String_literal */11 :
-            var match$27 = type_format_gen(fmt[1], fmtty);
-            return /* Fmt_fmtty_EBB */[
-                    /* String_literal */__(11, [
-                        fmt[0],
-                        match$27[0]
-                      ]),
-                    match$27[1]
-                  ];
-        case /* Char_literal */12 :
-            var match$28 = type_format_gen(fmt[1], fmtty);
-            return /* Fmt_fmtty_EBB */[
-                    /* Char_literal */__(12, [
-                        fmt[0],
-                        match$28[0]
-                      ]),
-                    match$28[1]
-                  ];
-        case /* Format_arg */13 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Format_arg_ty */8) {
-              var sub_fmtty$prime = fmtty[0];
-              if (caml_notequal(/* Fmtty_EBB */[fmt[1]], /* Fmtty_EBB */[sub_fmtty$prime])) {
-                throw Type_mismatch;
-              }
-              var match$29 = type_format_gen(fmt[2], fmtty[1]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Format_arg */__(13, [
-                          fmt[0],
-                          sub_fmtty$prime,
-                          match$29[0]
-                        ]),
-                      match$29[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Format_subst */14 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Format_subst_ty */9) {
-              var sub_fmtty1 = fmtty[0];
-              if (caml_notequal(/* Fmtty_EBB */[erase_rel(fmt[1])], /* Fmtty_EBB */[erase_rel(sub_fmtty1)])) {
-                throw Type_mismatch;
-              }
-              var match$30 = type_format_gen(fmt[2], erase_rel(fmtty[2]));
-              return /* Fmt_fmtty_EBB */[
-                      /* Format_subst */__(14, [
-                          fmt[0],
-                          sub_fmtty1,
-                          match$30[0]
-                        ]),
-                      match$30[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Alpha */15 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Alpha_ty */10) {
-              var match$31 = type_format_gen(fmt[0], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Alpha */__(15, [match$31[0]]),
-                      match$31[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Theta */16 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Theta_ty */11) {
-              var match$32 = type_format_gen(fmt[0], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Theta */__(16, [match$32[0]]),
-                      match$32[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Formatting_lit */17 :
-            var match$33 = type_format_gen(fmt[1], fmtty);
-            return /* Fmt_fmtty_EBB */[
-                    /* Formatting_lit */__(17, [
-                        fmt[0],
-                        match$33[0]
-                      ]),
-                    match$33[1]
-                  ];
-        case /* Formatting_gen */18 :
-            var formatting_gen = fmt[0];
-            var fmt0 = fmt[1];
-            var fmtty0 = fmtty;
-            if (formatting_gen.tag) {
-              var match$34 = formatting_gen[0];
-              var match$35 = type_format_gen(match$34[0], fmtty0);
-              var match$36 = type_format_gen(fmt0, match$35[1]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Formatting_gen */__(18, [
-                          /* Open_box */__(1, [/* Format */[
-                                match$35[0],
-                                match$34[1]
-                              ]]),
-                          match$36[0]
-                        ]),
-                      match$36[1]
-                    ];
-            } else {
-              var match$37 = formatting_gen[0];
-              var match$38 = type_format_gen(match$37[0], fmtty0);
-              var match$39 = type_format_gen(fmt0, match$38[1]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Formatting_gen */__(18, [
-                          /* Open_tag */__(0, [/* Format */[
-                                match$38[0],
-                                match$37[1]
-                              ]]),
-                          match$39[0]
-                        ]),
-                      match$39[1]
-                    ];
-            }
-        case /* Reader */19 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Reader_ty */13) {
-              var match$40 = type_format_gen(fmt[0], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Reader */__(19, [match$40[0]]),
-                      match$40[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Scan_char_set */20 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* String_ty */1) {
-              var match$41 = type_format_gen(fmt[2], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Scan_char_set */__(20, [
-                          fmt[0],
-                          fmt[1],
-                          match$41[0]
-                        ]),
-                      match$41[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Scan_get_counter */21 :
-            if (typeof fmtty === "number") {
-              throw Type_mismatch;
-            } else if (fmtty.tag === /* Int_ty */2) {
-              var match$42 = type_format_gen(fmt[1], fmtty[0]);
-              return /* Fmt_fmtty_EBB */[
-                      /* Scan_get_counter */__(21, [
-                          fmt[0],
-                          match$42[0]
-                        ]),
-                      match$42[1]
-                    ];
-            } else {
-              throw Type_mismatch;
-            }
-        case /* Ignored_param */23 :
-            var ign = fmt[0];
-            var fmt$1 = fmt[1];
-            var fmtty$1 = fmtty;
-            if (typeof ign === "number") {
-              if (ign === /* Ignored_reader */2) {
-                if (typeof fmtty$1 === "number") {
-                  throw Type_mismatch;
-                } else if (fmtty$1.tag === /* Ignored_reader_ty */14) {
-                  var match$43 = type_format_gen(fmt$1, fmtty$1[0]);
-                  return /* Fmt_fmtty_EBB */[
-                          /* Ignored_param */__(23, [
-                              /* Ignored_reader */2,
-                              match$43[0]
-                            ]),
-                          match$43[1]
-                        ];
-                } else {
-                  throw Type_mismatch;
-                }
-              } else {
-                return type_ignored_param_one(ign, fmt$1, fmtty$1);
-              }
-            } else {
-              switch (ign.tag | 0) {
-                case /* Ignored_format_arg */8 :
-                    return type_ignored_param_one(/* Ignored_format_arg */__(8, [
-                                  ign[0],
-                                  ign[1]
-                                ]), fmt$1, fmtty$1);
-                case /* Ignored_format_subst */9 :
-                    var match$44 = type_ignored_format_substitution(ign[1], fmt$1, fmtty$1);
-                    var match$45 = match$44[1];
-                    return /* Fmt_fmtty_EBB */[
-                            /* Ignored_param */__(23, [
-                                /* Ignored_format_subst */__(9, [
-                                    ign[0],
-                                    match$44[0]
-                                  ]),
-                                match$45[0]
-                              ]),
-                            match$45[1]
-                          ];
-                default:
-                  return type_ignored_param_one(ign, fmt$1, fmtty$1);
-              }
-            }
-        case /* Scan_next_char */22 :
-        case /* Custom */24 :
-            throw Type_mismatch;
-        
-      }
-    }
-  }
-
-  function type_ignored_param_one(ign, fmt, fmtty) {
-    var match = type_format_gen(fmt, fmtty);
-    return /* Fmt_fmtty_EBB */[
-            /* Ignored_param */__(23, [
-                ign,
-                match[0]
-              ]),
-            match[1]
-          ];
-  }
-
-  function type_format(fmt, fmtty) {
-    var match = type_format_gen(fmt, fmtty);
-    if (typeof match[1] === "number") {
-      return match[0];
-    } else {
-      throw Type_mismatch;
-    }
-  }
-
-  function recast(fmt, fmtty) {
-    return type_format(fmt, erase_rel(symm(fmtty)));
-  }
-
-  function fix_padding(padty, width, str) {
-    var len = str.length;
-    var width$1 = abs(width);
-    var padty$1 = width < 0 ? /* Left */0 : padty;
-    if (width$1 <= len) {
-      return str;
-    } else {
-      var res = make(width$1, padty$1 === /* Zeros */2 ? /* "0" */48 : /* " " */32);
-      switch (padty$1) {
-        case /* Left */0 :
-            blit$2(str, 0, res, 0, len);
-            break;
-        case /* Right */1 :
-            blit$2(str, 0, res, width$1 - len | 0, len);
-            break;
-        case /* Zeros */2 :
-            if (len > 0 && (get(str, 0) === /* "+" */43 || get(str, 0) === /* "-" */45 || get(str, 0) === /* " " */32)) {
-              res[0] = get(str, 0);
-              blit$2(str, 1, res, (width$1 - len | 0) + 1 | 0, len - 1 | 0);
-            } else if (len > 1 && get(str, 0) === /* "0" */48 && (get(str, 1) === /* "x" */120 || get(str, 1) === /* "X" */88)) {
-              res[1] = get(str, 1);
-              blit$2(str, 2, res, (width$1 - len | 0) + 2 | 0, len - 2 | 0);
-            } else {
-              blit$2(str, 0, res, width$1 - len | 0, len);
-            }
-            break;
-        
-      }
-      return bytes_to_string(res);
-    }
-  }
-
-  function fix_int_precision(prec, str) {
-    var prec$1 = abs(prec);
-    var len = str.length;
-    var c = get(str, 0);
-    var exit = 0;
-    if (c >= 58) {
-      if (c >= 71) {
-        if (c > 102 || c < 97) {
-          return str;
-        } else {
-          exit = 2;
-        }
-      } else if (c >= 65) {
-        exit = 2;
-      } else {
-        return str;
-      }
-    } else if (c !== 32) {
-      if (c >= 43) {
-        switch (c - 43 | 0) {
-          case 0 :
-          case 2 :
-              exit = 1;
-              break;
-          case 1 :
-          case 3 :
-          case 4 :
-              return str;
-          case 5 :
-              if ((prec$1 + 2 | 0) > len && len > 1 && (get(str, 1) === /* "x" */120 || get(str, 1) === /* "X" */88)) {
-                var res = make(prec$1 + 2 | 0, /* "0" */48);
-                res[1] = get(str, 1);
-                blit$2(str, 2, res, (prec$1 - len | 0) + 4 | 0, len - 2 | 0);
-                return bytes_to_string(res);
-              } else {
-                exit = 2;
-              }
-              break;
-          case 6 :
-          case 7 :
-          case 8 :
-          case 9 :
-          case 10 :
-          case 11 :
-          case 12 :
-          case 13 :
-          case 14 :
-              exit = 2;
-              break;
-          
-        }
-      } else {
-        return str;
-      }
-    } else {
-      exit = 1;
-    }
-    switch (exit) {
-      case 1 :
-          if ((prec$1 + 1 | 0) > len) {
-            var res$1 = make(prec$1 + 1 | 0, /* "0" */48);
-            res$1[0] = c;
-            blit$2(str, 1, res$1, (prec$1 - len | 0) + 2 | 0, len - 1 | 0);
-            return bytes_to_string(res$1);
-          } else {
-            return str;
-          }
-      case 2 :
-          if (prec$1 > len) {
-            var res$2 = make(prec$1, /* "0" */48);
-            blit$2(str, 0, res$2, prec$1 - len | 0, len);
-            return bytes_to_string(res$2);
-          } else {
-            return str;
-          }
-      
-    }
-  }
-
-  function string_to_caml_string(str) {
-    var str$1 = escaped$2(str);
-    var l = str$1.length;
-    var res = make(l + 2 | 0, /* "\"" */34);
-    caml_blit_string(str$1, 0, res, 1, l);
-    return bytes_to_string(res);
-  }
-
-  function format_of_iconv(param) {
-    switch (param) {
-      case /* Int_d */0 :
-          return "%d";
-      case /* Int_pd */1 :
-          return "%+d";
-      case /* Int_sd */2 :
-          return "% d";
-      case /* Int_i */3 :
-          return "%i";
-      case /* Int_pi */4 :
-          return "%+i";
-      case /* Int_si */5 :
-          return "% i";
-      case /* Int_x */6 :
-          return "%x";
-      case /* Int_Cx */7 :
-          return "%#x";
-      case /* Int_X */8 :
-          return "%X";
-      case /* Int_CX */9 :
-          return "%#X";
-      case /* Int_o */10 :
-          return "%o";
-      case /* Int_Co */11 :
-          return "%#o";
-      case /* Int_u */12 :
-          return "%u";
-      
-    }
-  }
-
-  function format_of_iconvL(param) {
-    switch (param) {
-      case /* Int_d */0 :
-          return "%Ld";
-      case /* Int_pd */1 :
-          return "%+Ld";
-      case /* Int_sd */2 :
-          return "% Ld";
-      case /* Int_i */3 :
-          return "%Li";
-      case /* Int_pi */4 :
-          return "%+Li";
-      case /* Int_si */5 :
-          return "% Li";
-      case /* Int_x */6 :
-          return "%Lx";
-      case /* Int_Cx */7 :
-          return "%#Lx";
-      case /* Int_X */8 :
-          return "%LX";
-      case /* Int_CX */9 :
-          return "%#LX";
-      case /* Int_o */10 :
-          return "%Lo";
-      case /* Int_Co */11 :
-          return "%#Lo";
-      case /* Int_u */12 :
-          return "%Lu";
-      
-    }
-  }
-
-  function format_of_iconvl(param) {
-    switch (param) {
-      case /* Int_d */0 :
-          return "%ld";
-      case /* Int_pd */1 :
-          return "%+ld";
-      case /* Int_sd */2 :
-          return "% ld";
-      case /* Int_i */3 :
-          return "%li";
-      case /* Int_pi */4 :
-          return "%+li";
-      case /* Int_si */5 :
-          return "% li";
-      case /* Int_x */6 :
-          return "%lx";
-      case /* Int_Cx */7 :
-          return "%#lx";
-      case /* Int_X */8 :
-          return "%lX";
-      case /* Int_CX */9 :
-          return "%#lX";
-      case /* Int_o */10 :
-          return "%lo";
-      case /* Int_Co */11 :
-          return "%#lo";
-      case /* Int_u */12 :
-          return "%lu";
-      
-    }
-  }
-
-  function format_of_iconvn(param) {
-    switch (param) {
-      case /* Int_d */0 :
-          return "%nd";
-      case /* Int_pd */1 :
-          return "%+nd";
-      case /* Int_sd */2 :
-          return "% nd";
-      case /* Int_i */3 :
-          return "%ni";
-      case /* Int_pi */4 :
-          return "%+ni";
-      case /* Int_si */5 :
-          return "% ni";
-      case /* Int_x */6 :
-          return "%nx";
-      case /* Int_Cx */7 :
-          return "%#nx";
-      case /* Int_X */8 :
-          return "%nX";
-      case /* Int_CX */9 :
-          return "%#nX";
-      case /* Int_o */10 :
-          return "%no";
-      case /* Int_Co */11 :
-          return "%#no";
-      case /* Int_u */12 :
-          return "%nu";
-      
-    }
-  }
-
-  function format_of_fconv(fconv, prec) {
-    if (fconv === /* Float_F */15) {
-      return "%.12g";
-    } else {
-      var prec$1 = abs(prec);
-      var symb = char_of_fconv(fconv);
-      var buf = {
-        ind: 0,
-        bytes: caml_create_bytes(16)
-      };
-      buffer_add_char(buf, /* "%" */37);
-      bprint_fconv_flag(buf, fconv);
-      buffer_add_char(buf, /* "." */46);
-      buffer_add_string(buf, String(prec$1));
-      buffer_add_char(buf, symb);
-      return buffer_contents(buf);
-    }
-  }
-
-  function convert_int(iconv, n) {
-    return caml_format_int(format_of_iconv(iconv), n);
-  }
-
-  function convert_int32(iconv, n) {
-    return caml_int32_format(format_of_iconvl(iconv), n);
-  }
-
-  function convert_nativeint(iconv, n) {
-    return caml_nativeint_format(format_of_iconvn(iconv), n);
-  }
-
-  function convert_int64(iconv, n) {
-    return caml_int64_format(format_of_iconvL(iconv), n);
-  }
-
-  function convert_float(fconv, prec, x) {
-    if (fconv >= 16) {
-      var sign;
-      if (fconv >= 17) {
-        switch (fconv - 17 | 0) {
-          case /* Float_sf */2 :
-              sign = /* "-" */45;
-              break;
-          case /* Float_f */0 :
-          case /* Float_e */3 :
-              sign = /* "+" */43;
-              break;
-          case /* Float_pf */1 :
-          case /* Float_pe */4 :
-              sign = /* " " */32;
-              break;
-          
-        }
-      } else {
-        sign = /* "-" */45;
-      }
-      var str = caml_hexstring_of_float(x, prec, sign);
-      if (fconv >= 19) {
-        return bytes_to_string(uppercase_ascii$1(bytes_of_string(str)));
-      } else {
-        return str;
-      }
-    } else {
-      var str$1 = caml_format_float(format_of_fconv(fconv, prec), x);
-      if (fconv !== /* Float_F */15) {
-        return str$1;
-      } else {
-        var len = str$1.length;
-        var is_valid = function (_i) {
-          while(true) {
-            var i = _i;
-            if (i === len) {
-              return false;
-            } else {
-              var match = get(str$1, i);
-              var switcher = match - 46 | 0;
-              if (switcher > 23 || switcher < 0) {
-                if (switcher !== 55) {
-                  _i = i + 1 | 0;
-                  continue ;
-                } else {
-                  return true;
-                }
-              } else if (switcher > 22 || switcher < 1) {
-                return true;
-              } else {
-                _i = i + 1 | 0;
-                continue ;
-              }
-            }
-          }      };
-        var match = classify_float(x);
-        if (match !== 3) {
-          if (match >= 4) {
-            return "nan";
-          } else if (is_valid(0)) {
-            return str$1;
-          } else {
-            return str$1 + ".";
-          }
-        } else if (x < 0.0) {
-          return "neg_infinity";
-        } else {
-          return "infinity";
-        }
-      }
-    }
-  }
-
-  function format_caml_char(c) {
-    var str = escaped(c);
-    var l = str.length;
-    var res = make(l + 2 | 0, /* "'" */39);
-    caml_blit_string(str, 0, res, 1, l);
-    return bytes_to_string(res);
-  }
-
-  function string_of_fmtty(fmtty) {
-    var buf = {
-      ind: 0,
-      bytes: caml_create_bytes(16)
-    };
-    bprint_fmtty(buf, fmtty);
-    return buffer_contents(buf);
-  }
-
-  function make_printf(_k, o, _acc, _fmt) {
-    while(true) {
-      var fmt = _fmt;
-      var acc = _acc;
-      var k = _k;
-      if (typeof fmt === "number") {
-        return _2(k, o, acc);
-      } else {
-        switch (fmt.tag | 0) {
-          case /* Char */0 :
-              var rest = fmt[0];
-              return (function(k,acc,rest){
-              return function (c) {
-                var new_acc = /* Acc_data_char */__(5, [
-                    acc,
-                    c
-                  ]);
-                return make_printf(k, o, new_acc, rest);
-              }
-              }(k,acc,rest));
-          case /* Caml_char */1 :
-              var rest$1 = fmt[0];
-              return (function(k,acc,rest$1){
-              return function (c) {
-                var new_acc_001 = format_caml_char(c);
-                var new_acc = /* Acc_data_string */__(4, [
-                    acc,
-                    new_acc_001
-                  ]);
-                return make_printf(k, o, new_acc, rest$1);
-              }
-              }(k,acc,rest$1));
-          case /* String */2 :
-              return make_padding(k, o, acc, fmt[1], fmt[0], (function (str) {
-                            return str;
-                          }));
-          case /* Caml_string */3 :
-              return make_padding(k, o, acc, fmt[1], fmt[0], string_to_caml_string);
-          case /* Int */4 :
-              return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_int, fmt[0]);
-          case /* Int32 */5 :
-              return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_int32, fmt[0]);
-          case /* Nativeint */6 :
-              return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_nativeint, fmt[0]);
-          case /* Int64 */7 :
-              return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_int64, fmt[0]);
-          case /* Float */8 :
-              var k$1 = k;
-              var o$1 = o;
-              var acc$1 = acc;
-              var fmt$1 = fmt[3];
-              var pad = fmt[1];
-              var prec = fmt[2];
-              var fconv = fmt[0];
-              if (typeof pad === "number") {
-                if (typeof prec === "number") {
-                  if (prec !== 0) {
-                    return (function(k$1,o$1,acc$1,fmt$1,fconv){
-                    return function (p, x) {
-                      var str = convert_float(fconv, p, x);
-                      return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                    acc$1,
-                                    str
-                                  ]), fmt$1);
-                    }
-                    }(k$1,o$1,acc$1,fmt$1,fconv));
-                  } else {
-                    return (function(k$1,o$1,acc$1,fmt$1,fconv){
-                    return function (x) {
-                      var str = convert_float(fconv, -6, x);
-                      return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                    acc$1,
-                                    str
-                                  ]), fmt$1);
-                    }
-                    }(k$1,o$1,acc$1,fmt$1,fconv));
-                  }
-                } else {
-                  var p = prec[0];
-                  return (function(k$1,o$1,acc$1,fmt$1,fconv,p){
-                  return function (x) {
-                    var str = convert_float(fconv, p, x);
-                    return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                  acc$1,
-                                  str
-                                ]), fmt$1);
-                  }
-                  }(k$1,o$1,acc$1,fmt$1,fconv,p));
-                }
-              } else if (pad.tag) {
-                var padty = pad[0];
-                if (typeof prec === "number") {
-                  if (prec !== 0) {
-                    return (function(k$1,o$1,acc$1,fmt$1,fconv,padty){
-                    return function (w, p, x) {
-                      var str = fix_padding(padty, w, convert_float(fconv, p, x));
-                      return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                    acc$1,
-                                    str
-                                  ]), fmt$1);
-                    }
-                    }(k$1,o$1,acc$1,fmt$1,fconv,padty));
-                  } else {
-                    return (function(k$1,o$1,acc$1,fmt$1,fconv,padty){
-                    return function (w, x) {
-                      var str = convert_float(fconv, -6, x);
-                      var str$prime = fix_padding(padty, w, str);
-                      return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                    acc$1,
-                                    str$prime
-                                  ]), fmt$1);
-                    }
-                    }(k$1,o$1,acc$1,fmt$1,fconv,padty));
-                  }
-                } else {
-                  var p$1 = prec[0];
-                  return (function(k$1,o$1,acc$1,fmt$1,fconv,padty,p$1){
-                  return function (w, x) {
-                    var str = fix_padding(padty, w, convert_float(fconv, p$1, x));
-                    return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                  acc$1,
-                                  str
-                                ]), fmt$1);
-                  }
-                  }(k$1,o$1,acc$1,fmt$1,fconv,padty,p$1));
-                }
-              } else {
-                var w = pad[1];
-                var padty$1 = pad[0];
-                if (typeof prec === "number") {
-                  if (prec !== 0) {
-                    return (function(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w){
-                    return function (p, x) {
-                      var str = fix_padding(padty$1, w, convert_float(fconv, p, x));
-                      return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                    acc$1,
-                                    str
-                                  ]), fmt$1);
-                    }
-                    }(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w));
-                  } else {
-                    return (function(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w){
-                    return function (x) {
-                      var str = convert_float(fconv, -6, x);
-                      var str$prime = fix_padding(padty$1, w, str);
-                      return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                    acc$1,
-                                    str$prime
-                                  ]), fmt$1);
-                    }
-                    }(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w));
-                  }
-                } else {
-                  var p$2 = prec[0];
-                  return (function(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w,p$2){
-                  return function (x) {
-                    var str = fix_padding(padty$1, w, convert_float(fconv, p$2, x));
-                    return make_printf(k$1, o$1, /* Acc_data_string */__(4, [
-                                  acc$1,
-                                  str
-                                ]), fmt$1);
-                  }
-                  }(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w,p$2));
-                }
-              }
-          case /* Bool */9 :
-              return make_padding(k, o, acc, fmt[1], fmt[0], string_of_bool);
-          case /* Flush */10 :
-              _fmt = fmt[0];
-              _acc = /* Acc_flush */__(7, [acc]);
-              continue ;
-          case /* String_literal */11 :
-              _fmt = fmt[1];
-              _acc = /* Acc_string_literal */__(2, [
-                  acc,
-                  fmt[0]
-                ]);
-              continue ;
-          case /* Char_literal */12 :
-              _fmt = fmt[1];
-              _acc = /* Acc_char_literal */__(3, [
-                  acc,
-                  fmt[0]
-                ]);
-              continue ;
-          case /* Format_arg */13 :
-              var rest$2 = fmt[2];
-              var ty = string_of_fmtty(fmt[1]);
-              return (function(k,acc,rest$2,ty){
-              return function (str) {
-                return make_printf(k, o, /* Acc_data_string */__(4, [
-                              acc,
-                              ty
-                            ]), rest$2);
-              }
-              }(k,acc,rest$2,ty));
-          case /* Format_subst */14 :
-              var rest$3 = fmt[2];
-              var fmtty = fmt[1];
-              return (function(k,acc,fmtty,rest$3){
-              return function (param) {
-                return make_printf(k, o, acc, concat_fmt(recast(param[0], fmtty), rest$3));
-              }
-              }(k,acc,fmtty,rest$3));
-          case /* Alpha */15 :
-              var rest$4 = fmt[0];
-              return (function(k,acc,rest$4){
-              return function (f, x) {
-                return make_printf(k, o, /* Acc_delay */__(6, [
-                              acc,
-                              (function (o) {
-                                  return _2(f, o, x);
-                                })
-                            ]), rest$4);
-              }
-              }(k,acc,rest$4));
-          case /* Theta */16 :
-              var rest$5 = fmt[0];
-              return (function(k,acc,rest$5){
-              return function (f) {
-                return make_printf(k, o, /* Acc_delay */__(6, [
-                              acc,
-                              f
-                            ]), rest$5);
-              }
-              }(k,acc,rest$5));
-          case /* Formatting_lit */17 :
-              _fmt = fmt[1];
-              _acc = /* Acc_formatting_lit */__(0, [
-                  acc,
-                  fmt[0]
-                ]);
-              continue ;
-          case /* Formatting_gen */18 :
-              var match = fmt[0];
-              if (match.tag) {
-                var rest$6 = fmt[1];
-                var k$prime = (function(k,acc,rest$6){
-                return function k$prime(koc, kacc) {
-                  return make_printf(k, koc, /* Acc_formatting_gen */__(1, [
-                                acc,
-                                /* Acc_open_box */__(1, [kacc])
-                              ]), rest$6);
-                }
-                }(k,acc,rest$6));
-                _fmt = match[0][0];
-                _acc = /* End_of_acc */0;
-                _k = k$prime;
-                continue ;
-              } else {
-                var rest$7 = fmt[1];
-                var k$prime$1 = (function(k,acc,rest$7){
-                return function k$prime$1(koc, kacc) {
-                  return make_printf(k, koc, /* Acc_formatting_gen */__(1, [
-                                acc,
-                                /* Acc_open_tag */__(0, [kacc])
-                              ]), rest$7);
-                }
-                }(k,acc,rest$7));
-                _fmt = match[0][0];
-                _acc = /* End_of_acc */0;
-                _k = k$prime$1;
-                continue ;
-              }
-          case /* Reader */19 :
-              throw [
-                    assert_failure,
-                    /* tuple */[
-                      "camlinternalFormat.ml",
-                      1525,
-                      4
-                    ]
-                  ];
-          case /* Scan_char_set */20 :
-              var rest$8 = fmt[2];
-              var new_acc = /* Acc_invalid_arg */__(8, [
-                  acc,
-                  "Printf: bad conversion %["
-                ]);
-              return (function(k,rest$8,new_acc){
-              return function (param) {
-                return make_printf(k, o, new_acc, rest$8);
-              }
-              }(k,rest$8,new_acc));
-          case /* Scan_get_counter */21 :
-              var rest$9 = fmt[1];
-              return (function(k,acc,rest$9){
-              return function (n) {
-                var new_acc_001 = caml_format_int("%u", n);
-                var new_acc = /* Acc_data_string */__(4, [
-                    acc,
-                    new_acc_001
-                  ]);
-                return make_printf(k, o, new_acc, rest$9);
-              }
-              }(k,acc,rest$9));
-          case /* Scan_next_char */22 :
-              var rest$10 = fmt[0];
-              return (function(k,acc,rest$10){
-              return function (c) {
-                var new_acc = /* Acc_data_char */__(5, [
-                    acc,
-                    c
-                  ]);
-                return make_printf(k, o, new_acc, rest$10);
-              }
-              }(k,acc,rest$10));
-          case /* Ignored_param */23 :
-              return make_ignored_param(k, o, acc, fmt[0], fmt[1]);
-          case /* Custom */24 :
-              return make_custom(k, o, acc, fmt[2], fmt[0], _1(fmt[1], /* () */0));
-          
-        }
-      }
-    }}
-
-  function make_ignored_param(k, o, acc, ign, fmt) {
-    if (typeof ign === "number") {
-      if (ign === /* Ignored_reader */2) {
-        throw [
-              assert_failure,
-              /* tuple */[
-                "camlinternalFormat.ml",
-                1593,
-                39
-              ]
-            ];
-      } else {
-        return make_invalid_arg(k, o, acc, fmt);
-      }
-    } else if (ign.tag === /* Ignored_format_subst */9) {
-      return make_from_fmtty(k, o, acc, ign[1], fmt);
-    } else {
-      return make_invalid_arg(k, o, acc, fmt);
-    }
-  }
-
-  function make_from_fmtty(k, o, acc, fmtty, fmt) {
-    if (typeof fmtty === "number") {
-      return make_invalid_arg(k, o, acc, fmt);
-    } else {
-      switch (fmtty.tag | 0) {
-        case /* Char_ty */0 :
-            var rest = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest, fmt);
-              });
-        case /* String_ty */1 :
-            var rest$1 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$1, fmt);
-              });
-        case /* Int_ty */2 :
-            var rest$2 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$2, fmt);
-              });
-        case /* Int32_ty */3 :
-            var rest$3 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$3, fmt);
-              });
-        case /* Nativeint_ty */4 :
-            var rest$4 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$4, fmt);
-              });
-        case /* Int64_ty */5 :
-            var rest$5 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$5, fmt);
-              });
-        case /* Float_ty */6 :
-            var rest$6 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$6, fmt);
-              });
-        case /* Bool_ty */7 :
-            var rest$7 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$7, fmt);
-              });
-        case /* Format_arg_ty */8 :
-            var rest$8 = fmtty[1];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$8, fmt);
-              });
-        case /* Format_subst_ty */9 :
-            var rest$9 = fmtty[2];
-            var ty = trans(symm(fmtty[0]), fmtty[1]);
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, concat_fmtty(ty, rest$9), fmt);
-              });
-        case /* Alpha_ty */10 :
-            var rest$10 = fmtty[0];
-            return (function (param, param$1) {
-                return make_from_fmtty(k, o, acc, rest$10, fmt);
-              });
-        case /* Theta_ty */11 :
-            var rest$11 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$11, fmt);
-              });
-        case /* Any_ty */12 :
-            var rest$12 = fmtty[0];
-            return (function (param) {
-                return make_from_fmtty(k, o, acc, rest$12, fmt);
-              });
-        case /* Reader_ty */13 :
-            throw [
-                  assert_failure,
-                  /* tuple */[
-                    "camlinternalFormat.ml",
-                    1616,
-                    31
-                  ]
-                ];
-        case /* Ignored_reader_ty */14 :
-            throw [
-                  assert_failure,
-                  /* tuple */[
-                    "camlinternalFormat.ml",
-                    1617,
-                    31
-                  ]
-                ];
-        
-      }
-    }
-  }
-
-  function make_invalid_arg(k, o, acc, fmt) {
-    return make_printf(k, o, /* Acc_invalid_arg */__(8, [
-                  acc,
-                  "Printf: bad conversion %_"
-                ]), fmt);
-  }
-
-  function make_padding(k, o, acc, fmt, pad, trans) {
-    if (typeof pad === "number") {
-      return (function (x) {
-          var new_acc_001 = _1(trans, x);
-          var new_acc = /* Acc_data_string */__(4, [
-              acc,
-              new_acc_001
-            ]);
-          return make_printf(k, o, new_acc, fmt);
-        });
-    } else if (pad.tag) {
-      var padty = pad[0];
-      return (function (w, x) {
-          var new_acc_001 = fix_padding(padty, w, _1(trans, x));
-          var new_acc = /* Acc_data_string */__(4, [
-              acc,
-              new_acc_001
-            ]);
-          return make_printf(k, o, new_acc, fmt);
-        });
-    } else {
-      var width = pad[1];
-      var padty$1 = pad[0];
-      return (function (x) {
-          var new_acc_001 = fix_padding(padty$1, width, _1(trans, x));
-          var new_acc = /* Acc_data_string */__(4, [
-              acc,
-              new_acc_001
-            ]);
-          return make_printf(k, o, new_acc, fmt);
-        });
-    }
-  }
-
-  function make_int_padding_precision(k, o, acc, fmt, pad, prec, trans, iconv) {
-    if (typeof pad === "number") {
-      if (typeof prec === "number") {
-        if (prec !== 0) {
-          return (function (p, x) {
-              var str = fix_int_precision(p, _2(trans, iconv, x));
-              return make_printf(k, o, /* Acc_data_string */__(4, [
-                            acc,
-                            str
-                          ]), fmt);
-            });
-        } else {
-          return (function (x) {
-              var str = _2(trans, iconv, x);
-              return make_printf(k, o, /* Acc_data_string */__(4, [
-                            acc,
-                            str
-                          ]), fmt);
-            });
-        }
-      } else {
-        var p = prec[0];
-        return (function (x) {
-            var str = fix_int_precision(p, _2(trans, iconv, x));
-            return make_printf(k, o, /* Acc_data_string */__(4, [
-                          acc,
-                          str
-                        ]), fmt);
-          });
-      }
-    } else if (pad.tag) {
-      var padty = pad[0];
-      if (typeof prec === "number") {
-        if (prec !== 0) {
-          return (function (w, p, x) {
-              var str = fix_padding(padty, w, fix_int_precision(p, _2(trans, iconv, x)));
-              return make_printf(k, o, /* Acc_data_string */__(4, [
-                            acc,
-                            str
-                          ]), fmt);
-            });
-        } else {
-          return (function (w, x) {
-              var str = fix_padding(padty, w, _2(trans, iconv, x));
-              return make_printf(k, o, /* Acc_data_string */__(4, [
-                            acc,
-                            str
-                          ]), fmt);
-            });
-        }
-      } else {
-        var p$1 = prec[0];
-        return (function (w, x) {
-            var str = fix_padding(padty, w, fix_int_precision(p$1, _2(trans, iconv, x)));
-            return make_printf(k, o, /* Acc_data_string */__(4, [
-                          acc,
-                          str
-                        ]), fmt);
-          });
-      }
-    } else {
-      var w = pad[1];
-      var padty$1 = pad[0];
-      if (typeof prec === "number") {
-        if (prec !== 0) {
-          return (function (p, x) {
-              var str = fix_padding(padty$1, w, fix_int_precision(p, _2(trans, iconv, x)));
-              return make_printf(k, o, /* Acc_data_string */__(4, [
-                            acc,
-                            str
-                          ]), fmt);
-            });
-        } else {
-          return (function (x) {
-              var str = fix_padding(padty$1, w, _2(trans, iconv, x));
-              return make_printf(k, o, /* Acc_data_string */__(4, [
-                            acc,
-                            str
-                          ]), fmt);
-            });
-        }
-      } else {
-        var p$2 = prec[0];
-        return (function (x) {
-            var str = fix_padding(padty$1, w, fix_int_precision(p$2, _2(trans, iconv, x)));
-            return make_printf(k, o, /* Acc_data_string */__(4, [
-                          acc,
-                          str
-                        ]), fmt);
-          });
-      }
-    }
-  }
-
-  function make_custom(k, o, acc, rest, arity, f) {
-    if (arity) {
-      var arity$1 = arity[0];
-      return (function (x) {
-          return make_custom(k, o, acc, rest, arity$1, _1(f, x));
-        });
-    } else {
-      return make_printf(k, o, /* Acc_data_string */__(4, [
-                    acc,
-                    f
-                  ]), rest);
-    }
-  }
-
-  function strput_acc(b, _acc) {
-    while(true) {
-      var acc = _acc;
-      var exit = 0;
-      if (typeof acc === "number") {
-        return /* () */0;
-      } else {
-        switch (acc.tag | 0) {
-          case /* Acc_formatting_lit */0 :
-              var s = string_of_formatting_lit(acc[1]);
-              strput_acc(b, acc[0]);
-              return add_string(b, s);
-          case /* Acc_formatting_gen */1 :
-              var match = acc[1];
-              var p = acc[0];
-              strput_acc(b, p);
-              if (match.tag) {
-                add_string(b, "@[");
-                _acc = match[0];
-                continue ;
-              } else {
-                add_string(b, "@{");
-                _acc = match[0];
-                continue ;
-              }
-          case /* Acc_string_literal */2 :
-          case /* Acc_data_string */4 :
-              exit = 1;
-              break;
-          case /* Acc_char_literal */3 :
-          case /* Acc_data_char */5 :
-              exit = 2;
-              break;
-          case /* Acc_delay */6 :
-              strput_acc(b, acc[0]);
-              return add_string(b, _1(acc[1], /* () */0));
-          case /* Acc_flush */7 :
-              _acc = acc[0];
-              continue ;
-          case /* Acc_invalid_arg */8 :
-              strput_acc(b, acc[0]);
-              throw [
-                    invalid_argument,
-                    acc[1]
-                  ];
-          
-        }
-      }
-      switch (exit) {
-        case 1 :
-            strput_acc(b, acc[0]);
-            return add_string(b, acc[1]);
-        case 2 :
-            strput_acc(b, acc[0]);
-            return add_char(b, acc[1]);
-        
-      }
-    }}
-  /* No side effect */
-
-  function ksprintf(k, param) {
-    var k$prime = function (param, acc) {
-      var buf = create$2(64);
-      strput_acc(buf, acc);
-      return _1(k, contents(buf));
-    };
-    return make_printf(k$prime, /* () */0, /* End_of_acc */0, param[0]);
-  }
-
-  function sprintf(fmt) {
-    return ksprintf((function (s) {
-                  return s;
-                }), fmt);
   }
   /* No side effect */
 
@@ -9856,6 +5444,22 @@
                 ]
               ], /* :: */[
                 text(title),
+                /* [] */0
+              ]);
+  }
+
+  function seed_link(param) {
+    return div(undefined, undefined, /* [] */0, /* :: */[
+                a(undefined, undefined, /* :: */[
+                      href("#"),
+                      /* :: */[
+                        onClick(/* Fetch */__(9, [param[1]])),
+                        /* [] */0
+                      ]
+                    ], /* :: */[
+                      text(param[0]),
+                      /* [] */0
+                    ]),
                 /* [] */0
               ]);
   }
@@ -9879,212 +5483,128 @@
                         var match = find((function (param) {
                                 return i === param[2];
                               }), rule_list);
-                        return /* SetRule */__(8, [match[1]]);
+                        return /* SetRule */__(7, [match[1]]);
                       })),
                 /* [] */0
               ], map(rules_option, rule_list));
   }
 
+  function params_form(model) {
+    return div(undefined, undefined, /* :: */[
+                class$prime("flex"),
+                /* [] */0
+              ], /* :: */[
+                select_rule(model),
+                /* :: */[
+                  span(undefined, undefined, /* :: */[
+                        class$prime("label-i"),
+                        /* [] */0
+                      ], /* :: */[
+                        text("x = "),
+                        /* [] */0
+                      ]),
+                  /* :: */[
+                    input$prime(undefined, undefined, /* :: */[
+                          type$prime("text"),
+                          /* :: */[
+                            class$prime("small-i"),
+                            /* :: */[
+                              value$1(String(width(model.board))),
+                              /* :: */[
+                                onInput(undefined, (function (x) {
+                                        return /* Resize */__(4, [
+                                                  caml_int_of_string(x),
+                                                  height$1(model.board)
+                                                ]);
+                                      })),
+                                /* [] */0
+                              ]
+                            ]
+                          ]
+                        ], /* [] */0),
+                    /* :: */[
+                      span(undefined, undefined, /* :: */[
+                            class$prime("label-i"),
+                            /* [] */0
+                          ], /* :: */[
+                            text("y = "),
+                            /* [] */0
+                          ]),
+                      /* :: */[
+                        input$prime(undefined, undefined, /* :: */[
+                              type$prime("text"),
+                              /* :: */[
+                                class$prime("small-i"),
+                                /* :: */[
+                                  value$1(String(height$1(model.board))),
+                                  /* :: */[
+                                    onInput(undefined, (function (y) {
+                                            return /* Resize */__(4, [
+                                                      width(model.board),
+                                                      caml_int_of_string(y)
+                                                    ]);
+                                          })),
+                                    /* [] */0
+                                  ]
+                                ]
+                              ]
+                            ], /* [] */0),
+                        /* :: */[
+                          view_button("Resize", /* Clamp */5),
+                          /* :: */[
+                            model.auto_clamp ? view_button("Auto: On", /* ToggleAutoClamp */4) : view_button("Auto: Off", /* ToggleAutoClamp */4),
+                            /* [] */0
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]);
+  }
+
   function view(model) {
-    return div$1(undefined, undefined, /* :: */[
+    return div(undefined, undefined, /* :: */[
                 id$1("container"),
                 /* :: */[
                   class$prime("flex"),
                   /* [] */0
                 ]
               ], /* :: */[
-                div$1(undefined, undefined, /* :: */[
+                div(undefined, undefined, /* :: */[
                       id$1("left-side"),
                       /* [] */0
                     ], /* :: */[
-                      select_rule(model),
+                      params_form(model),
                       /* :: */[
-                        div$1(undefined, undefined, /* [] */0, /* :: */[
-                              a(undefined, undefined, /* :: */[
-                                    href("#"),
-                                    /* :: */[
-                                      onClick(/* Fetch */__(10, ["test.rle"])),
-                                      /* [] */0
-                                    ]
-                                  ], /* :: */[
-                                    text("Test"),
-                                    /* [] */0
-                                  ]),
-                              /* [] */0
-                            ]),
-                        /* :: */[
-                          div$1(undefined, undefined, /* [] */0, /* :: */[
-                                a(undefined, undefined, /* :: */[
-                                      href("#"),
-                                      /* :: */[
-                                        onClick(/* Fetch */__(10, ["elephant.rle"])),
-                                        /* [] */0
-                                      ]
-                                    ], /* :: */[
-                                      text("Elephant"),
-                                      /* [] */0
-                                    ]),
-                                /* [] */0
-                              ]),
-                          /* :: */[
-                            div$1(undefined, undefined, /* [] */0, /* :: */[
-                                  a(undefined, undefined, /* :: */[
-                                        href("#"),
-                                        /* :: */[
-                                          onClick(/* Fetch */__(10, ["ufo.rle"])),
-                                          /* [] */0
-                                        ]
-                                      ], /* :: */[
-                                        text("UFO"),
-                                        /* [] */0
-                                      ]),
-                                  /* [] */0
-                                ]),
-                            /* :: */[
-                              div$1(undefined, undefined, /* [] */0, /* :: */[
-                                    span(undefined, undefined, /* [] */0, /* :: */[
-                                          text("x = "),
-                                          /* [] */0
-                                        ]),
-                                    /* :: */[
-                                      input$prime(undefined, undefined, /* :: */[
-                                            type$prime("text"),
-                                            /* :: */[
-                                              class$prime("small-i"),
-                                              /* :: */[
-                                                value$1(String(width(model.board))),
-                                                /* :: */[
-                                                  onInput(undefined, (function (x) {
-                                                          return /* SetX */__(6, [caml_int_of_string(x)]);
-                                                        })),
-                                                  /* [] */0
-                                                ]
-                                              ]
-                                            ]
-                                          ], /* [] */0),
-                                      /* :: */[
-                                        span(undefined, undefined, /* [] */0, /* :: */[
-                                              text("y = "),
-                                              /* [] */0
-                                            ]),
-                                        /* :: */[
-                                          input$prime(undefined, undefined, /* :: */[
-                                                type$prime("text"),
-                                                /* :: */[
-                                                  class$prime("small-i"),
-                                                  /* :: */[
-                                                    value$1(String(height$1(model.board))),
-                                                    /* :: */[
-                                                      onInput(undefined, (function (y) {
-                                                              return /* SetY */__(7, [caml_int_of_string(y)]);
-                                                            })),
-                                                      /* [] */0
-                                                    ]
-                                                  ]
-                                                ]
-                                              ], /* [] */0),
-                                          /* :: */[
-                                            view_button("Clamp", /* Clamp */4),
-                                            /* [] */0
-                                          ]
-                                        ]
-                                      ]
-                                    ]
-                                  ]),
-                              /* :: */[
-                                div$1(undefined, undefined, /* :: */[
-                                      class$prime("flex"),
-                                      /* [] */0
-                                    ], /* :: */[
-                                      model.auto_clamp ? view_button("Auto clamp: On", /* ToggleAutoClamp */3) : view_button("Auto clamp: Off", /* ToggleAutoClamp */3),
-                                      /* [] */0
-                                    ]),
-                                /* [] */0
-                              ]
-                            ]
-                          ]
-                        ]
+                        div(undefined, undefined, /* [] */0, map(seed_link, seed_list)),
+                        /* [] */0
                       ]
                     ]),
                 /* :: */[
-                  div$1(undefined, undefined, /* :: */[
+                  div(undefined, undefined, /* :: */[
                         id$1("center"),
                         /* [] */0
                       ], /* :: */[
-                        div$1(undefined, undefined, /* :: */[
-                              class$prime("flex"),
+                        div(undefined, undefined, /* :: */[
+                              class$prime("board"),
                               /* [] */0
-                            ], /* :: */[
-                              div$1(undefined, undefined, /* :: */[
-                                    class$prime("flex-1 centered"),
-                                    /* :: */[
-                                      id$1("size"),
-                                      /* [] */0
-                                    ]
-                                  ], /* :: */[
-                                    p(undefined, undefined, /* [] */0, /* :: */[
-                                          text(_2(sprintf(/* Format */[
-                                                        /* String_literal */__(11, [
-                                                            "Size : ",
-                                                            /* Int */__(4, [
-                                                                /* Int_d */0,
-                                                                /* No_padding */0,
-                                                                /* No_precision */0,
-                                                                /* Char_literal */__(12, [
-                                                                    /* "x" */120,
-                                                                    /* Int */__(4, [
-                                                                        /* Int_d */0,
-                                                                        /* No_padding */0,
-                                                                        /* No_precision */0,
-                                                                        /* End_of_format */0
-                                                                      ])
-                                                                  ])
-                                                              ])
-                                                          ]),
-                                                        "Size : %dx%d"
-                                                      ]), width(model.board), height$1(model.board))),
-                                          /* [] */0
-                                        ]),
-                                    /* [] */0
-                                  ]),
-                              /* :: */[
-                                div$1(undefined, undefined, /* :: */[
-                                      class$prime("flex-1 centered"),
-                                      /* :: */[
-                                        id$1("population"),
-                                        /* [] */0
-                                      ]
-                                    ], /* :: */[
-                                      p(undefined, undefined, /* [] */0, /* :: */[
-                                            text("My Pop"),
-                                            /* [] */0
-                                          ]),
-                                      /* [] */0
-                                    ]),
-                                /* [] */0
-                              ]
-                            ]),
+                            ], draw_html(model)),
                         /* :: */[
-                          div$1(undefined, undefined, /* :: */[
-                                class$prime("board"),
+                          div(undefined, undefined, /* :: */[
+                                class$prime("flex"),
                                 /* [] */0
-                              ], draw_html(model)),
-                          /* :: */[
-                            div$1(undefined, undefined, /* :: */[
-                                  class$prime("flex"),
-                                  /* [] */0
-                                ], /* :: */[
-                                  view_button("Reset", /* Reset */5),
+                              ], /* :: */[
+                                view_button("Reset", /* Reset */1),
+                                /* :: */[
+                                  view_button("Previous", /* Previous */3),
                                   /* :: */[
-                                    view_button("Previous", /* Previous */2),
-                                    /* :: */[
-                                      view_button("Next", /* Next */1),
-                                      /* [] */0
-                                    ]
+                                    view_button("Next", /* Next */2),
+                                    /* [] */0
                                   ]
-                                ]),
-                            /* [] */0
-                          ]
+                                ]
+                              ]),
+                          /* [] */0
                         ]
                       ]),
                   /* [] */0
@@ -10094,6 +5614,32 @@
   /* Draw Not a pure module */
 
   // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
+
+  function flip(i, j, board) {
+    return mapij((function (i2, j2, e) {
+                  if (i === i2 && j === j2) {
+                    if (e) {
+                      return /* Dead */0;
+                    } else {
+                      return /* Alive */1;
+                    }
+                  } else {
+                    return e;
+                  }
+                }), board);
+  }
+
+  function reset(board) {
+    return make$2(width(board), height$1(board), /* Dead */0);
+  }
+
+  function resize(board, x, y) {
+    var w = width(board);
+    var h = height$1(board);
+    var a = make$2(x, y, /* Dead */0);
+    blit$1(board, 0, 0, a, 0, 0, x < w ? x : w, y < h ? y : h);
+    return a;
+  }
 
   function clamp(board) {
     var is_alive = function (param) {
@@ -10124,32 +5670,42 @@
     var x1 = match[0];
     var w = match[1] - x1 | 0;
     var h = match[3] - y1 | 0;
-    var board2 = make_matrix(w + 3 | 0, h + 3 | 0, /* Dead */0);
-    blit$3(board, x1, y1, board2, 1, 1, w + 1 | 0, h + 1 | 0);
-    return board2;
+    var a = make_matrix(w + 3 | 0, h + 3 | 0, /* Dead */0);
+    blit$1(board, x1, y1, a, 1, 1, w + 1 | 0, h + 1 | 0);
+    return a;
   }
 
   function next(rule, board) {
-    var is_alive = function (coords) {
-      var j = coords[1];
-      var i = coords[0];
-      if (i < 0 || i >= board.length || j < 0 || j >= caml_array_get(board, 0).length) {
-        return 0;
+    var is_inside = function (param) {
+      var j = param[1];
+      var i = param[0];
+      if (i >= 0 && i < width(board) && j >= 0) {
+        return j < height$1(board);
       } else {
-        var match = caml_array_get(caml_array_get(board, i), j);
-        if (match) {
-          return 1;
-        } else {
-          return 0;
-        }
+        return false;
       }
     };
     var sum_neighbourg = function (x, y) {
-      var coords = map((function (coords) {
-              return /* tuple */[
-                      x + coords[0] | 0,
-                      y + coords[1] | 0
-                    ];
+      var neighbourg = map((function (param) {
+              var param$1 = /* tuple */[
+                x + param[0] | 0,
+                y + param[1] | 0
+              ];
+              var j = param$1[1];
+              var i = param$1[0];
+              if (is_inside(/* tuple */[
+                      i,
+                      j
+                    ])) {
+                var match = caml_array_get(caml_array_get(board, i), j);
+                if (match) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              } else {
+                return 0;
+              }
             }), /* :: */[
             /* tuple */[
               -1,
@@ -10199,7 +5755,6 @@
               ]
             ]
           ]);
-      var neighbourg = map(is_alive, coords);
       return fold_left((function (prim, prim$1) {
                     return prim + prim$1 | 0;
                   }), 0, neighbourg);
@@ -10221,92 +5776,28 @@
     return mapij(next_one, board);
   }
 
-  function flip(i, j, board) {
-    return mapij((function (param, param$1, param$2) {
-                  var i$1 = i;
-                  var j$1 = j;
-                  var i2 = param;
-                  var j2 = param$1;
-                  var e = param$2;
-                  if (i$1 === i2 && j$1 === j2) {
-                    if (e) {
-                      return /* Dead */0;
-                    } else {
-                      return /* Alive */1;
-                    }
-                  } else {
-                    return e;
-                  }
-                }), board);
-  }
-
-  function resize$1(board, x, y) {
-    var w = width(board);
-    var h = height$1(board);
-    var a = make$2(x, y, /* Dead */0);
-    blit$3(board, 0, 0, a, x, y, w, h);
-    return a;
-  }
-
-  function update$1(state, $$event) {
-    var w = width(state.board);
-    var h = height$1(state.board);
-    var board;
-    if (typeof $$event === "number") {
-      switch ($$event) {
-        case /* Next */1 :
-            board = next(state.rule, state.board);
-            break;
-        case /* Previous */2 :
-            var match = state.previous;
-            board = match ? match[0] : make$2(0, 0, /* Dead */0);
-            break;
-        case /* Clamp */4 :
-            board = clamp(state.board);
-            break;
-        case /* Reset */5 :
-            board = make$2(width(state.board), height$1(state.board), /* Dead */0);
-            break;
+  function update$1(state, param) {
+    if (typeof param === "number") {
+      switch (param) {
+        case /* Reset */1 :
+            return clamp(reset(state.board));
+        case /* Next */2 :
+            return next(state.rule, state.board);
+        case /* Clamp */5 :
+            return clamp(state.board);
         default:
-          board = state.board;
+          return state.board;
       }
     } else {
-      switch ($$event.tag | 0) {
-        case /* Click */0 :
-            board = flip($$event[0], $$event[1], state.board);
-            break;
-        case /* ClickThenNext */1 :
-            board = next(state.rule, flip($$event[0], $$event[1], state.board));
-            break;
-        case /* SetBoard */3 :
-            board = $$event[0];
-            break;
-        case /* SetBoardFromSeed */4 :
-            board = ( JSON.parse($$event[0]) );
-            break;
-        case /* SetX */6 :
-            board = resize$1(state.board, $$event[0], h);
-            break;
-        case /* SetY */7 :
-            board = resize$1(state.board, w, $$event[0]);
-            break;
+      switch (param.tag | 0) {
+        case /* Flip */0 :
+            return clamp(flip(param[0], param[1], state.board));
+        case /* Resize */4 :
+            return resize(state.board, param[0], param[1]);
         default:
-          board = state.board;
+          return state.board;
       }
     }
-    var cmd;
-    if (typeof $$event === "number") {
-      cmd = $$event === /* Clamp */4 || !state.auto_clamp ? /* NoCmd */0 : msg(/* Clamp */4);
-    } else if ($$event.tag === /* KeyPressed */9) {
-      var match$1 = $$event[0].key_code;
-      cmd = match$1 !== 13 && match$1 !== 32 ? /* NoCmd */0 : msg(/* Next */1);
-    } else {
-      cmd = state.auto_clamp ? msg(/* Clamp */4) : /* NoCmd */0;
-    }
-    return /* tuple */[
-            board,
-            cmd
-          ];
   }
   /* No side effect */
 
@@ -10808,97 +6299,145 @@
     return /* tuple */[
             {
               board: /* array */[/* array */[/* Dead */0]],
-              previous: /* [] */0,
-              seeds: /* :: */[
-                {
-                  name: "Glisseur 1",
-                  str: "[[0,1,0],[1,0,0],[1,1,1]]"
-                },
-                /* :: */[
-                  {
-                    name: "Mathusalem 1",
-                    str: "[[0,0,1,0],[0,1,0,0],[1,1,1,0]]"
-                  },
-                  /* [] */0
-                ]
-              ],
               rule: /* B3S23 */0,
+              geo: /* Infinite */0,
+              previous: /* [] */0,
               auto_clamp: true
             },
-            msg(/* Reset */5)
-          ];
-  }
-
-  function update$2(state, $$event) {
-    var match = update$1(state, $$event);
-    var cmd = match[1];
-    var board = match[0];
-    var previous;
-    var exit = 0;
-    if (typeof $$event === "number") {
-      switch ($$event) {
-        case /* Next */1 :
-            exit = 1;
-            break;
-        case /* Previous */2 :
-            var match$1 = state.previous;
-            previous = match$1 ? match$1[1] : /* [] */0;
-            break;
-        default:
-          previous = state.previous;
-      }
-    } else {
-      switch ($$event.tag | 0) {
-        case /* Click */0 :
-        case /* SetBoard */3 :
-            exit = 1;
-            break;
-        default:
-          previous = state.previous;
-      }
-    }
-    if (exit === 1) {
-      previous = /* :: */[
-        state.board,
-        state.previous
-      ];
-    }
-    var seeds;
-    seeds = typeof $$event === "number" || $$event.tag !== /* AddSeed */5 ? state.seeds : /* :: */[
-        {
-          name: $$event[0],
-          str: $$event[1]
-        },
-        state.seeds
-      ];
-    var rule;
-    rule = typeof $$event === "number" || $$event.tag !== /* SetRule */8 ? state.rule : $$event[0];
-    var auto_clamp = typeof $$event === "number" && $$event === 3 ? !state.auto_clamp : state.auto_clamp;
-    var cmd2;
-    cmd2 = typeof $$event === "number" || $$event.tag !== /* Fetch */10 ? cmd : send$1(lifeData, getString($$event[0]));
-    var board2;
-    if (typeof $$event === "number" || $$event.tag !== /* LifeData */11) {
-      board2 = board;
-    } else {
-      var match$2 = $$event[0];
-      board2 = match$2.tag ? board : parse(match$2[0]);
-    }
-    return /* tuple */[
-            {
-              board: board2,
-              previous: previous,
-              seeds: seeds,
-              rule: rule,
-              auto_clamp: auto_clamp
-            },
-            cmd2
+            msg(/* Reset */1)
           ];
   }
 
   function subscriptions(param) {
     return downs(undefined, (function (k) {
-                  return /* KeyPressed */__(9, [k]);
+                  return /* KeyPressed */__(8, [k]);
                 }));
+  }
+
+  function update$2(state, $$event) {
+    var state$1;
+    var exit = 0;
+    if (typeof $$event === "number") {
+      switch ($$event) {
+        case /* Previous */3 :
+            var match = state.previous;
+            var match$1 = match ? /* tuple */[
+                match[0],
+                match[1]
+              ] : /* tuple */[
+                make$2(0, 0, /* Dead */0),
+                /* [] */0
+              ];
+            state$1 = {
+              board: match$1[0],
+              rule: state.rule,
+              geo: state.geo,
+              previous: match$1[1],
+              auto_clamp: state.auto_clamp
+            };
+            break;
+        case /* ToggleAutoClamp */4 :
+            state$1 = {
+              board: state.board,
+              rule: state.rule,
+              geo: state.geo,
+              previous: state.previous,
+              auto_clamp: !state.auto_clamp
+            };
+            break;
+        case /* Reset */1 :
+        case /* Next */2 :
+        case /* Clamp */5 :
+            exit = 1;
+            break;
+        default:
+          state$1 = state;
+      }
+    } else {
+      switch ($$event.tag | 0) {
+        case /* Flip */0 :
+        case /* Resize */4 :
+            exit = 1;
+            break;
+        case /* SetRule */7 :
+            state$1 = {
+              board: state.board,
+              rule: $$event[0],
+              geo: state.geo,
+              previous: state.previous,
+              auto_clamp: state.auto_clamp
+            };
+            break;
+        case /* LifeData */10 :
+            var match$2 = $$event[0];
+            state$1 = match$2.tag ? ({
+                  board: make$2(0, 0, /* Dead */0),
+                  rule: state.rule,
+                  geo: state.geo,
+                  previous: state.previous,
+                  auto_clamp: state.auto_clamp
+                }) : ({
+                  board: parse(match$2[0]),
+                  rule: state.rule,
+                  geo: state.geo,
+                  previous: state.previous,
+                  auto_clamp: state.auto_clamp
+                });
+            break;
+        default:
+          state$1 = state;
+      }
+    }
+    if (exit === 1) {
+      state$1 = {
+        board: update$1(state, $$event),
+        rule: state.rule,
+        geo: state.geo,
+        previous: /* :: */[
+          state.board,
+          state.previous
+        ],
+        auto_clamp: state.auto_clamp
+      };
+    }
+    var cmd;
+    var exit$1 = 0;
+    if (typeof $$event === "number") {
+      if ($$event === /* Next */2) {
+        exit$1 = 1;
+      } else {
+        cmd = /* NoCmd */0;
+      }
+    } else {
+      switch ($$event.tag | 0) {
+        case /* Flip */0 :
+            exit$1 = 1;
+            break;
+        case /* KeyPressed */8 :
+            var match$3 = $$event[0].key_code;
+            cmd = match$3 !== 13 && match$3 !== 32 ? /* NoCmd */0 : msg(/* Next */2);
+            break;
+        case /* Fetch */9 :
+            cmd = send$1(lifeData, getString($$event[0]));
+            break;
+        case /* LifeData */10 :
+            if ($$event[0].tag) {
+              cmd = /* NoCmd */0;
+            } else {
+              exit$1 = 1;
+            }
+            break;
+        default:
+          cmd = /* NoCmd */0;
+      }
+    }
+    if (exit$1 === 1) {
+      cmd = state$1.geo === /* Infinite */0 ? msg(/* Clamp */5) : /* NoCmd */0;
+    }
+    return /* tuple */[
+            state$1,
+            cmd
+          ];
   }
 
   function partial_arg_shutdown(param) {

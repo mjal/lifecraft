@@ -30,4 +30,5 @@ html, body {
 }
 .alive { background-color: black; }
 .dead { background-color: lightgrey; }
-.small-i { width: 30px; }
+.small-i { width: 23px; }
+.label-i { margin: 2px; margin-top: 7px; }

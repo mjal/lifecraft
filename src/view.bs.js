@@ -3,10 +3,8 @@
 import * as Draw from "./draw.bs.js";
 import * as List from "../node_modules/bs-platform/lib/es6/list.js";
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
-import * as Curry from "../node_modules/bs-platform/lib/es6/curry.js";
 import * as Global from "./global.bs.js";
 import * as Matrix from "./matrix.bs.js";
-import * as Printf from "../node_modules/bs-platform/lib/es6/printf.js";
 import * as Tea_html from "../node_modules/bucklescript-tea/src-ocaml/tea_html.js";
 import * as Caml_format from "../node_modules/bs-platform/lib/es6/caml_format.js";
 
@@ -39,6 +37,22 @@ function view_link(title, msg) {
             ]);
 }
 
+function seed_link(param) {
+  return Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
+              Tea_html.a(undefined, undefined, /* :: */[
+                    Tea_html.href("#"),
+                    /* :: */[
+                      Tea_html.onClick(/* Fetch */Block.__(9, [param[1]])),
+                      /* [] */0
+                    ]
+                  ], /* :: */[
+                    Tea_html.text(param[0]),
+                    /* [] */0
+                  ]),
+              /* [] */0
+            ]);
+}
+
 function select_rule(model) {
   var rules_option = function (param) {
     return Tea_html.option$prime(undefined, undefined, /* :: */[
@@ -58,10 +72,84 @@ function select_rule(model) {
                       var match = List.find((function (param) {
                               return i === param[2];
                             }), Global.rule_list);
-                      return /* SetRule */Block.__(8, [match[1]]);
+                      return /* SetRule */Block.__(7, [match[1]]);
                     })),
               /* [] */0
             ], List.map(rules_option, Global.rule_list));
+}
+
+function params_form(model) {
+  return Tea_html.div(undefined, undefined, /* :: */[
+              Tea_html.class$prime("flex"),
+              /* [] */0
+            ], /* :: */[
+              select_rule(model),
+              /* :: */[
+                Tea_html.span(undefined, undefined, /* :: */[
+                      Tea_html.class$prime("label-i"),
+                      /* [] */0
+                    ], /* :: */[
+                      Tea_html.text("x = "),
+                      /* [] */0
+                    ]),
+                /* :: */[
+                  Tea_html.input$prime(undefined, undefined, /* :: */[
+                        Tea_html.type$prime("text"),
+                        /* :: */[
+                          Tea_html.class$prime("small-i"),
+                          /* :: */[
+                            Tea_html.value(String(Matrix.width(model.board))),
+                            /* :: */[
+                              Tea_html.onInput(undefined, (function (x) {
+                                      return /* Resize */Block.__(4, [
+                                                Caml_format.caml_int_of_string(x),
+                                                Matrix.height(model.board)
+                                              ]);
+                                    })),
+                              /* [] */0
+                            ]
+                          ]
+                        ]
+                      ], /* [] */0),
+                  /* :: */[
+                    Tea_html.span(undefined, undefined, /* :: */[
+                          Tea_html.class$prime("label-i"),
+                          /* [] */0
+                        ], /* :: */[
+                          Tea_html.text("y = "),
+                          /* [] */0
+                        ]),
+                    /* :: */[
+                      Tea_html.input$prime(undefined, undefined, /* :: */[
+                            Tea_html.type$prime("text"),
+                            /* :: */[
+                              Tea_html.class$prime("small-i"),
+                              /* :: */[
+                                Tea_html.value(String(Matrix.height(model.board))),
+                                /* :: */[
+                                  Tea_html.onInput(undefined, (function (y) {
+                                          return /* Resize */Block.__(4, [
+                                                    Matrix.width(model.board),
+                                                    Caml_format.caml_int_of_string(y)
+                                                  ]);
+                                        })),
+                                  /* [] */0
+                                ]
+                              ]
+                            ]
+                          ], /* [] */0),
+                      /* :: */[
+                        view_button("Resize", /* Clamp */5),
+                        /* :: */[
+                          model.auto_clamp ? view_button("Auto: On", /* ToggleAutoClamp */4) : view_button("Auto: Off", /* ToggleAutoClamp */4),
+                          /* [] */0
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]);
 }
 
 function view(model) {
@@ -76,113 +164,10 @@ function view(model) {
                     Tea_html.id("left-side"),
                     /* [] */0
                   ], /* :: */[
-                    select_rule(model),
+                    params_form(model),
                     /* :: */[
-                      Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
-                            Tea_html.a(undefined, undefined, /* :: */[
-                                  Tea_html.href("#"),
-                                  /* :: */[
-                                    Tea_html.onClick(/* Fetch */Block.__(10, ["test.rle"])),
-                                    /* [] */0
-                                  ]
-                                ], /* :: */[
-                                  Tea_html.text("Test"),
-                                  /* [] */0
-                                ]),
-                            /* [] */0
-                          ]),
-                      /* :: */[
-                        Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
-                              Tea_html.a(undefined, undefined, /* :: */[
-                                    Tea_html.href("#"),
-                                    /* :: */[
-                                      Tea_html.onClick(/* Fetch */Block.__(10, ["elephant.rle"])),
-                                      /* [] */0
-                                    ]
-                                  ], /* :: */[
-                                    Tea_html.text("Elephant"),
-                                    /* [] */0
-                                  ]),
-                              /* [] */0
-                            ]),
-                        /* :: */[
-                          Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
-                                Tea_html.a(undefined, undefined, /* :: */[
-                                      Tea_html.href("#"),
-                                      /* :: */[
-                                        Tea_html.onClick(/* Fetch */Block.__(10, ["ufo.rle"])),
-                                        /* [] */0
-                                      ]
-                                    ], /* :: */[
-                                      Tea_html.text("UFO"),
-                                      /* [] */0
-                                    ]),
-                                /* [] */0
-                              ]),
-                          /* :: */[
-                            Tea_html.div(undefined, undefined, /* [] */0, /* :: */[
-                                  Tea_html.span(undefined, undefined, /* [] */0, /* :: */[
-                                        Tea_html.text("x = "),
-                                        /* [] */0
-                                      ]),
-                                  /* :: */[
-                                    Tea_html.input$prime(undefined, undefined, /* :: */[
-                                          Tea_html.type$prime("text"),
-                                          /* :: */[
-                                            Tea_html.class$prime("small-i"),
-                                            /* :: */[
-                                              Tea_html.value(String(Matrix.width(model.board))),
-                                              /* :: */[
-                                                Tea_html.onInput(undefined, (function (x) {
-                                                        return /* SetX */Block.__(6, [Caml_format.caml_int_of_string(x)]);
-                                                      })),
-                                                /* [] */0
-                                              ]
-                                            ]
-                                          ]
-                                        ], /* [] */0),
-                                    /* :: */[
-                                      Tea_html.span(undefined, undefined, /* [] */0, /* :: */[
-                                            Tea_html.text("y = "),
-                                            /* [] */0
-                                          ]),
-                                      /* :: */[
-                                        Tea_html.input$prime(undefined, undefined, /* :: */[
-                                              Tea_html.type$prime("text"),
-                                              /* :: */[
-                                                Tea_html.class$prime("small-i"),
-                                                /* :: */[
-                                                  Tea_html.value(String(Matrix.height(model.board))),
-                                                  /* :: */[
-                                                    Tea_html.onInput(undefined, (function (y) {
-                                                            return /* SetY */Block.__(7, [Caml_format.caml_int_of_string(y)]);
-                                                          })),
-                                                    /* [] */0
-                                                  ]
-                                                ]
-                                              ]
-                                            ], /* [] */0),
-                                        /* :: */[
-                                          view_button("Clamp", /* Clamp */4),
-                                          /* [] */0
-                                        ]
-                                      ]
-                                    ]
-                                  ]
-                                ]),
-                            /* :: */[
-                              Tea_html.div(undefined, undefined, /* :: */[
-                                    Tea_html.class$prime("flex"),
-                                    /* [] */0
-                                  ], /* :: */[
-                                    model.auto_clamp ? view_button("Auto clamp: On", /* ToggleAutoClamp */3) : view_button("Auto clamp: Off", /* ToggleAutoClamp */3),
-                                    /* [] */0
-                                  ]),
-                              /* [] */0
-                            ]
-                          ]
-                        ]
-                      ]
+                      Tea_html.div(undefined, undefined, /* [] */0, List.map(seed_link, Global.seed_list)),
+                      /* [] */0
                     ]
                   ]),
               /* :: */[
@@ -191,79 +176,24 @@ function view(model) {
                       /* [] */0
                     ], /* :: */[
                       Tea_html.div(undefined, undefined, /* :: */[
-                            Tea_html.class$prime("flex"),
+                            Tea_html.class$prime("board"),
                             /* [] */0
-                          ], /* :: */[
-                            Tea_html.div(undefined, undefined, /* :: */[
-                                  Tea_html.class$prime("flex-1 centered"),
-                                  /* :: */[
-                                    Tea_html.id("size"),
-                                    /* [] */0
-                                  ]
-                                ], /* :: */[
-                                  Tea_html.p(undefined, undefined, /* [] */0, /* :: */[
-                                        Tea_html.text(Curry._2(Printf.sprintf(/* Format */[
-                                                      /* String_literal */Block.__(11, [
-                                                          "Size : ",
-                                                          /* Int */Block.__(4, [
-                                                              /* Int_d */0,
-                                                              /* No_padding */0,
-                                                              /* No_precision */0,
-                                                              /* Char_literal */Block.__(12, [
-                                                                  /* "x" */120,
-                                                                  /* Int */Block.__(4, [
-                                                                      /* Int_d */0,
-                                                                      /* No_padding */0,
-                                                                      /* No_precision */0,
-                                                                      /* End_of_format */0
-                                                                    ])
-                                                                ])
-                                                            ])
-                                                        ]),
-                                                      "Size : %dx%d"
-                                                    ]), Matrix.width(model.board), Matrix.height(model.board))),
-                                        /* [] */0
-                                      ]),
-                                  /* [] */0
-                                ]),
-                            /* :: */[
-                              Tea_html.div(undefined, undefined, /* :: */[
-                                    Tea_html.class$prime("flex-1 centered"),
-                                    /* :: */[
-                                      Tea_html.id("population"),
-                                      /* [] */0
-                                    ]
-                                  ], /* :: */[
-                                    Tea_html.p(undefined, undefined, /* [] */0, /* :: */[
-                                          Tea_html.text("My Pop"),
-                                          /* [] */0
-                                        ]),
-                                    /* [] */0
-                                  ]),
-                              /* [] */0
-                            ]
-                          ]),
+                          ], Draw.draw_html(model)),
                       /* :: */[
                         Tea_html.div(undefined, undefined, /* :: */[
-                              Tea_html.class$prime("board"),
+                              Tea_html.class$prime("flex"),
                               /* [] */0
-                            ], Draw.draw_html(model)),
-                        /* :: */[
-                          Tea_html.div(undefined, undefined, /* :: */[
-                                Tea_html.class$prime("flex"),
-                                /* [] */0
-                              ], /* :: */[
-                                view_button("Reset", /* Reset */5),
+                            ], /* :: */[
+                              view_button("Reset", /* Reset */1),
+                              /* :: */[
+                                view_button("Previous", /* Previous */3),
                                 /* :: */[
-                                  view_button("Previous", /* Previous */2),
-                                  /* :: */[
-                                    view_button("Next", /* Next */1),
-                                    /* [] */0
-                                  ]
+                                  view_button("Next", /* Next */2),
+                                  /* [] */0
                                 ]
-                              ]),
-                          /* [] */0
-                        ]
+                              ]
+                            ]),
+                        /* [] */0
                       ]
                     ]),
                 /* [] */0
@@ -274,7 +204,9 @@ function view(model) {
 export {
   view_button ,
   view_link ,
+  seed_link ,
   select_rule ,
+  params_form ,
   view ,
   
 }

@@ -16,7 +16,7 @@ function draw_html(state) {
                           return Tea_html.div(undefined, undefined, /* :: */[
                                       Tea_html.class$prime(e === /* Alive */1 ? "alive" : "dead"),
                                       /* :: */[
-                                        Tea_html.onClick(/* Click */Block.__(0, [
+                                        Tea_html.onClick(/* Flip */Block.__(0, [
                                                 i$1,
                                                 j
                                               ])),

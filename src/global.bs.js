@@ -2,64 +2,57 @@
 
 import * as Block from "../node_modules/bs-platform/lib/es6/block.js";
 
-function click(param_0, param_1) {
-  return /* Click */Block.__(0, [
-            param_0,
-            param_1
-          ]);
-}
-
-function clickThenNext(param_0, param_1) {
-  return /* ClickThenNext */Block.__(1, [
-            param_0,
-            param_1
-          ]);
-}
-
-function select(param_0, param_1) {
-  return /* Select */Block.__(2, [
+function flip(param_0, param_1) {
+  return /* Flip */Block.__(0, [
             param_0,
             param_1
           ]);
 }
 
 function setBoard(param_0) {
-  return /* SetBoard */Block.__(3, [param_0]);
+  return /* SetBoard */Block.__(1, [param_0]);
 }
 
 function setBoardFromSeed(param_0) {
-  return /* SetBoardFromSeed */Block.__(4, [param_0]);
+  return /* SetBoardFromSeed */Block.__(2, [param_0]);
 }
 
 function addSeed(param_0, param_1) {
-  return /* AddSeed */Block.__(5, [
+  return /* AddSeed */Block.__(3, [
+            param_0,
+            param_1
+          ]);
+}
+
+function resize(param_0, param_1) {
+  return /* Resize */Block.__(4, [
             param_0,
             param_1
           ]);
 }
 
 function setX(param_0) {
-  return /* SetX */Block.__(6, [param_0]);
+  return /* SetX */Block.__(5, [param_0]);
 }
 
 function setY(param_0) {
-  return /* SetY */Block.__(7, [param_0]);
+  return /* SetY */Block.__(6, [param_0]);
 }
 
 function setRule(param_0) {
-  return /* SetRule */Block.__(8, [param_0]);
+  return /* SetRule */Block.__(7, [param_0]);
 }
 
 function keyPressed(param_0) {
-  return /* KeyPressed */Block.__(9, [param_0]);
+  return /* KeyPressed */Block.__(8, [param_0]);
 }
 
 function $$fetch(param_0) {
-  return /* Fetch */Block.__(10, [param_0]);
+  return /* Fetch */Block.__(9, [param_0]);
 }
 
 function lifeData(param_0) {
-  return /* LifeData */Block.__(11, [param_0]);
+  return /* LifeData */Block.__(10, [param_0]);
 }
 
 var b3S23 = /* B3S23 */0;
@@ -68,15 +61,15 @@ var b36S23 = /* B36S23 */1;
 
 var nothing = /* Nothing */0;
 
-var next = /* Next */1;
+var reset = /* Reset */1;
 
-var previous = /* Previous */2;
+var next = /* Next */2;
 
-var toggleAutoClamp = /* ToggleAutoClamp */3;
+var previous = /* Previous */3;
 
-var clamp = /* Clamp */4;
+var toggleAutoClamp = /* ToggleAutoClamp */4;
 
-var reset = /* Reset */5;
+var clamp = /* Clamp */5;
 
 var rule_list = /* :: */[
   /* tuple */[
@@ -94,18 +87,44 @@ var rule_list = /* :: */[
   ]
 ];
 
+var seed_list = /* :: */[
+  /* tuple */[
+    "Test",
+    "test.rle"
+  ],
+  /* :: */[
+    /* tuple */[
+      "Elephant",
+      "elephant.rle"
+    ],
+    /* :: */[
+      /* tuple */[
+        "UFO",
+        "ufo.rle"
+      ],
+      /* :: */[
+        /* tuple */[
+          "Bob",
+          "bob.rle"
+        ],
+        /* [] */0
+      ]
+    ]
+  ]
+];
+
 export {
   b3S23 ,
   b36S23 ,
   nothing ,
-  click ,
-  clickThenNext ,
-  select ,
+  reset ,
+  flip ,
   next ,
   previous ,
   setBoard ,
   setBoardFromSeed ,
   addSeed ,
+  resize ,
   setX ,
   setY ,
   setRule ,
@@ -114,8 +133,8 @@ export {
   clamp ,
   $$fetch ,
   lifeData ,
-  reset ,
   rule_list ,
+  seed_list ,
   
 }
 /* No side effect */

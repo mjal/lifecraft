@@ -5,7 +5,7 @@ let draw_html state =
   let draw_cell i j e =
     div [
       class' (if e = Alive then "alive" else "dead");
-      onClick (Click(i,j))
+      onClick (Flip(i,j))
     ] []
   in
   let draw_line i line = 
