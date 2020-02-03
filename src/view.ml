@@ -19,8 +19,20 @@ let select_rule model =
     option' [
       value (string_of_int i);
       Attributes.selected (model.rule = rule)
-    ] [text str]
-  in select [onChange (fun v -> v |> int_of_string |> change_rule)] (List.map rules_option rule_list)
+    ] [text str] in
+  (* select [onChange (fun v -> v |> int_of_string |> change_rule)] (List.map rules_option rule_list) *)
+  div [class' "dropdown"] [
+    button [class' "btn btn-secondary dropdown-toggle";
+    type' "button";
+    Vdom.attribute "" "data-toggle" "dropdown"
+  ] [text "Rule"];
+    div [class' "dropdown menu";
+    ] (
+      List.map (fun (str, rule, i) ->
+        a [class' "dropdown-item"; href "#"] [text str]
+      ) rule_list
+    )
+  ]
 
 let select_backend model =
   let change_backend i = let _,backend,_ = List.find (fun (_,_,j) -> i = j) backend_list in SetBackend(backend) in
