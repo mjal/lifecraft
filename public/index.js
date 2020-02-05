@@ -1313,22 +1313,6 @@
       }
     }}
 
-  function find(p, _param) {
-    while(true) {
-      var param = _param;
-      if (param) {
-        var x = param[0];
-        if (_1(p, x)) {
-          return x;
-        } else {
-          _param = param[1];
-          continue ;
-        }
-      } else {
-        throw not_found;
-      }
-    }}
-
   function find_all(p) {
     return (function (param) {
         var _accu = /* [] */0;
@@ -2165,19 +2149,6 @@
               unique,
               props,
               vdoms
-            ]);
-  }
-
-  function onCB(name, key, cb) {
-    return /* Event */__(3, [
-              name,
-              /* EventHandlerCallback */__(0, [
-                  key,
-                  cb
-                ]),
-              {
-                contents: undefined
-              }
             ]);
   }
 
@@ -3857,7 +3828,7 @@
     }
   }
 
-  function find$1(x, _param) {
+  function find(x, _param) {
     while(true) {
       var param = _param;
       if (param) {
@@ -4684,7 +4655,7 @@
     choose: min_binding,
     choose_opt: min_binding_opt,
     split: split,
-    find: find$1,
+    find: find,
     find_opt: find_opt,
     find_first: find_first,
     find_first_opt: find_first_opt,
@@ -5331,40 +5302,10 @@
     return fullnode("", "div", key, unique, props, nodes);
   }
 
-  function span($staropt$star, $staropt$star$1, props, nodes) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
-    return fullnode("", "span", key, unique, props, nodes);
-  }
-
-  function a($staropt$star, $staropt$star$1, props, nodes) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
-    return fullnode("", "a", key, unique, props, nodes);
-  }
-
   function button($staropt$star, $staropt$star$1, props, nodes) {
     var key = $staropt$star !== undefined ? $staropt$star : "";
     var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
     return fullnode("", "button", key, unique, props, nodes);
-  }
-
-  function input$prime($staropt$star, $staropt$star$1, props, nodes) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
-    return fullnode("", "input", key, unique, props, nodes);
-  }
-
-  function select($staropt$star, $staropt$star$1, props, nodes) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
-    return fullnode("", "select", key, unique, props, nodes);
-  }
-
-  function option$prime($staropt$star, $staropt$star$1, props, nodes) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    var unique = $staropt$star$1 !== undefined ? $staropt$star$1 : "";
-    return fullnode("", "option", key, unique, props, nodes);
   }
 
   function id$1(str) {
@@ -5374,79 +5315,11 @@
             ]);
   }
 
-  function href(str) {
-    return /* Attribute */__(1, [
-              "",
-              "href",
-              str
-            ]);
-  }
-
   function class$prime(name) {
     return /* RawProp */__(0, [
               "className",
               name
             ]);
-  }
-
-  function type$prime(typ) {
-    return /* RawProp */__(0, [
-              "type",
-              typ
-            ]);
-  }
-
-  function value$1(str) {
-    return /* RawProp */__(0, [
-              "value",
-              str
-            ]);
-  }
-
-  function onInputOpt($staropt$star, msg) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    return onCB("input", key, (function (ev) {
-                  var match = ev.target;
-                  if (match !== undefined) {
-                    var match$1 = match.value;
-                    if (match$1 !== undefined) {
-                      return _1(msg, match$1);
-                    } else {
-                      return ;
-                    }
-                  }
-                  
-                }));
-  }
-
-  function onInput($staropt$star, msg) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    return onInputOpt(key, (function (ev) {
-                  return some(_1(msg, ev));
-                }));
-  }
-
-  function onChangeOpt($staropt$star, msg) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    return onCB("change", key, (function (ev) {
-                  var match = ev.target;
-                  if (match !== undefined) {
-                    var match$1 = match.value;
-                    if (match$1 !== undefined) {
-                      return _1(msg, match$1);
-                    } else {
-                      return ;
-                    }
-                  }
-                  
-                }));
-  }
-
-  function onChange($staropt$star, msg) {
-    var key = $staropt$star !== undefined ? $staropt$star : "";
-    return onChangeOpt(key, (function (ev) {
-                  return some(_1(msg, ev));
-                }));
   }
 
   function onClick(msg) {
@@ -5470,80 +5343,6 @@
       ], Decoder.bool);
 
   var keyCode = Decoder.field("keyCode", Decoder.$$int);
-
-  function max(value) {
-    return /* Attribute */__(1, [
-              "",
-              "max",
-              value
-            ]);
-  }
-
-  function min(value) {
-    return /* Attribute */__(1, [
-              "",
-              "min",
-              value
-            ]);
-  }
-
-  function step(value) {
-    return /* Attribute */__(1, [
-              "",
-              "step",
-              value
-            ]);
-  }
-
-  function disabled(b) {
-    if (b) {
-      return /* Attribute */__(1, [
-                "",
-                "disabled",
-                "true"
-              ]);
-    } else {
-      return /* NoProp */0;
-    }
-  }
-
-  function selected(b) {
-    if (b) {
-      return /* Attribute */__(1, [
-                "",
-                "selected",
-                "true"
-              ]);
-    } else {
-      return /* NoProp */0;
-    }
-  }
-
-  function acceptCharset(c) {
-    return /* Attribute */__(1, [
-              "",
-              "accept-charset",
-              c
-            ]);
-  }
-
-  function rel(value) {
-    return /* Attribute */__(1, [
-              "",
-              "rel",
-              value
-            ]);
-  }
-
-  var Attributes = {
-    max: max,
-    min: min,
-    step: step,
-    disabled: disabled,
-    selected: selected,
-    acceptCharset: acceptCharset,
-    rel: rel
-  };
   /* targetValue Not a pure module */
 
   // Generated by BUCKLESCRIPT, PLEASE EDIT WITH CARE
@@ -5711,163 +5510,6 @@
                 ]));
   }
 
-  function seed_link(param) {
-    return div(undefined, undefined, /* [] */0, /* :: */simpleVariant("::", [
-                  a(undefined, undefined, /* :: */simpleVariant("::", [
-                          href("#"),
-                          /* :: */simpleVariant("::", [
-                              onClick(/* Fetch */variant("Fetch", 10, [param[1]])),
-                              /* [] */0
-                            ])
-                        ]), /* :: */simpleVariant("::", [
-                          text(param[0]),
-                          /* [] */0
-                        ])),
-                  /* [] */0
-                ]));
-  }
-
-  function select_rule(model) {
-    return div(undefined, undefined, /* :: */simpleVariant("::", [
-                  class$prime("dropdown"),
-                  /* [] */0
-                ]), /* :: */simpleVariant("::", [
-                  button(undefined, undefined, /* :: */simpleVariant("::", [
-                          class$prime("btn btn-secondary dropdown-toggle"),
-                          /* :: */simpleVariant("::", [
-                              type$prime("button"),
-                              /* :: */simpleVariant("::", [
-                                  attribute("", "data-toggle", "dropdown"),
-                                  /* [] */0
-                                ])
-                            ])
-                        ]), /* :: */simpleVariant("::", [
-                          text("Rule"),
-                          /* [] */0
-                        ])),
-                  /* :: */simpleVariant("::", [
-                      div(undefined, undefined, /* :: */simpleVariant("::", [
-                              class$prime("dropdown menu"),
-                              /* [] */0
-                            ]), map((function (param) {
-                                  return a(undefined, undefined, /* :: */simpleVariant("::", [
-                                                class$prime("dropdown-item"),
-                                                /* :: */simpleVariant("::", [
-                                                    href("#"),
-                                                    /* [] */0
-                                                  ])
-                                              ]), /* :: */simpleVariant("::", [
-                                                text(param[0]),
-                                                /* [] */0
-                                              ]));
-                                }), rule_list)),
-                      /* [] */0
-                    ])
-                ]));
-  }
-
-  function select_backend(model) {
-    var backend_option = function (param) {
-      return option$prime(undefined, undefined, /* :: */simpleVariant("::", [
-                    value$1(String(param[2])),
-                    /* :: */simpleVariant("::", [
-                        Attributes.selected(model.backend === param[1]),
-                        /* [] */0
-                      ])
-                  ]), /* :: */simpleVariant("::", [
-                    text(param[0]),
-                    /* [] */0
-                  ]));
-    };
-    return select(undefined, undefined, /* :: */simpleVariant("::", [
-                  onChange(undefined, (function (v) {
-                          var i = caml_int_of_string(v);
-                          var match = find((function (param) {
-                                  return i === param[2];
-                                }), backend_list);
-                          return /* SetBackend */variant("SetBackend", 8, [match[1]]);
-                        })),
-                  /* [] */0
-                ]), map(backend_option, backend_list));
-  }
-
-  function params_form(model) {
-    return div(undefined, undefined, /* :: */simpleVariant("::", [
-                  class$prime("flex"),
-                  /* [] */0
-                ]), /* :: */simpleVariant("::", [
-                  select_rule(),
-                  /* :: */simpleVariant("::", [
-                      select_backend(model),
-                      /* :: */simpleVariant("::", [
-                          span(undefined, undefined, /* :: */simpleVariant("::", [
-                                  class$prime("label-i"),
-                                  /* [] */0
-                                ]), /* :: */simpleVariant("::", [
-                                  text("x = "),
-                                  /* [] */0
-                                ])),
-                          /* :: */simpleVariant("::", [
-                              input$prime(undefined, undefined, /* :: */simpleVariant("::", [
-                                      type$prime("text"),
-                                      /* :: */simpleVariant("::", [
-                                          class$prime("small-i"),
-                                          /* :: */simpleVariant("::", [
-                                              value$1(String(width(model.board))),
-                                              /* :: */simpleVariant("::", [
-                                                  onInput(undefined, (function (x) {
-                                                          return /* Resize */variant("Resize", 4, [
-                                                                    caml_int_of_string(x),
-                                                                    height(model.board)
-                                                                  ]);
-                                                        })),
-                                                  /* [] */0
-                                                ])
-                                            ])
-                                        ])
-                                    ]), /* [] */0),
-                              /* :: */simpleVariant("::", [
-                                  span(undefined, undefined, /* :: */simpleVariant("::", [
-                                          class$prime("label-i"),
-                                          /* [] */0
-                                        ]), /* :: */simpleVariant("::", [
-                                          text("y = "),
-                                          /* [] */0
-                                        ])),
-                                  /* :: */simpleVariant("::", [
-                                      input$prime(undefined, undefined, /* :: */simpleVariant("::", [
-                                              type$prime("text"),
-                                              /* :: */simpleVariant("::", [
-                                                  class$prime("small-i"),
-                                                  /* :: */simpleVariant("::", [
-                                                      value$1(String(height(model.board))),
-                                                      /* :: */simpleVariant("::", [
-                                                          onInput(undefined, (function (y) {
-                                                                  return /* Resize */variant("Resize", 4, [
-                                                                            width(model.board),
-                                                                            caml_int_of_string(y)
-                                                                          ]);
-                                                                })),
-                                                          /* [] */0
-                                                        ])
-                                                    ])
-                                                ])
-                                            ]), /* [] */0),
-                                      /* :: */simpleVariant("::", [
-                                          view_button("Resize", /* Clamp */5),
-                                          /* :: */simpleVariant("::", [
-                                              model.auto_clamp ? view_button("Auto: On", /* ToggleAutoClamp */4) : view_button("Auto: Off", /* ToggleAutoClamp */4),
-                                              /* [] */0
-                                            ])
-                                        ])
-                                    ])
-                                ])
-                            ])
-                        ])
-                    ])
-                ]));
-  }
-
   function view(model) {
     return div(undefined, undefined, /* :: */simpleVariant("::", [
                   id$1("container"),
@@ -5877,43 +5519,31 @@
                     ])
                 ]), /* :: */simpleVariant("::", [
                   div(undefined, undefined, /* :: */simpleVariant("::", [
-                          id$1("left-side"),
+                          id$1("center"),
                           /* [] */0
                         ]), /* :: */simpleVariant("::", [
-                          params_form(model),
+                          div(undefined, undefined, /* :: */simpleVariant("::", [
+                                  class$prime("menu flex"),
+                                  /* [] */0
+                                ]), /* :: */simpleVariant("::", [
+                                  view_button("Reset", /* Reset */1),
+                                  /* :: */simpleVariant("::", [
+                                      view_button("Next", /* Next */2),
+                                      /* :: */simpleVariant("::", [
+                                          view_button("Previous", /* Previous */3),
+                                          /* [] */0
+                                        ])
+                                    ])
+                                ])),
                           /* :: */simpleVariant("::", [
-                              div(undefined, undefined, /* [] */0, map(seed_link, seed_list)),
-                              /* [] */0
-                            ])
-                        ])),
-                  /* :: */simpleVariant("::", [
-                      div(undefined, undefined, /* :: */simpleVariant("::", [
-                              id$1("center"),
-                              /* [] */0
-                            ]), /* :: */simpleVariant("::", [
                               div(undefined, undefined, /* :: */simpleVariant("::", [
                                       class$prime("board"),
                                       /* [] */0
                                     ]), draw(model)),
-                              /* :: */simpleVariant("::", [
-                                  div(undefined, undefined, /* :: */simpleVariant("::", [
-                                          class$prime("flex"),
-                                          /* [] */0
-                                        ]), /* :: */simpleVariant("::", [
-                                          view_button("Reset", /* Reset */1),
-                                          /* :: */simpleVariant("::", [
-                                              view_button("Previous", /* Previous */3),
-                                              /* :: */simpleVariant("::", [
-                                                  view_button("Next", /* Next */2),
-                                                  /* [] */0
-                                                ])
-                                            ])
-                                        ])),
-                                  /* [] */0
-                                ])
-                            ])),
-                      /* [] */0
-                    ])
+                              /* [] */0
+                            ])
+                        ])),
+                  /* [] */0
                 ]));
   }
   /* Draw Not a pure module */

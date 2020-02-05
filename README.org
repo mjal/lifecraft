@@ -2,5 +2,4 @@
 ** Game of life simulator
 ** .rle parser
 * NA
-** Improve UI (fullsize squared)
-** Bigger buttons for mobile
+** Fullsize grid (menu on top)

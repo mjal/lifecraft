@@ -7,6 +7,9 @@ html, body {
   padding: 0 !important;
   height: 100%;
 }
+#app {
+  height: 100%;
+}
 #container {
   height: 100%;
 }
@@ -14,12 +17,14 @@ html, body {
   width: 30%;
 }
 #center {
-  width: 70%;
+  width: 100%;
   display: relative;
 }
-#right-side {}
+.menu {
+  height: 40px;
+}
 .board {
-  height: 600px;
+  height: calc(100% - 40px);
   display: flex;
   flex-direction: column;
 }

@@ -67,11 +67,16 @@ let params_form model =
 
 let view model =
   div [id "container"; class' "flex"] [
-    div [id "left-side"] [
+    (*div [id "left-side"] [
       params_form model;
       div [] (List.map seed_link seed_list)
-    ];
+    ];*)
     div [id "center"] [
+      div [class' "menu flex"] [
+        view_button "Reset" Reset;
+        view_button "Next" Next;
+        view_button "Previous" Previous;
+      ];
       (*div [class' "flex"] [
         div [class' "flex-1 centered"; id "size"] [
           p [] [text (Printf.sprintf "Size : %dx%d" (Matrix.width model.board) (Matrix.height model.board))]
@@ -82,11 +87,5 @@ let view model =
       ];*)
       div [class' "board"] (Draw.draw model);
       (*node "canvas" [Vdom.attribute "" "width" "640"; Vdom.attribute "" "height" "640"] []; *)
-      div [class' "flex"] [
-        view_button "Reset" Reset;
-        view_button "Previous" Previous;
-        view_button "Next" Next;
-        (*view_button "Save" Save; *)
-      ]
     ];
   ]
