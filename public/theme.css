@@ -13,9 +13,6 @@ html, body {
 #container {
   height: 100%;
 }
-#left-side {
-  width: 30%;
-}
 #center {
   width: 100%;
   display: relative;
@@ -30,10 +27,10 @@ html, body {
 }
 .dead, .alive {
   flex: 1;
-  border-right: 1px solid white;
-  border-bottom: 1px solid white;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
 }
 .alive { background-color: black; }
-.dead { background-color: lightgrey; }
+.dead { background-color: white; }
 .small-i { width: 23px; }
 .label-i { margin: 2px; margin-top: 7px; }

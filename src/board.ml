@@ -54,6 +54,6 @@ let update state = function
   | Next -> state.board |> (next state.rule)
   | Reset -> state.board |> reset |> clamp
   | Flip(i,j) -> state.board |> flip i j |> clamp
-  | Resize(x, y) -> resize state.board x y
+  | SetSize(x, y) -> resize state.board x y
   | Clamp -> state.board |> clamp
   | _ -> state.board

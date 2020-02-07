@@ -2,7 +2,7 @@ open Global
 open Tea.Html
 
 let view_button title msg =
-  button [ onClick msg; class' "flex-1" ] [ text title ]
+  button [ onClick msg; class' "btn btn-light flex-1" ] [ text title ]
 
 let view_link title msg =
   p [] [ a [ href "#"; onClick msg ] [ text title ] ]
@@ -10,82 +10,49 @@ let view_link title msg =
 let seed_link (name, url) =
   div [] [a [href "#"; onClick (Fetch(url))] [text name]]
 
+let auto_clamp_button model =
+  let text = if model.auto_clamp then "Auto: On" else "Auto: Off" in
+  view_button text SetAutoClamp
+
 let select_rule model =
-  let change_rule i =
-    let _,rule,_ = List.find (fun (_,_,j) -> i = j) rule_list in
-    SetRule(rule)
-  in
   let rules_option (str, rule, i) =
-    option' [
-      value (string_of_int i);
-      Attributes.selected (model.rule = rule)
-    ] [text str] in
-  (* select [onChange (fun v -> v |> int_of_string |> change_rule)] (List.map rules_option rule_list) *)
-  div [class' "dropdown"] [
-    button [class' "btn btn-secondary dropdown-toggle";
-    type' "button";
-    Vdom.attribute "" "data-toggle" "dropdown"
-  ] [text "Rule"];
-    div [class' "dropdown menu";
-    ] (
-      List.map (fun (str, rule, i) ->
-        a [class' "dropdown-item"; href "#"] [text str]
-      ) rule_list
-    )
-  ]
+    option' [value "dropdown-item"; Attributes.selected (model.rule = rule); onClick (SetRule(rule))] [text str]
+  in select [] (List.map rules_option rule_list)
 
 let select_backend model =
   let change_backend i = let _,backend,_ = List.find (fun (_,_,j) -> i = j) backend_list in SetBackend(backend) in
-  let backend_option (str, enum, i) =
-    option' [
-      value (string_of_int i);
-      Attributes.selected (model.backend = enum)
-    ] [text str]
+  let backend_option (str, enum, i) = option' [ value (string_of_int i); Attributes.selected (model.backend = enum) ] [text str]
   in select [onChange (fun v -> v |> int_of_string |> change_backend)] (List.map backend_option backend_list)
 
-let params_form model =
-  div [class' "flex"] [
-    select_rule model;
-    select_backend model;
-    span [class' "label-i"] [text "x = "];
-    input' [
-      type' "text"; class' "small-i";
-      value (Js.String.make (Matrix.width model.board));
-      onInput (fun x -> Resize(int_of_string x, Matrix.height model.board))
-    ] [];
-    span [class' "label-i"] [text "y = "];
-    input' [
-      type' "text"; class' "small-i";
-      value (Js.String.make (Matrix.height model.board));
-      onInput (fun y -> Resize(Matrix.width model.board, int_of_string y))
-    ] [];
-    view_button "Resize" Clamp;
-    if model.auto_clamp
-    then view_button "Auto: On" ToggleAutoClamp
-    else view_button "Auto: Off"  ToggleAutoClamp
-  ]
+let file_menu model =
+  let directories = List.map (fun (k,v) -> k) Filelist.list in
+  let file_button model filename = 
+    view_button filename (Fetch ("Life/" ^ model.directory ^ "/" ^ filename))
+  in
+  let files_from_dir dir =
+    try let (k,files) = List.find (fun (k,v) -> dir = k) Filelist.list in files
+    with _ -> []
+  in
+  if not model.show_patterns then div [] [] else
+    div [] [
+      div [class' "menu flex"] (List.map (fun e -> view_button e (SetDirectory e)) directories);
+      div [class' "menu flex"] (List.map (file_button model) (files_from_dir model.directory));
+    ]
 
 let view model =
   div [id "container"; class' "flex"] [
-    (*div [id "left-side"] [
-      params_form model;
-      div [] (List.map seed_link seed_list)
-    ];*)
     div [id "center"] [
       div [class' "menu flex"] [
         view_button "Reset" Reset;
         view_button "Next" Next;
         view_button "Previous" Previous;
+        select_rule model;
+        select_backend model;
+        view_button "Resize" Clamp;
+        auto_clamp_button model;
+        view_button "Patterns" SetShowPattern;
       ];
-      (*div [class' "flex"] [
-        div [class' "flex-1 centered"; id "size"] [
-          p [] [text (Printf.sprintf "Size : %dx%d" (Matrix.width model.board) (Matrix.height model.board))]
-        ];
-        div [class' "flex-1 centered"; id "population"] [
-          p [] [text "Unimplemented"]
-        ]
-      ];*)
+      file_menu model;
       div [class' "board"] (Draw.draw model);
-      (*node "canvas" [Vdom.attribute "" "width" "640"; Vdom.attribute "" "height" "640"] []; *)
     ];
   ]

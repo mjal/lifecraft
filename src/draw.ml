@@ -17,27 +17,26 @@ let draw_html state =
 let draw_svg state =
   let ftoa x = Js.Float.toPrecisionWithPrecision x 4 in
   let ftoa2 x = (ftoa x)^"%" in
-  let draw_cell w h x y e =
+  let draw_cell i j e =
+    let w = 100. /. (float_of_int (Matrix.width state.board)) in
+    let h = 100. /. (float_of_int (Matrix.height state.board)) in
+    let x = (float_of_int i) *. w in
+    let y = (float_of_int j) *. h in
     node "rect" [
       Vdom.attribute "" "x" (ftoa x);
       Vdom.attribute "" "y" (ftoa y);
       Vdom.attribute "" "width" (ftoa w);
       Vdom.attribute "" "height" (ftoa h);
       Vdom.attribute "" "fill" (if e = Alive then "black" else "white");
+      onClick (Flip(i,j));
     ] []
   in
-  let w = 600. /. (float_of_int (Matrix.width state.board)) in
-  let h = 600. /. (float_of_int (Matrix.height state.board)) in
-  let cells = (Matrix.mapij (fun i j e -> draw_cell w h ((float_of_int i)*.w) ((float_of_int j)*.h) e) state.board) in
-
+  let cells = (Matrix.mapij (fun i j e -> draw_cell i j e) state.board) in
   [
     svg [
-      Vdom.attribute "" "width" "600";
-      Vdom.attribute "" "height" "600";
+      Vdom.attribute "" "viewBox" "0 0 100 100";
     ] (List.flatten (Array.to_list (Array.map Array.to_list cells)))
   ]
-
-
 
 let draw_canvas state =
   (*
