@@ -25,7 +25,7 @@ let update state event =
   | SetBackend backend -> { state with backend }
   | SetAutoClamp -> { state with auto_clamp = not state.auto_clamp }
   | SetShowPattern -> { state with show_patterns = not state.show_patterns }
-  | Reset | Next | Flip(_) | SetSize(_,_) | Clamp -> { state with previous = state.board :: state.previous; board = (Board.update state event) }
+  | Reset | Next | Flip(_) | SetSize(_,_) | Clamp -> { state with (*previous = state.board :: state.previous;*) board = (Board.update state event) }
   | Previous ->
     let board, previous = begin match state.previous with
       | [] -> (Matrix.make 0 0 Dead), []

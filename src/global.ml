@@ -20,14 +20,12 @@ type state = {
 
 type event =
   | Nothing
+  (* Actions *)
   | Reset
   | Flip of int * int
   | Next
   | Previous
-  | SetBoard of cell array array
-  | SetBoardFromSeed of string
-  | AddSeed of string * string
-
+  | Clamp
   (* Setters *)
   | SetAutoClamp
   | SetSize of int * int
@@ -35,16 +33,14 @@ type event =
   | SetBackend of backend
   | SetDirectory of string
   | SetShowPattern
-
-  | Fetch of string
-
+  (* Keyboard *)
   | KeyPressed of Keyboard.key_event
-  | Clamp
+  (* Request *)
+  | Fetch of string
   | LifeData of (string, string Tea.Http.error) Tea.Result.t
 [@@bs.deriving {accessors}]
 
-
 let rule_list = [("B3S23", B3S23, 0); ("B36S23", B36S23, 1)]
 let backend_list = [("Html", Html, 0); ("Svg", Svg, 1); ("Canvas", Canvas, 2)]
+
 let seed_list = [("Test", "test.rle"); ("Elephant", "elephant.rle"); ("UFO","ufo.rle"); ("Bob", "bob.rle")]
-let file_list = [("Bounded-Grids", ["agar-p3"; "cross-surface"]); ("Breeders", ["rake-breeder"]); ("Oscillators", ["billiard-table"])]

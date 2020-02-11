@@ -15,14 +15,26 @@ let auto_clamp_button model =
   view_button text SetAutoClamp
 
 let select_rule model =
+  let rule_list =
+    [("B3S23", B3S23, 0); ("B36S23", B36S23, 1)]
+  in
   let rules_option (str, rule, i) =
-    option' [value "dropdown-item"; Attributes.selected (model.rule = rule); onClick (SetRule(rule))] [text str]
+    option' [
+      Attributes.selected (model.rule = rule);
+      onClick (SetRule(rule));
+    ] [text str]
   in select [] (List.map rules_option rule_list)
 
 let select_backend model =
-  let change_backend i = let _,backend,_ = List.find (fun (_,_,j) -> i = j) backend_list in SetBackend(backend) in
-  let backend_option (str, enum, i) = option' [ value (string_of_int i); Attributes.selected (model.backend = enum) ] [text str]
-  in select [onChange (fun v -> v |> int_of_string |> change_backend)] (List.map backend_option backend_list)
+  let backend_list =
+    [("Html", Html, 0); ("Svg", Svg, 1); ("Canvas", Canvas, 2)]
+  in
+  let backend_option (str, backend, i) =
+    option' [
+      Attributes.selected (model.backend = backend);
+      onClick (SetBackend(backend));
+    ] [text str]
+  in select [] (List.map backend_option backend_list)
 
 let file_menu model =
   let directories = List.map (fun (k,v) -> k) Filelist.list in
@@ -45,7 +57,7 @@ let view model =
       div [class' "menu flex"] [
         view_button "Reset" Reset;
         view_button "Next" Next;
-        view_button "Previous" Previous;
+        (*view_button "Previous" Previous;*)
         select_rule model;
         select_backend model;
         view_button "Resize" Clamp;

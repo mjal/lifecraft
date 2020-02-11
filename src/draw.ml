@@ -28,6 +28,8 @@ let draw_svg state =
       Vdom.attribute "" "width" (ftoa w);
       Vdom.attribute "" "height" (ftoa h);
       Vdom.attribute "" "fill" (if e = Alive then "black" else "white");
+      Vdom.attribute "" "stroke-width" "0.5";
+      Vdom.attribute "" "stroke" "pink";
       onClick (Flip(i,j));
     ] []
   in
@@ -39,10 +41,13 @@ let draw_svg state =
   ]
 
 let draw_canvas state =
-  (*
+  let (canvas_width, canvas_height) = (800,600) in
+  let (matrix_width, matrix_height) = (Matrix.width state.board, Matrix.height state.board) in
+  let drawDisk x y size color = "" in
+  let clear () = "" in
   let draw_one i j e =
-    let dot_w = (canvas_width / state.size.x) in
-    let dot_h = (canvas_height / state.size.y) in
+    let dot_w = (canvas_width / matrix_width) in
+    let dot_h = (canvas_height / matrix_height) in
     let r = min (dot_w / 2) (dot_h / 2) in
     let x = i * dot_w + dot_w / 2 in
     let y = j * dot_h + dot_h / 2 in
@@ -53,12 +58,18 @@ let draw_canvas state =
       drawDisk x y size color;
   in
     clear();
-    if state.size.x != 0 && state.size.y != 0 then
-      lmatrix_iterij draw_one state.board
+    (if matrix_width != 0 && matrix_height != 0 then
+      () (*Matrix.iterij draw_one state.board*)
     else
       ()
-  *)
-  []
+    );
+    [
+      canvas [
+        Vdom.attribute "" "width" "800";
+        Vdom.attribute "" "height" "600";
+      ] []
+    ]
+
 
 let draw state =
   match state.backend with

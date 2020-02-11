@@ -13,6 +13,10 @@ let mapij f matrix =
   matrix  |> Array.mapi (fun i row -> row
           |> Array.mapi (fun j e -> f i j e))
 
+let iterij f matrix =
+  matrix  |> Array.iteri (fun i row -> row
+          |> Array.iteri (fun j e -> f i j e))
+
 let findi (f: 'a -> bool) (a: 'a array array) =
   let rec findi2 f a i =
     if i >= Array.length a then raise Not_found
