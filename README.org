@@ -1,3 +1,4 @@
 * [[https://mjal.gitlab.io/lifecraft]]
 * Game of life simulator
 * .rle parser
+* Truc
