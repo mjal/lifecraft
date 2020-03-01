@@ -18,7 +18,7 @@ let select_rule model =
   let rule_list =
     [("B3S23", B3S23, 0); ("B36S23", B36S23, 1)]
   in
-  let rules_option (str, rule, i) =
+  let rules_option (str, rule, _) =
     option' [
       Attributes.selected (model.rule = rule);
       onClick (SetRule(rule));
@@ -29,7 +29,7 @@ let select_backend model =
   let backend_list =
     [("Html", Html, 0); ("Svg", Svg, 1); ("Canvas", Canvas, 2)]
   in
-  let backend_option (str, backend, i) =
+  let backend_option (str, backend, _) =
     option' [
       Attributes.selected (model.backend = backend);
       onClick (SetBackend(backend));
@@ -37,12 +37,12 @@ let select_backend model =
   in select [] (List.map backend_option backend_list)
 
 let file_menu model =
-  let directories = List.map (fun (k,v) -> k) Filelist.list in
+  let directories = List.map (fun (k,_) -> k) Filelist.list in
   let file_button model filename = 
     view_button filename (Fetch ("Life/" ^ model.directory ^ "/" ^ filename))
   in
   let files_from_dir dir =
-    try let (k,files) = List.find (fun (k,v) -> dir = k) Filelist.list in files
+    try let (_,files) = List.find (fun (k,_) -> dir = k) Filelist.list in files
     with _ -> []
   in
   if not model.show_patterns then div [] [] else
