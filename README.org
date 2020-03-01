@@ -1,6 +1,3 @@
 * [[https://mjal.gitlab.io/lifecraft]]
-* Lifecraft
-** Game of life simulator
-** .rle parser
-* NA
-** Fullsize grid (menu on top)
+* Game of life simulator
+* .rle parser
