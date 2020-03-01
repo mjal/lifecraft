@@ -1,4 +1,4 @@
-* https://mjal.gitlab.io/lifecracft
+* [https://mjal.gitlab.io/lifecraft]
 * Lifecraft
 ** Game of life simulator
 ** .rle parser
