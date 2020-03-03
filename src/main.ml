@@ -9,7 +9,7 @@ let init () =
      geo = Infinite;
      previous = [];
      auto_clamp = true;
-     backend = Html;
+     backend = Svg;
      show_patterns = false;
      directory = "";
    },

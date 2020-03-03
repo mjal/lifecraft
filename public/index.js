@@ -7029,7 +7029,7 @@
               board: /* array */[/* array */[/* Dead */0]],
               rule: /* B3S23 */0,
               geo: /* Infinite */0,
-              backend: /* Html */0,
+              backend: /* Svg */1,
               previous: /* [] */0,
               auto_clamp: true,
               show_patterns: false,
